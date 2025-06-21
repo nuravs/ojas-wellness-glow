@@ -1,4 +1,5 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,6 +43,18 @@
     --wellness-yellow: 255 193 7;
     --wellness-red: 244 67 54;
     --wellness-blue: 33 150 243;
+
+    /* Calm color system variables */
+    --wellness-calm-50: 248 250 252;
+    --wellness-calm-100: 241 245 249;
+    --wellness-calm-200: 226 232 240;
+    --wellness-calm-300: 203 213 225;
+    --wellness-calm-400: 148 163 184;
+    --wellness-calm-500: 100 116 139;
+    --wellness-calm-600: 71 85 105;
+    --wellness-calm-700: 51 65 85;
+    --wellness-calm-800: 30 41 59;
+    --wellness-calm-900: 15 23 42;
   }
 
   .dark {
@@ -81,7 +94,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-wellness;
     font-size: 18px; /* Larger base font size for accessibility */
     line-height: 1.6;
   }
@@ -121,20 +134,20 @@
 
   /* Gentle card styling */
   .ojas-card {
-    @apply bg-white rounded-2xl shadow-sm border border-wellness-calm-200 p-6 transition-all duration-200 hover:shadow-md;
+    @apply bg-white rounded-2xl shadow-sm border border-calm-200 p-6 transition-all duration-200 hover:shadow-md;
   }
 
   /* Large, friendly buttons */
   .ojas-button {
-    @apply px-8 py-4 rounded-xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3;
+    @apply px-8 py-4 rounded-xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-sm;
   }
 
   .ojas-button-primary {
-    @apply ojas-button bg-wellness-green text-white hover:bg-wellness-green/90 active:scale-95;
+    @apply ojas-button bg-wellness-green text-white hover:bg-wellness-green/90 active:scale-95 shadow-lg;
   }
 
   .ojas-button-secondary {
-    @apply ojas-button bg-wellness-calm-100 text-wellness-calm-800 hover:bg-wellness-calm-200 active:scale-95;
+    @apply ojas-button bg-calm-100 text-calm-800 hover:bg-calm-200 active:scale-95 border border-calm-300;
   }
 
   /* Tab navigation styling */
@@ -143,11 +156,16 @@
   }
 
   .ojas-tab.active {
-    @apply bg-wellness-green text-white;
+    @apply bg-wellness-green text-white font-semibold shadow-md;
   }
 
   .ojas-tab.inactive {
-    @apply bg-white text-wellness-calm-600 hover:bg-wellness-calm-50;
+    @apply bg-white text-calm-600 hover:bg-calm-50 font-medium;
+  }
+
+  /* Custom form inputs */
+  .ojas-input {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-calm-200 bg-white text-calm-800 placeholder-calm-500 focus:border-wellness-green focus:ring-2 focus:ring-wellness-green/20 transition-all duration-200;
   }
 }
 

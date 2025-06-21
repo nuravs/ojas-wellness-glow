@@ -2,15 +2,14 @@
 import React, { useState } from 'react';
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
-import SymptomsPage from './SymptomsPage';
-import CalendarPage from './CalendarPage';
+import WellnessCenterPage from './WellnessCenterPage';
 import RecordsPage from './RecordsPage';
-import HelpPage from './HelpPage';
+import MorePage from './MorePage';
 import Navigation from '../components/Navigation';
 import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'calendar' | 'records' | 'help'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'wellness' | 'records' | 'more'>('home');
   const { toast } = useToast();
 
   // Sample medication data
@@ -95,21 +94,19 @@ const Index = () => {
             onAddMedication={handleAddMedication}
           />
         );
-      case 'symptoms':
-        return <SymptomsPage />;
-      case 'calendar':
-        return <CalendarPage />;
+      case 'wellness':
+        return <WellnessCenterPage />;
       case 'records':
         return <RecordsPage />;
-      case 'help':
-        return <HelpPage />;
+      case 'more':
+        return <MorePage />;
       default:
         return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostponeMedication={handlePostponeMedication} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-wellness">
       {renderCurrentPage()}
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
