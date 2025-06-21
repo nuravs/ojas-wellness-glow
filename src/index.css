@@ -121,7 +121,7 @@
 
   /* Gentle card styling */
   .ojas-card {
-    @apply bg-white rounded-2xl shadow-sm border border-calm-200 p-6 transition-all duration-200 hover:shadow-md;
+    @apply bg-white rounded-2xl shadow-sm border border-wellness-calm-200 p-6 transition-all duration-200 hover:shadow-md;
   }
 
   /* Large, friendly buttons */
@@ -134,7 +134,7 @@
   }
 
   .ojas-button-secondary {
-    @apply ojas-button bg-calm-100 text-calm-800 hover:bg-calm-200 active:scale-95;
+    @apply ojas-button bg-wellness-calm-100 text-wellness-calm-800 hover:bg-wellness-calm-200 active:scale-95;
   }
 
   /* Tab navigation styling */
@@ -147,7 +147,7 @@
   }
 
   .ojas-tab.inactive {
-    @apply bg-white text-calm-600 hover:bg-calm-50;
+    @apply bg-white text-wellness-calm-600 hover:bg-wellness-calm-50;
   }
 }
 

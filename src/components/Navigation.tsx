@@ -16,7 +16,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-calm-200 px-4 py-2 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-wellness-calm-200 px-4 py-2 z-50">
       <div className="max-w-md mx-auto">
         <div className="flex">
           {tabs.map(({ id, label, icon: Icon }) => (
