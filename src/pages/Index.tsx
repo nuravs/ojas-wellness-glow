@@ -4,11 +4,13 @@ import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
 import SymptomsPage from './SymptomsPage';
 import CalendarPage from './CalendarPage';
+import RecordsPage from './RecordsPage';
+import HelpPage from './HelpPage';
 import Navigation from '../components/Navigation';
 import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'calendar'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'calendar' | 'records' | 'help'>('home');
   const { toast } = useToast();
 
   // Sample medication data
@@ -97,6 +99,10 @@ const Index = () => {
         return <SymptomsPage />;
       case 'calendar':
         return <CalendarPage />;
+      case 'records':
+        return <RecordsPage />;
+      case 'help':
+        return <HelpPage />;
       default:
         return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostponeMedication={handlePostponeMedication} />;
     }
