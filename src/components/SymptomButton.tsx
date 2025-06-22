@@ -1,37 +1,54 @@
 
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface SymptomButtonProps {
   icon: LucideIcon;
   label: string;
   onClick: () => void;
   color?: 'blue' | 'green' | 'yellow' | 'red';
+  severity?: 'low' | 'medium' | 'high';
 }
 
 const SymptomButton: React.FC<SymptomButtonProps> = ({ 
   icon: Icon, 
   label, 
   onClick, 
-  color = 'blue' 
+  color = 'blue',
+  severity
 }) => {
-  const getColorClasses = () => {
-    switch (color) {
-      case 'green': return 'bg-wellness-green/10 hover:bg-wellness-green/20 text-wellness-green border-wellness-green/20';
-      case 'yellow': return 'bg-wellness-yellow/10 hover:bg-wellness-yellow/20 text-wellness-yellow border-wellness-yellow/20';
-      case 'red': return 'bg-wellness-red/10 hover:bg-wellness-red/20 text-wellness-red border-wellness-red/20';
-      default: return 'bg-wellness-blue/10 hover:bg-wellness-blue/20 text-wellness-blue border-wellness-blue/20';
+  const getSeverityIcon = () => {
+    switch (severity) {
+      case 'high': return <TrendingUp className="w-4 h-4" />;
+      case 'medium': return <Minus className="w-4 h-4" />;
+      case 'low': return <TrendingDown className="w-4 h-4" />;
+      default: return null;
+    }
+  };
+
+  const getSeverityText = () => {
+    switch (severity) {
+      case 'high': return 'High';
+      case 'medium': return 'Medium';
+      case 'low': return 'Low';
+      default: return '';
     }
   };
 
   return (
     <button
       onClick={onClick}
-      className={`ojas-card ${getColorClasses()} hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2`}
-      aria-label={`Log ${label} symptom`}
+      className={`symptom-grid-button wellness-${color}`}
+      aria-label={`Log ${label} symptom${severity ? ` - ${getSeverityText()} severity` : ''}`}
     >
-      <Icon className="w-8 h-8" />
-      <span className="text-lg font-medium">{label}</span>
+      <Icon className="w-10 h-10" />
+      <span className="text-lg font-semibold">{label}</span>
+      {severity && (
+        <div className="flex items-center gap-1 text-sm font-medium">
+          {getSeverityIcon()}
+          <span>{getSeverityText()}</span>
+        </div>
+      )}
     </button>
   );
 };

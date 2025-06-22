@@ -63,41 +63,46 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Ojas wellness color palette
+				// Ojas empathetic wellness color palette - designed for neurological conditions
 				wellness: {
 					green: {
-						light: '#E8F5E8',
-						DEFAULT: '#4CAF50',
-						dark: '#2E7D32'
-					},
-					yellow: {
-						light: '#FFF8E1',
-						DEFAULT: '#FFC107',
-						dark: '#F57F17'
-					},
-					red: {
-						light: '#FFEBEE',
-						DEFAULT: '#F44336',
-						dark: '#C62828'
+						light: '#F0F9F0',
+						DEFAULT: '#2E7D32',
+						dark: '#1B5E20'
 					},
 					blue: {
-						light: '#E3F2FD',
-						DEFAULT: '#2196F3',
-						dark: '#1565C0'
+						light: '#E8F4FD',
+						DEFAULT: '#1976D2',
+						dark: '#0D47A1'
+					},
+					yellow: {
+						light: '#FFFBF0',
+						DEFAULT: '#F57C00',
+						dark: '#E65100'
+					},
+					red: {
+						light: '#FFF5F5',
+						DEFAULT: '#D32F2F',
+						dark: '#B71C1C'
+					},
+					purple: {
+						light: '#F3E5F5',
+						DEFAULT: '#7B1FA2',
+						dark: '#4A148C'
 					}
 				},
-				// Fixed calm color system
+				// Calm, accessible color system optimized for 50+ users
 				calm: {
-					50: '#F8FAFC',
-					100: '#F1F5F9',
-					200: '#E2E8F0',
-					300: '#CBD5E1',
-					400: '#94A3B8',
-					500: '#64748B',
-					600: '#475569',
-					700: '#334155',
-					800: '#1E293B',
-					900: '#0F172A'
+					50: '#FAFBFC',
+					100: '#F4F6F8',
+					200: '#E4E7EB',
+					300: '#CBD2D9',
+					400: '#9AA5B1',
+					500: '#687078',
+					600: '#4B5563',
+					700: '#374151',
+					800: '#1F2937',
+					900: '#111827'
 				}
 			},
 			borderRadius: {
@@ -106,7 +111,18 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				'wellness': ['Inter', 'system-ui', 'sans-serif'],
+				'wellness': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+				'heading': ['Inter', 'system-ui', 'sans-serif'],
+			},
+			fontSize: {
+				'xs': ['0.75rem', { lineHeight: '1.6' }],
+				'sm': ['0.875rem', { lineHeight: '1.7' }],
+				'base': ['1rem', { lineHeight: '1.7' }],
+				'lg': ['1.125rem', { lineHeight: '1.7' }],
+				'xl': ['1.25rem', { lineHeight: '1.6' }],
+				'2xl': ['1.5rem', { lineHeight: '1.5' }],
+				'3xl': ['1.875rem', { lineHeight: '1.4' }],
+				'4xl': ['2.25rem', { lineHeight: '1.3' }],
 			},
 			keyframes: {
 				'accordion-down': {
@@ -158,6 +174,26 @@ export default {
 						transform: 'scale(1) rotate(45deg)',
 						opacity: '1'
 					}
+				},
+				'expand-summary': {
+					'0%': {
+						height: '0',
+						opacity: '0'
+					},
+					'100%': {
+						height: 'auto',
+						opacity: '1'
+					}
+				},
+				'collapse-summary': {
+					'0%': {
+						height: 'auto',
+						opacity: '1'
+					},
+					'100%': {
+						height: '0',
+						opacity: '0'
+					}
 				}
 			},
 			animation: {
@@ -165,18 +201,14 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'gentle-fade-in': 'gentle-fade-in 0.3s ease-out',
 				'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite',
-				'check-mark': 'check-mark 0.4s ease-out'
+				'check-mark': 'check-mark 0.4s ease-out',
+				'expand-summary': 'expand-summary 0.3s ease-out',
+				'collapse-summary': 'collapse-summary 0.3s ease-out'
 			},
-			fontSize: {
-				'xs': ['0.75rem', { lineHeight: '1.5' }],
-				'sm': ['0.875rem', { lineHeight: '1.6' }],
-				'base': ['1rem', { lineHeight: '1.6' }],
-				'lg': ['1.125rem', { lineHeight: '1.6' }],
-				'xl': ['1.25rem', { lineHeight: '1.6' }],
-				'2xl': ['1.5rem', { lineHeight: '1.5' }],
-				'3xl': ['1.875rem', { lineHeight: '1.4' }],
-				'4xl': ['2.25rem', { lineHeight: '1.3' }],
-				'5xl': ['3rem', { lineHeight: '1.2' }],
+			boxShadow: {
+				'wellness-soft': '0 2px 8px rgba(0, 0, 0, 0.08)',
+				'wellness-medium': '0 4px 16px rgba(0, 0, 0, 0.12)',
+				'wellness-strong': '0 8px 24px rgba(0, 0, 0, 0.16)',
 			}
 		}
 	},

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3 } from 'lucide-react';
+import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface WellnessRingProps {
   status: 'good' | 'attention' | 'urgent';
@@ -28,123 +28,134 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
     switch (status) {
       case 'good': 
         return { 
-          icon: <CheckCircle className="w-8 h-8 text-wellness-green" />, 
+          icon: <CheckCircle className="w-10 h-10 text-wellness-green" />, 
           label: 'All Good',
           description: 'Everything looks good today',
-          accessibilityLabel: 'Normal - Everything is on track'
+          accessibilityLabel: 'Normal - Everything is on track',
+          statusIcon: <Check className="w-4 h-4" />
         };
       case 'attention': 
         return { 
-          icon: <Clock3 className="w-8 h-8 text-wellness-yellow" />, 
+          icon: <Clock3 className="w-10 h-10 text-wellness-yellow" />, 
           label: 'Gentle Reminder',
           description: 'A gentle reminder is waiting',
-          accessibilityLabel: 'Attention - Check your reminders'
+          accessibilityLabel: 'Attention - Check your reminders',
+          statusIcon: <Clock className="w-4 h-4" />
         };
       case 'urgent': 
         return { 
-          icon: <AlertCircle className="w-8 h-8 text-wellness-red" />, 
+          icon: <AlertCircle className="w-10 h-10 text-wellness-red" />, 
           label: 'Important Alert',
           description: 'Please check your important alerts',
-          accessibilityLabel: 'Alert - Action required'
+          accessibilityLabel: 'Alert - Action required',
+          statusIcon: <AlertTriangle className="w-4 h-4" />
         };
     }
   };
 
   const statusConfig = getStatusConfig();
 
-  const getMedicationStatusText = () => {
-    if (medsCount.taken === medsCount.total) return 'All medications taken ✓';
-    return `${medsCount.taken}/${medsCount.total} medications taken`;
-  };
-
-  const getMedicationStatusLabel = () => {
-    if (medsCount.taken === medsCount.total) return 'Complete';
-    return 'Pending';
+  const getSummaryItems = () => {
+    return [
+      {
+        label: 'Medications',
+        value: `${medsCount.taken}/${medsCount.total} taken`,
+        status: medsCount.taken === medsCount.total ? 'good' : 'attention',
+        icon: medsCount.taken === medsCount.total ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />,
+        textStatus: medsCount.taken === medsCount.total ? 'Complete' : 'Pending'
+      },
+      {
+        label: 'Symptoms',
+        value: symptomsLogged ? 'Logged today' : 'No entries yet',
+        status: symptomsLogged ? 'good' : 'neutral',
+        icon: symptomsLogged ? <Check className="w-4 h-4" /> : <Minus className="w-4 h-4" />,
+        textStatus: symptomsLogged ? 'Logged' : 'None'
+      },
+      {
+        label: 'Next Appointment',
+        value: nextAppointment || 'None scheduled',
+        status: 'neutral',
+        icon: <Clock className="w-4 h-4" />,
+        textStatus: nextAppointment ? 'Upcoming' : 'None'
+      }
+    ];
   };
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      {/* Main Ring */}
+      {/* Main Interactive Ring */}
       <button
         onClick={handleTap}
-        className={`w-48 h-48 mx-auto wellness-ring status-${status} flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-wellness-blue/50`}
-        aria-label={`Wellness status: ${statusConfig.accessibilityLabel}. Tap to view details.`}
+        className={`w-56 h-56 mx-auto wellness-ring status-${status} flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-wellness-blue/50`}
+        aria-label={`Wellness status: ${statusConfig.accessibilityLabel}. Tap to ${isExpanded ? 'hide' : 'view'} details.`}
+        aria-expanded={isExpanded}
       >
         <div className="text-center">
           {statusConfig.icon}
-          <p className="mt-2 text-sm font-medium text-wellness-calm-700">
+          <p className="mt-3 text-lg font-semibold text-calm-700">
             {statusConfig.label}
           </p>
-          {/* Accessibility text label */}
-          <p className="text-xs text-wellness-calm-600 mt-1">
-            {statusConfig.accessibilityLabel.split(' - ')[0]}
+          <div className="flex items-center justify-center gap-2 mt-2">
+            {statusConfig.statusIcon}
+            <p className="text-sm font-medium text-calm-600">
+              {statusConfig.accessibilityLabel.split(' - ')[0]}
+            </p>
+          </div>
+          <p className="text-xs text-calm-500 mt-2">
+            {isExpanded ? 'Tap to collapse' : 'Tap to expand'}
           </p>
         </div>
       </button>
 
       {/* Status Summary */}
-      <p className="text-center mt-4 text-wellness-calm-600 text-lg">
+      <p className="text-center mt-6 text-calm-600 text-lg font-medium">
         {statusConfig.description}
       </p>
 
-      {/* Expanded Details */}
+      {/* Expanded Interactive Summary */}
       {isExpanded && (
-        <div className="mt-6 animate-gentle-fade-in">
+        <div className="mt-8 animate-gentle-fade-in">
           <div className="ojas-card">
-            <h3 className="text-xl font-semibold text-wellness-calm-800 mb-4">Today's Overview</h3>
+            <h3 className="text-xl font-semibold text-calm-800 mb-6 text-center">Today's Overview</h3>
             
-            <div className="space-y-3">
-              {/* Medications */}
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${medsCount.taken === medsCount.total ? 'bg-wellness-green' : 'bg-wellness-yellow'}`} />
-                  <span className="text-wellness-calm-700">Medications</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    medsCount.taken === medsCount.total 
-                      ? 'bg-wellness-green/20 text-wellness-green' 
-                      : 'bg-wellness-yellow/20 text-wellness-yellow'
-                  }`}>
-                    {getMedicationStatusLabel()}
-                  </span>
-                </div>
-                <span className="font-medium text-wellness-calm-800">
-                  {medsCount.taken}/{medsCount.total} taken
-                </span>
-              </div>
-
-              {/* Symptoms */}
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${symptomsLogged ? 'bg-wellness-green' : 'bg-wellness-calm-300'}`} />
-                  <span className="text-wellness-calm-700">Symptoms</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    symptomsLogged 
-                      ? 'bg-wellness-green/20 text-wellness-green' 
-                      : 'bg-wellness-calm-200 text-wellness-calm-600'
-                  }`}>
-                    {symptomsLogged ? 'Logged' : 'None'}
-                  </span>
-                </div>
-                <span className="font-medium text-wellness-calm-800">
-                  {symptomsLogged ? 'Logged today' : 'No entries today'}
-                </span>
-              </div>
-
-              {/* Next Appointment */}
-              {nextAppointment && (
-                <div className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-wellness-blue" />
-                    <span className="text-wellness-calm-700">Next Appointment</span>
-                    <span className="text-xs bg-wellness-blue/20 text-wellness-blue px-2 py-1 rounded-full">
-                      Upcoming
-                    </span>
+            <div className="space-y-4">
+              {getSummaryItems().map((item, index) => (
+                <div key={index} className="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-calm-50 transition-colors duration-200">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                      item.status === 'good' ? 'bg-wellness-green' : 
+                      item.status === 'attention' ? 'bg-wellness-yellow' : 
+                      'bg-calm-300'
+                    }`}>
+                      {item.status !== 'neutral' && (
+                        <div className="w-2 h-2 bg-white rounded-full" />
+                      )}
+                    </div>
+                    <span className="text-calm-700 font-medium">{item.label}</span>
+                    <div className="flex items-center gap-1">
+                      {item.icon}
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        item.status === 'good' 
+                          ? 'bg-wellness-green/20 text-wellness-green' 
+                          : item.status === 'attention'
+                          ? 'bg-wellness-yellow/20 text-wellness-yellow'
+                          : 'bg-calm-200 text-calm-600'
+                      }`}>
+                        {item.textStatus}
+                      </span>
+                    </div>
                   </div>
-                  <span className="font-medium text-wellness-calm-800">
-                    {nextAppointment}
+                  <span className="font-semibold text-calm-800 text-right">
+                    {item.value}
                   </span>
                 </div>
-              )}
+              ))}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-calm-200">
+              <p className="text-center text-calm-600 text-sm">
+                Your wellness summary updates throughout the day
+              </p>
             </div>
           </div>
         </div>

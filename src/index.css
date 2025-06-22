@@ -4,87 +4,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ojas Wellness Design System - Colors optimized for accessibility and calm */
+/* Ojas Wellness Design System - Empathetic design for neurological wellness */
 
 @layer base {
   :root {
-    --background: 248 250 252; /* calm-50 */
-    --foreground: 15 23 42; /* calm-900 */
+    --background: 250 251 252; /* calm-50 */
+    --foreground: 17 24 39; /* calm-900 */
 
     --card: 255 255 255;
-    --card-foreground: 15 23 42;
+    --card-foreground: 17 24 39;
 
     --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
+    --popover-foreground: 17 24 39;
 
-    --primary: 34 65 85; /* calm-700 - deep, trustworthy */
-    --primary-foreground: 248 250 252;
+    --primary: 25 118 210; /* wellness-blue */
+    --primary-foreground: 255 255 255;
 
-    --secondary: 241 245 249; /* calm-100 */
-    --secondary-foreground: 15 23 42;
+    --secondary: 244 246 248; /* calm-100 */
+    --secondary-foreground: 17 24 39;
 
-    --muted: 226 232 240; /* calm-200 */
-    --muted-foreground: 100 116 139; /* calm-500 */
+    --muted: 228 231 235; /* calm-200 */
+    --muted-foreground: 104 112 120; /* calm-500 */
 
-    --accent: 226 232 240;
-    --accent-foreground: 15 23 42;
+    --accent: 228 231 235;
+    --accent-foreground: 17 24 39;
 
-    --destructive: 244 67 54; /* wellness red */
-    --destructive-foreground: 248 250 252;
+    --destructive: 211 47 47; /* wellness-red */
+    --destructive-foreground: 255 255 255;
 
-    --border: 226 232 240;
-    --input: 226 232 240;
-    --ring: 76 175 80; /* wellness green */
+    --border: 228 231 235;
+    --input: 228 231 235;
+    --ring: 46 125 50; /* wellness-green */
 
-    --radius: 12px; /* Larger radius for friendlier feel */
-
-    /* Wellness status colors */
-    --wellness-green: 76 175 80;
-    --wellness-yellow: 255 193 7;
-    --wellness-red: 244 67 54;
-    --wellness-blue: 33 150 243;
-
-    /* Calm color system variables */
-    --wellness-calm-50: 248 250 252;
-    --wellness-calm-100: 241 245 249;
-    --wellness-calm-200: 226 232 240;
-    --wellness-calm-300: 203 213 225;
-    --wellness-calm-400: 148 163 184;
-    --wellness-calm-500: 100 116 139;
-    --wellness-calm-600: 71 85 105;
-    --wellness-calm-700: 51 65 85;
-    --wellness-calm-800: 30 41 59;
-    --wellness-calm-900: 15 23 42;
+    --radius: 16px; /* Larger radius for softer, friendlier feel */
   }
 
   .dark {
-    --background: 15 23 42;
-    --foreground: 248 250 252;
+    --background: 17 24 39;
+    --foreground: 250 251 252;
 
-    --card: 30 41 59;
-    --card-foreground: 248 250 252;
+    --card: 31 41 55;
+    --card-foreground: 250 251 252;
 
-    --popover: 30 41 59;
-    --popover-foreground: 248 250 252;
+    --popover: 31 41 55;
+    --popover-foreground: 250 251 252;
 
-    --primary: 148 163 184;
-    --primary-foreground: 15 23 42;
+    --primary: 154 165 177;
+    --primary-foreground: 17 24 39;
 
-    --secondary: 51 65 85;
-    --secondary-foreground: 248 250 252;
+    --secondary: 55 65 81;
+    --secondary-foreground: 250 251 252;
 
-    --muted: 51 65 85;
-    --muted-foreground: 148 163 184;
+    --muted: 55 65 81;
+    --muted-foreground: 154 165 177;
 
-    --accent: 51 65 85;
-    --accent-foreground: 248 250 252;
+    --accent: 55 65 81;
+    --accent-foreground: 250 251 252;
 
-    --destructive: 244 67 54;
-    --destructive-foreground: 248 250 252;
+    --destructive: 211 47 47;
+    --destructive-foreground: 250 251 252;
 
-    --border: 51 65 85;
-    --input: 51 65 85;
-    --ring: 76 175 80;
+    --border: 55 65 81;
+    --input: 55 65 81;
+    --ring: 46 125 50;
   }
 }
 
@@ -95,94 +77,168 @@
 
   body {
     @apply bg-background text-foreground font-wellness;
-    font-size: 18px; /* Larger base font size for accessibility */
-    line-height: 1.6;
+    font-size: 18px; /* Larger base font for accessibility */
+    line-height: 1.7;
   }
 
-  /* High contrast focus indicators for accessibility */
+  /* Enhanced focus indicators for accessibility */
   *:focus-visible {
-    @apply outline-none ring-4 ring-wellness-blue/50 ring-offset-2 ring-offset-background;
+    @apply outline-none ring-4 ring-wellness-blue/40 ring-offset-2 ring-offset-background;
   }
 
-  /* Ensure tap targets are at least 44px for accessibility */
+  /* Ensure all interactive elements meet minimum tap target size */
   button, .tap-target {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
   }
 }
 
 @layer components {
-  /* Wellness status ring component */
+  /* Wellness Ring - Core interactive component */
   .wellness-ring {
-    @apply relative rounded-full border-8 transition-all duration-300 ease-out;
+    @apply relative rounded-full border-8 transition-all duration-500 ease-out cursor-pointer;
   }
   
   .wellness-ring.status-good {
     @apply border-wellness-green bg-wellness-green/10;
-    box-shadow: 0 0 0 8px rgb(76 175 80 / 0.1);
+    box-shadow: 0 0 0 12px rgb(46 125 50 / 0.08), 0 4px 16px rgb(46 125 50 / 0.15);
   }
   
   .wellness-ring.status-attention {
     @apply border-wellness-yellow bg-wellness-yellow/10;
-    box-shadow: 0 0 0 8px rgb(255 193 7 / 0.1);
+    box-shadow: 0 0 0 12px rgb(245 124 0 / 0.08), 0 4px 16px rgb(245 124 0 / 0.15);
   }
   
   .wellness-ring.status-urgent {
     @apply border-wellness-red bg-wellness-red/10;
-    box-shadow: 0 0 0 8px rgb(244 67 54 / 0.1);
+    box-shadow: 0 0 0 12px rgb(211 47 47 / 0.08), 0 4px 16px rgb(211 47 47 / 0.15);
   }
 
-  /* Gentle card styling */
+  .wellness-ring:hover {
+    @apply scale-105;
+  }
+
+  .wellness-ring:active {
+    @apply scale-95;
+  }
+
+  /* Empathetic card styling */
   .ojas-card {
-    @apply bg-white rounded-2xl shadow-sm border border-calm-200 p-6 transition-all duration-200 hover:shadow-md;
+    @apply bg-white rounded-2xl shadow-wellness-soft border border-calm-200 p-6 transition-all duration-300 hover:shadow-wellness-medium;
   }
 
-  /* Large, friendly buttons */
+  /* Primary action buttons - tap-first design */
   .ojas-button {
-    @apply px-8 py-4 rounded-xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-sm;
+    @apply px-8 py-4 rounded-2xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-wellness-soft;
   }
 
   .ojas-button-primary {
-    @apply ojas-button bg-wellness-green text-white hover:bg-wellness-green/90 active:scale-95 shadow-lg;
+    @apply ojas-button bg-wellness-green text-white hover:bg-wellness-green/90 active:scale-95 shadow-wellness-medium font-semibold;
   }
 
   .ojas-button-secondary {
-    @apply ojas-button bg-calm-100 text-calm-800 hover:bg-calm-200 active:scale-95 border border-calm-300;
+    @apply ojas-button bg-calm-100 text-calm-800 hover:bg-calm-200 active:scale-95 border-2 border-calm-300 font-medium;
   }
 
-  /* Tab navigation styling */
+  .ojas-button-danger {
+    @apply ojas-button bg-wellness-red text-white hover:bg-wellness-red/90 active:scale-95 shadow-wellness-medium font-semibold;
+  }
+
+  /* Large, accessible medication action buttons */
+  .medication-action-button {
+    @apply flex-1 min-h-[60px] rounded-2xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 active:scale-95;
+  }
+
+  .medication-taken-button {
+    @apply medication-action-button bg-wellness-green text-white hover:bg-wellness-green/90 shadow-wellness-medium;
+  }
+
+  .medication-postpone-button {
+    @apply medication-action-button bg-wellness-yellow text-white hover:bg-wellness-yellow/90 shadow-wellness-medium;
+  }
+
+  /* Tab navigation with empathetic styling */
   .ojas-tab {
-    @apply flex-1 py-4 px-6 text-center rounded-xl transition-all duration-200 min-h-[60px] flex flex-col items-center justify-center gap-1;
+    @apply flex-1 py-4 px-6 text-center rounded-2xl transition-all duration-300 min-h-[64px] flex flex-col items-center justify-center gap-2;
   }
 
   .ojas-tab.active {
-    @apply bg-wellness-green text-white font-semibold shadow-md;
+    @apply bg-wellness-green text-white font-semibold shadow-wellness-medium;
   }
 
   .ojas-tab.inactive {
     @apply bg-white text-calm-600 hover:bg-calm-50 font-medium;
   }
 
-  /* Custom form inputs */
+  /* Accessible form inputs */
   .ojas-input {
-    @apply w-full px-4 py-3 rounded-xl border-2 border-calm-200 bg-white text-calm-800 placeholder-calm-500 focus:border-wellness-green focus:ring-2 focus:ring-wellness-green/20 transition-all duration-200;
+    @apply w-full px-6 py-4 rounded-2xl border-2 border-calm-200 bg-white text-calm-800 placeholder-calm-500 focus:border-wellness-green focus:ring-4 focus:ring-wellness-green/20 transition-all duration-200 text-lg;
+  }
+
+  /* Status indicators with accessibility */
+  .status-indicator {
+    @apply flex items-center gap-2 text-sm font-medium;
+  }
+
+  .status-good {
+    @apply text-wellness-green;
+  }
+
+  .status-attention {
+    @apply text-wellness-yellow;
+  }
+
+  .status-urgent {
+    @apply text-wellness-red;
+  }
+
+  /* Symptom grid buttons - custom styled */
+  .symptom-grid-button {
+    @apply ojas-card hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2 cursor-pointer;
+  }
+
+  .symptom-grid-button.wellness-green {
+    @apply bg-wellness-green/10 hover:bg-wellness-green/20 text-wellness-green border-wellness-green/30;
+  }
+
+  .symptom-grid-button.wellness-blue {
+    @apply bg-wellness-blue/10 hover:bg-wellness-blue/20 text-wellness-blue border-wellness-blue/30;
+  }
+
+  .symptom-grid-button.wellness-yellow {
+    @apply bg-wellness-yellow/10 hover:bg-wellness-yellow/20 text-wellness-yellow border-wellness-yellow/30;  
+  }
+
+  .symptom-grid-button.wellness-red {
+    @apply bg-wellness-red/10 hover:bg-wellness-red/20 text-wellness-red border-wellness-red/30;
   }
 }
 
-/* Custom scrollbar for a cleaner look */
+/* Enhanced scrollbar for better UX */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(241 245 249);
+  background: rgb(244 246 248);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(203 213 225);
-  border-radius: 3px;
+  background: rgb(203 210 217);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(148 163 184);
+  background: rgb(154 165 177);
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
