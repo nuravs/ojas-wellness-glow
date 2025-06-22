@@ -18,7 +18,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-calm-200 px-4 py-3 z-50 shadow-wellness-strong"
+      className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-ojas-border px-4 py-3 z-50 shadow-ojas-strong"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -32,7 +32,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
               aria-label={`Navigate to ${label}`}
               aria-current={activeTab === id ? 'page' : undefined}
             >
-              <Icon className="w-6 h-6" />
+              <Icon className="w-7 h-7" />
               <span className="text-sm font-medium">{label}</span>
             </button>
           ))}

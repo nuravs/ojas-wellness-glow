@@ -63,46 +63,21 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Ojas empathetic wellness color palette - designed for neurological conditions
-				wellness: {
-					green: {
-						light: '#F0F9F0',
-						DEFAULT: '#2E7D32',
-						dark: '#1B5E20'
-					},
-					blue: {
-						light: '#E8F4FD',
-						DEFAULT: '#1976D2',
-						dark: '#0D47A1'
-					},
-					yellow: {
-						light: '#FFFBF0',
-						DEFAULT: '#F57C00',
-						dark: '#E65100'
-					},
-					red: {
-						light: '#FFF5F5',
-						DEFAULT: '#D32F2F',
-						dark: '#B71C1C'
-					},
-					purple: {
-						light: '#F3E5F5',
-						DEFAULT: '#7B1FA2',
-						dark: '#4A148C'
-					}
-				},
-				// Calm, accessible color system optimized for 50+ users
-				calm: {
-					50: '#FAFBFC',
-					100: '#F4F6F8',
-					200: '#E4E7EB',
-					300: '#CBD2D9',
-					400: '#9AA5B1',
-					500: '#687078',
-					600: '#4B5563',
-					700: '#374151',
-					800: '#1F2937',
-					900: '#111827'
+				// New Ojas Accessible Color Palette
+				ojas: {
+					primary: '#0077B6',        // Deep Sky Blue - Main accents, buttons, links
+					'primary-hover': '#005E8A', // Darker blue for hover states
+					success: '#00B488',        // Calming Jade - Success, wellness, completed states
+					'success-hover': '#009670', // Darker jade for hover
+					alert: '#FFC300',          // Soft Gold - Alerts, reminders, actionable banners
+					'alert-hover': '#E6B000',  // Darker gold for hover
+					error: '#FF4E4E',          // Vibrant Coral - Errors, missed meds, urgent attention
+					'error-hover': '#E63946',  // Darker coral for hover
+					'bg-light': '#F5F8FA',     // Mist White - App main background
+					'bg-dark': '#18233A',      // Soft Midnight Blue - High contrast mode
+					'text-main': '#22292F',    // Charcoal Gray - Standard text, icons
+					'text-secondary': '#6C7683', // Slate Gray - Secondary/less prominent text
+					border: '#E1E4EA'          // Cloud Silver - Card borders, separators
 				}
 			},
 			borderRadius: {
@@ -111,7 +86,7 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				'wellness': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+				'ojas': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
 				'heading': ['Inter', 'system-ui', 'sans-serif'],
 			},
 			fontSize: {
@@ -161,7 +136,15 @@ export default {
 						opacity: '0.9'
 					}
 				},
-				'check-mark': {
+				'pulse-glow': {
+					'0%, 100%': {
+						boxShadow: '0 0 20px rgba(0, 119, 182, 0.2)'
+					},
+					'50%': {
+						boxShadow: '0 0 30px rgba(0, 119, 182, 0.4)'
+					}
+				},
+				'success-check': {
 					'0%': {
 						transform: 'scale(0) rotate(45deg)',
 						opacity: '0'
@@ -175,24 +158,14 @@ export default {
 						opacity: '1'
 					}
 				},
-				'expand-summary': {
+				'card-highlight': {
 					'0%': {
-						height: '0',
-						opacity: '0'
+						transform: 'scale(1)',
+						boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
 					},
 					'100%': {
-						height: 'auto',
-						opacity: '1'
-					}
-				},
-				'collapse-summary': {
-					'0%': {
-						height: 'auto',
-						opacity: '1'
-					},
-					'100%': {
-						height: '0',
-						opacity: '0'
+						transform: 'scale(1.02)',
+						boxShadow: '0 8px 32px rgba(0, 119, 182, 0.15)'
 					}
 				}
 			},
@@ -201,14 +174,16 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'gentle-fade-in': 'gentle-fade-in 0.3s ease-out',
 				'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite',
-				'check-mark': 'check-mark 0.4s ease-out',
-				'expand-summary': 'expand-summary 0.3s ease-out',
-				'collapse-summary': 'collapse-summary 0.3s ease-out'
+				'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+				'success-check': 'success-check 0.5s ease-out',
+				'card-highlight': 'card-highlight 0.3s ease-out forwards'
 			},
 			boxShadow: {
-				'wellness-soft': '0 2px 8px rgba(0, 0, 0, 0.08)',
-				'wellness-medium': '0 4px 16px rgba(0, 0, 0, 0.12)',
-				'wellness-strong': '0 8px 24px rgba(0, 0, 0, 0.16)',
+				'ojas-soft': '0 2px 8px rgba(34, 41, 47, 0.08)',
+				'ojas-medium': '0 4px 16px rgba(34, 41, 47, 0.12)',
+				'ojas-strong': '0 8px 24px rgba(34, 41, 47, 0.16)',
+				'ojas-glow': '0 0 20px rgba(0, 119, 182, 0.2)',
+				'ojas-glow-strong': '0 0 30px rgba(0, 119, 182, 0.4)'
 			}
 		}
 	},

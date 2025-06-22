@@ -8,65 +8,65 @@
 
 @layer base {
   :root {
-    --background: 250 251 252; /* calm-50 */
-    --foreground: 17 24 39; /* calm-900 */
+    --background: 245 248 250; /* ojas-bg-light */
+    --foreground: 34 41 47; /* ojas-text-main */
 
     --card: 255 255 255;
-    --card-foreground: 17 24 39;
+    --card-foreground: 34 41 47;
 
     --popover: 255 255 255;
-    --popover-foreground: 17 24 39;
+    --popover-foreground: 34 41 47;
 
-    --primary: 25 118 210; /* wellness-blue */
+    --primary: 0 119 182; /* ojas-primary */
     --primary-foreground: 255 255 255;
 
-    --secondary: 244 246 248; /* calm-100 */
-    --secondary-foreground: 17 24 39;
+    --secondary: 225 228 234; /* ojas-border */
+    --secondary-foreground: 34 41 47;
 
-    --muted: 228 231 235; /* calm-200 */
-    --muted-foreground: 104 112 120; /* calm-500 */
+    --muted: 225 228 234;
+    --muted-foreground: 108 118 131; /* ojas-text-secondary */
 
-    --accent: 228 231 235;
-    --accent-foreground: 17 24 39;
+    --accent: 225 228 234;
+    --accent-foreground: 34 41 47;
 
-    --destructive: 211 47 47; /* wellness-red */
+    --destructive: 255 78 78; /* ojas-error */
     --destructive-foreground: 255 255 255;
 
-    --border: 228 231 235;
-    --input: 228 231 235;
-    --ring: 46 125 50; /* wellness-green */
+    --border: 225 228 234; /* ojas-border */
+    --input: 225 228 234;
+    --ring: 0 119 182; /* ojas-primary */
 
     --radius: 16px; /* Larger radius for softer, friendlier feel */
   }
 
   .dark {
-    --background: 17 24 39;
-    --foreground: 250 251 252;
+    --background: 24 35 58; /* ojas-bg-dark */
+    --foreground: 245 248 250;
 
-    --card: 31 41 55;
-    --card-foreground: 250 251 252;
+    --card: 34 41 47;
+    --card-foreground: 245 248 250;
 
-    --popover: 31 41 55;
-    --popover-foreground: 250 251 252;
+    --popover: 34 41 47;
+    --popover-foreground: 245 248 250;
 
-    --primary: 154 165 177;
-    --primary-foreground: 17 24 39;
+    --primary: 0 119 182;
+    --primary-foreground: 255 255 255;
 
-    --secondary: 55 65 81;
-    --secondary-foreground: 250 251 252;
+    --secondary: 108 118 131;
+    --secondary-foreground: 245 248 250;
 
-    --muted: 55 65 81;
-    --muted-foreground: 154 165 177;
+    --muted: 108 118 131;
+    --muted-foreground: 225 228 234;
 
-    --accent: 55 65 81;
-    --accent-foreground: 250 251 252;
+    --accent: 108 118 131;
+    --accent-foreground: 245 248 250;
 
-    --destructive: 211 47 47;
-    --destructive-foreground: 250 251 252;
+    --destructive: 255 78 78;
+    --destructive-foreground: 245 248 250;
 
-    --border: 55 65 81;
-    --input: 55 65 81;
-    --ring: 46 125 50;
+    --border: 108 118 131;
+    --input: 108 118 131;
+    --ring: 0 119 182;
   }
 }
 
@@ -76,14 +76,14 @@
   }
 
   body {
-    @apply bg-background text-foreground font-wellness;
+    @apply bg-ojas-bg-light text-ojas-text-main font-ojas;
     font-size: 18px; /* Larger base font for accessibility */
     line-height: 1.7;
   }
 
   /* Enhanced focus indicators for accessibility */
   *:focus-visible {
-    @apply outline-none ring-4 ring-wellness-blue/40 ring-offset-2 ring-offset-background;
+    @apply outline-none ring-4 ring-ojas-primary/40 ring-offset-2 ring-offset-background;
   }
 
   /* Ensure all interactive elements meet minimum tap target size */
@@ -94,54 +94,71 @@
 }
 
 @layer components {
-  /* Wellness Ring - Core interactive component */
-  .wellness-ring {
+  /* Enhanced Wellness Ring - Core interactive component */
+  .ojas-wellness-ring {
     @apply relative rounded-full border-8 transition-all duration-500 ease-out cursor-pointer;
   }
   
-  .wellness-ring.status-good {
-    @apply border-wellness-green bg-wellness-green/10;
-    box-shadow: 0 0 0 12px rgb(46 125 50 / 0.08), 0 4px 16px rgb(46 125 50 / 0.15);
+  .ojas-wellness-ring.status-good {
+    @apply border-ojas-success bg-ojas-success/10;
+    box-shadow: 0 0 0 12px rgb(0 180 136 / 0.08), 0 4px 16px rgb(0 180 136 / 0.15);
   }
   
-  .wellness-ring.status-attention {
-    @apply border-wellness-yellow bg-wellness-yellow/10;
-    box-shadow: 0 0 0 12px rgb(245 124 0 / 0.08), 0 4px 16px rgb(245 124 0 / 0.15);
+  .ojas-wellness-ring.status-attention {
+    @apply border-ojas-alert bg-ojas-alert/10;
+    box-shadow: 0 0 0 12px rgb(255 195 0 / 0.08), 0 4px 16px rgb(255 195 0 / 0.15);
   }
   
-  .wellness-ring.status-urgent {
-    @apply border-wellness-red bg-wellness-red/10;
-    box-shadow: 0 0 0 12px rgb(211 47 47 / 0.08), 0 4px 16px rgb(211 47 47 / 0.15);
+  .ojas-wellness-ring.status-urgent {
+    @apply border-ojas-error bg-ojas-error/10;
+    box-shadow: 0 0 0 12px rgb(255 78 78 / 0.08), 0 4px 16px rgb(255 78 78 / 0.15);
   }
 
-  .wellness-ring:hover {
+  .ojas-wellness-ring:hover {
     @apply scale-105;
   }
 
-  .wellness-ring:active {
+  .ojas-wellness-ring:active {
     @apply scale-95;
   }
 
-  /* Empathetic card styling */
+  /* Enhanced card styling with priority support */
   .ojas-card {
-    @apply bg-white rounded-2xl shadow-wellness-soft border border-calm-200 p-6 transition-all duration-300 hover:shadow-wellness-medium;
+    @apply bg-white rounded-2xl shadow-ojas-soft border border-ojas-border p-6 transition-all duration-300 hover:shadow-ojas-medium;
   }
 
-  /* Primary action buttons - tap-first design */
+  .ojas-card.priority-high {
+    @apply scale-105 shadow-ojas-medium border-ojas-primary/20;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .ojas-card:hover {
+    @apply -translate-y-1 shadow-ojas-strong;
+  }
+
+  /* Enhanced primary action buttons - tap-first design */
   .ojas-button {
-    @apply px-8 py-4 rounded-2xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-wellness-soft;
+    @apply px-8 py-4 rounded-2xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-ojas-soft;
   }
 
   .ojas-button-primary {
-    @apply ojas-button bg-wellness-green text-white hover:bg-wellness-green/90 active:scale-95 shadow-wellness-medium font-semibold;
+    @apply ojas-button bg-ojas-primary text-white hover:bg-ojas-primary-hover active:scale-95 shadow-ojas-medium font-semibold;
+  }
+
+  .ojas-button-success {
+    @apply ojas-button bg-ojas-success text-white hover:bg-ojas-success-hover active:scale-95 shadow-ojas-medium font-semibold;
   }
 
   .ojas-button-secondary {
-    @apply ojas-button bg-calm-100 text-calm-800 hover:bg-calm-200 active:scale-95 border-2 border-calm-300 font-medium;
+    @apply ojas-button bg-white text-ojas-text-main hover:bg-gray-50 active:scale-95 border-2 border-ojas-border font-medium;
   }
 
-  .ojas-button-danger {
-    @apply ojas-button bg-wellness-red text-white hover:bg-wellness-red/90 active:scale-95 shadow-wellness-medium font-semibold;
+  .ojas-button-alert {
+    @apply ojas-button bg-ojas-alert text-white hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium font-semibold;
+  }
+
+  .ojas-button-error {
+    @apply ojas-button bg-ojas-error text-white hover:bg-ojas-error-hover active:scale-95 shadow-ojas-medium font-semibold;
   }
 
   /* Large, accessible medication action buttons */
@@ -150,11 +167,11 @@
   }
 
   .medication-taken-button {
-    @apply medication-action-button bg-wellness-green text-white hover:bg-wellness-green/90 shadow-wellness-medium;
+    @apply medication-action-button bg-ojas-success text-white hover:bg-ojas-success-hover shadow-ojas-medium;
   }
 
   .medication-postpone-button {
-    @apply medication-action-button bg-wellness-yellow text-white hover:bg-wellness-yellow/90 shadow-wellness-medium;
+    @apply medication-action-button bg-ojas-alert text-white hover:bg-ojas-alert-hover shadow-ojas-medium;
   }
 
   /* Tab navigation with empathetic styling */
@@ -163,16 +180,16 @@
   }
 
   .ojas-tab.active {
-    @apply bg-wellness-green text-white font-semibold shadow-wellness-medium;
+    @apply bg-ojas-primary text-white font-semibold shadow-ojas-medium;
   }
 
   .ojas-tab.inactive {
-    @apply bg-white text-calm-600 hover:bg-calm-50 font-medium;
+    @apply bg-white text-ojas-text-secondary hover:bg-gray-50 font-medium;
   }
 
   /* Accessible form inputs */
   .ojas-input {
-    @apply w-full px-6 py-4 rounded-2xl border-2 border-calm-200 bg-white text-calm-800 placeholder-calm-500 focus:border-wellness-green focus:ring-4 focus:ring-wellness-green/20 transition-all duration-200 text-lg;
+    @apply w-full px-6 py-4 rounded-2xl border-2 border-ojas-border bg-white text-ojas-text-main placeholder-ojas-text-secondary focus:border-ojas-primary focus:ring-4 focus:ring-ojas-primary/20 transition-all duration-200 text-lg;
   }
 
   /* Status indicators with accessibility */
@@ -181,15 +198,15 @@
   }
 
   .status-good {
-    @apply text-wellness-green;
+    @apply text-ojas-success;
   }
 
   .status-attention {
-    @apply text-wellness-yellow;
+    @apply text-ojas-alert;
   }
 
   .status-urgent {
-    @apply text-wellness-red;
+    @apply text-ojas-error;
   }
 
   /* Symptom grid buttons - custom styled */
@@ -197,20 +214,30 @@
     @apply ojas-card hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2 cursor-pointer;
   }
 
-  .symptom-grid-button.wellness-green {
-    @apply bg-wellness-green/10 hover:bg-wellness-green/20 text-wellness-green border-wellness-green/30;
+  .symptom-grid-button.ojas-success {
+    @apply bg-ojas-success/10 hover:bg-ojas-success/20 text-ojas-success border-ojas-success/30;
   }
 
-  .symptom-grid-button.wellness-blue {
-    @apply bg-wellness-blue/10 hover:bg-wellness-blue/20 text-wellness-blue border-wellness-blue/30;
+  .symptom-grid-button.ojas-primary {
+    @apply bg-ojas-primary/10 hover:bg-ojas-primary/20 text-ojas-primary border-ojas-primary/30;
   }
 
-  .symptom-grid-button.wellness-yellow {
-    @apply bg-wellness-yellow/10 hover:bg-wellness-yellow/20 text-wellness-yellow border-wellness-yellow/30;  
+  .symptom-grid-button.ojas-alert {
+    @apply bg-ojas-alert/10 hover:bg-ojas-alert/20 text-ojas-alert border-ojas-alert/30;  
   }
 
-  .symptom-grid-button.wellness-red {
-    @apply bg-wellness-red/10 hover:bg-wellness-red/20 text-wellness-red border-wellness-red/30;
+  .symptom-grid-button.ojas-error {
+    @apply bg-ojas-error/10 hover:bg-ojas-error/20 text-ojas-error border-ojas-error/30;
+  }
+
+  /* Success animation for completed actions */
+  .success-animation {
+    @apply animate-success-check;
+  }
+
+  /* Floating action button */
+  .ojas-fab {
+    @apply w-16 h-16 bg-ojas-primary rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-primary-hover transition-all duration-200 hover:scale-110 active:scale-95;
   }
 }
 
@@ -220,16 +247,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(244 246 248);
+  background: rgb(245 248 250);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(203 210 217);
+  background: rgb(225 228 234);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(154 165 177);
+  background: rgb(108 118 131);
 }
 
 /* Reduced motion preferences */

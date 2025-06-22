@@ -14,53 +14,61 @@ interface MedicationCardProps {
   medication: Medication;
   onToggle: (id: string) => void;
   onPostpone?: (id: string) => void;
+  isPriority?: boolean;
 }
 
 const MedicationCard: React.FC<MedicationCardProps> = ({ 
   medication, 
   onToggle, 
-  onPostpone 
+  onPostpone,
+  isPriority = false
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleTaken = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card tap navigation
+    e.stopPropagation();
     setIsAnimating(true);
+    
     setTimeout(() => {
-      onToggle(medication.id);
-      setIsAnimating(false);
-    }, 300);
+      setShowSuccess(true);
+      setTimeout(() => {
+        onToggle(medication.id);
+        setIsAnimating(false);
+        setShowSuccess(false);
+      }, 500);
+    }, 200);
   };
 
   const handlePostpone = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card tap navigation
+    e.stopPropagation();
     onPostpone?.(medication.id);
   };
 
-  // Completed medication state
+  // Completed medication state with enhanced styling
   if (medication.taken) {
     return (
-      <div className="ojas-card bg-wellness-green/5 border-2 border-wellness-green/30 animate-gentle-fade-in">
+      <div className="ojas-card bg-ojas-success/5 border-2 border-ojas-success/30 animate-gentle-fade-in">
         <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-wellness-green/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="w-8 h-8 text-wellness-green animate-check-mark" />
+          <div className="w-18 h-18 bg-ojas-success/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-10 h-10 text-ojas-success animate-success-check" />
           </div>
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-xl font-semibold text-wellness-green">
+            <div className="flex items-center gap-4 mb-3">
+              <h3 className="text-2xl font-semibold text-ojas-success">
                 {medication.name}
               </h3>
-              <div className="flex items-center gap-1 status-indicator status-good">
-                <Check className="w-4 h-4" />
-                <span className="text-sm font-medium">Taken</span>
+              <div className="flex items-center gap-2 status-indicator status-good">
+                <Check className="w-5 h-5" />
+                <span className="text-base font-medium">Taken</span>
               </div>
             </div>
-            <p className="text-calm-600 font-medium mb-1">
+            <p className="text-ojas-text-secondary font-medium mb-2 text-lg">
               {medication.dosage}
             </p>
-            <div className="flex items-center gap-2 text-calm-500">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm">Completed at {medication.time}</span>
+            <div className="flex items-center gap-3 text-ojas-text-secondary">
+              <Clock className="w-5 h-5" />
+              <span className="text-base">Completed at {medication.time}</span>
             </div>
           </div>
         </div>
@@ -68,43 +76,55 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
     );
   }
 
-  // Pending medication state - tap-first design
+  // Pending medication state with priority support and enhanced interactions
   return (
-    <div className={`ojas-card hover:shadow-wellness-medium cursor-pointer transition-all duration-300 ${isAnimating ? 'animate-pulse-gentle' : ''}`}>
+    <div className={`ojas-card hover:shadow-ojas-medium cursor-pointer transition-all duration-300 ${
+      isPriority ? 'priority-high' : ''
+    } ${isAnimating ? 'animate-pulse-gentle' : ''}`}>
       <div className="flex items-start gap-6">
-        <div className="w-16 h-16 bg-wellness-blue/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-          <Pill className="w-8 h-8 text-wellness-blue" />
+        <div className="w-18 h-18 bg-ojas-primary/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <Pill className="w-10 h-10 text-ojas-primary" />
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-xl font-semibold text-calm-800">
+          <div className="flex items-center gap-4 mb-3">
+            <h3 className="text-2xl font-semibold text-ojas-text-main">
               {medication.name}
             </h3>
-            <div className="flex items-center gap-1 status-indicator status-attention">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-sm font-medium">Pending</span>
+            <div className="flex items-center gap-2 status-indicator status-attention">
+              <AlertCircle className="w-5 h-5" />
+              <span className="text-base font-medium">Pending</span>
             </div>
           </div>
           
-          <p className="text-calm-600 font-medium mb-2">
+          <p className="text-ojas-text-secondary font-medium mb-3 text-lg">
             {medication.dosage}
           </p>
           
-          <div className="flex items-center gap-2 mb-6 text-calm-500">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm font-medium">Scheduled for {medication.time}</span>
+          <div className="flex items-center gap-3 mb-8 text-ojas-text-secondary">
+            <Clock className="w-5 h-5" />
+            <span className="text-base font-medium">Scheduled for {medication.time}</span>
           </div>
           
-          {/* Large, accessible action buttons */}
-          <div className="flex gap-4">
+          {/* Enhanced action buttons with success animation */}
+          <div className="flex gap-5">
             <button
               onClick={handleTaken}
-              className="medication-taken-button"
+              className="medication-taken-button relative overflow-hidden"
               aria-label={`Mark ${medication.name} as taken`}
+              disabled={isAnimating}
             >
-              <CheckCircle className="w-6 h-6" />
-              <span>✓ Taken</span>
+              {showSuccess ? (
+                <>
+                  <CheckCircle className="w-7 h-7 animate-success-check" />
+                  <span>✓ Success!</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-7 h-7" />
+                  <span>✓ Taken</span>
+                </>
+              )}
             </button>
             
             {onPostpone && (
@@ -113,14 +133,14 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
                 className="medication-postpone-button"
                 aria-label={`Postpone ${medication.name} for 30 minutes`}
               >
-                <Calendar className="w-6 h-6" />
+                <Calendar className="w-7 h-7" />
                 <span>⏰ Postpone</span>
               </button>
             )}
           </div>
 
-          {/* Accessibility helper text */}
-          <p className="text-xs text-calm-500 mt-3 text-center">
+          {/* Enhanced accessibility helper text */}
+          <p className="text-sm text-ojas-text-secondary mt-4 text-center">
             Tap medication name for details, or use buttons above to log dose
           </p>
         </div>
