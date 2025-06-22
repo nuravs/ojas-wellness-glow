@@ -65,13 +65,13 @@ export default {
 				},
 				// New Ojas Accessible Color Palette
 				ojas: {
-					primary: '#0077B6',        // Deep Sky Blue - Main accents, buttons, links
+					primary: '#0077B6',        // Primary Blue - Main buttons, pulse, icons
 					'primary-hover': '#005E8A', // Darker blue for hover states
-					success: '#00B488',        // Calming Jade - Success, wellness, completed states
-					'success-hover': '#009670', // Darker jade for hover
-					alert: '#FFC300',          // Soft Gold - Alerts, reminders, actionable banners
+					success: '#00B488',        // Calming Green - Success, wellness, completed states
+					'success-hover': '#009670', // Darker green for hover
+					alert: '#FFC300',          // Soft Gold - Alerts, attention banners, skip buttons
 					'alert-hover': '#E6B000',  // Darker gold for hover
-					error: '#FF4E4E',          // Vibrant Coral - Errors, missed meds, urgent attention
+					error: '#FF4E4E',          // Vibrant Coral - Errors, urgency, overdue badges
 					'error-hover': '#E63946',  // Darker coral for hover
 					'bg-light': '#F5F8FA',     // Mist White - App main background
 					'bg-dark': '#18233A',      // Soft Midnight Blue - High contrast mode
@@ -144,6 +144,14 @@ export default {
 						boxShadow: '0 0 30px rgba(0, 119, 182, 0.4)'
 					}
 				},
+				'pulse-urgent': {
+					'0%, 100%': {
+						boxShadow: '0 0 20px rgba(255, 78, 78, 0.3)'
+					},
+					'50%': {
+						boxShadow: '0 0 30px rgba(255, 78, 78, 0.5)'
+					}
+				},
 				'success-check': {
 					'0%': {
 						transform: 'scale(0) rotate(45deg)',
@@ -167,6 +175,20 @@ export default {
 						transform: 'scale(1.02)',
 						boxShadow: '0 8px 32px rgba(0, 119, 182, 0.15)'
 					}
+				},
+				'pill-bottle-fill': {
+					'0%': {
+						transform: 'scale(0.8)',
+						opacity: '0.5'
+					},
+					'50%': {
+						transform: 'scale(1.1)',
+						opacity: '0.8'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
@@ -175,15 +197,18 @@ export default {
 				'gentle-fade-in': 'gentle-fade-in 0.3s ease-out',
 				'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite',
 				'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+				'pulse-urgent': 'pulse-urgent 2s ease-in-out infinite',
 				'success-check': 'success-check 0.5s ease-out',
-				'card-highlight': 'card-highlight 0.3s ease-out forwards'
+				'card-highlight': 'card-highlight 0.3s ease-out forwards',
+				'pill-bottle-fill': 'pill-bottle-fill 1.5s ease-out'
 			},
 			boxShadow: {
 				'ojas-soft': '0 2px 8px rgba(34, 41, 47, 0.08)',
 				'ojas-medium': '0 4px 16px rgba(34, 41, 47, 0.12)',
 				'ojas-strong': '0 8px 24px rgba(34, 41, 47, 0.16)',
 				'ojas-glow': '0 0 20px rgba(0, 119, 182, 0.2)',
-				'ojas-glow-strong': '0 0 30px rgba(0, 119, 182, 0.4)'
+				'ojas-glow-strong': '0 0 30px rgba(0, 119, 182, 0.4)',
+				'ojas-urgent': '0 0 20px rgba(255, 78, 78, 0.3)'
 			}
 		}
 	},

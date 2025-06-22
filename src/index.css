@@ -154,7 +154,7 @@
   }
 
   .ojas-button-alert {
-    @apply ojas-button bg-ojas-alert text-white hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-alert text-ojas-text-main hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium font-semibold;
   }
 
   .ojas-button-error {
@@ -167,11 +167,11 @@
   }
 
   .medication-taken-button {
-    @apply medication-action-button bg-ojas-success text-white hover:bg-ojas-success-hover shadow-ojas-medium;
+    @apply medication-action-button bg-ojas-primary text-white hover:bg-ojas-primary-hover shadow-ojas-medium;
   }
 
-  .medication-postpone-button {
-    @apply medication-action-button bg-ojas-alert text-white hover:bg-ojas-alert-hover shadow-ojas-medium;
+  .medication-skip-button {
+    @apply medication-action-button bg-ojas-alert text-ojas-text-main hover:bg-ojas-alert-hover shadow-ojas-medium;
   }
 
   /* Tab navigation with empathetic styling */
@@ -209,6 +209,10 @@
     @apply text-ojas-error;
   }
 
+  .status-overdue {
+    @apply text-ojas-error animate-pulse;
+  }
+
   /* Symptom grid buttons - custom styled */
   .symptom-grid-button {
     @apply ojas-card hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2 cursor-pointer;
@@ -238,6 +242,27 @@
   /* Floating action button */
   .ojas-fab {
     @apply w-16 h-16 bg-ojas-primary rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-primary-hover transition-all duration-200 hover:scale-110 active:scale-95;
+  }
+
+  /* Timeline specific styles */
+  .timeline-dot {
+    @apply w-4 h-4 rounded-full border-2 transition-all duration-300;
+  }
+
+  .timeline-dot.completed {
+    @apply bg-ojas-success border-ojas-success;
+  }
+
+  .timeline-dot.overdue {
+    @apply bg-ojas-error border-ojas-error animate-pulse-urgent;
+  }
+
+  .timeline-dot.current {
+    @apply bg-ojas-primary border-ojas-primary animate-pulse-glow;
+  }
+
+  .timeline-dot.pending {
+    @apply bg-white border-ojas-border;
   }
 }
 
