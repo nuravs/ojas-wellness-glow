@@ -26,6 +26,13 @@ const SymptomTrendsChart: React.FC<SymptomTrendsChartProps> = ({ symptomName, on
     return '#FF4E4E'; // Vibrant Coral
   };
 
+  // Custom Bar component to handle dynamic colors
+  const CustomBar = (props: any) => {
+    const { fill, ...restProps } = props;
+    const color = getBarColor(props.payload?.severity || 0);
+    return <Bar {...restProps} fill={color} />;
+  };
+
   return (
     <div className="min-h-screen bg-ojas-mist-white p-6 animate-gentle-fade-in">
       <div className="max-w-md mx-auto">
@@ -75,7 +82,11 @@ const SymptomTrendsChart: React.FC<SymptomTrendsChartProps> = ({ symptomName, on
               <Bar 
                 dataKey="severity" 
                 radius={[4, 4, 0, 0]}
-                fill={(entry) => getBarColor(entry.severity)}
+                fill="#00B488"
+                shape={(props: any) => {
+                  const color = getBarColor(props.payload?.severity || 0);
+                  return <rect {...props} fill={color} />;
+                }}
               />
             </BarChart>
           </ResponsiveContainer>
