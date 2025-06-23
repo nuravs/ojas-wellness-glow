@@ -2,153 +2,181 @@
 import React, { useState } from 'react';
 import SymptomButton from '../components/SymptomButton';
 import SymptomLogger from '../components/SymptomLogger';
-import { Activity, Brain, Zap, Scale, Heart, Eye, Shuffle, Clock, Moon } from 'lucide-react';
-
-const motorSymptoms = [
-  { id: 'tremor', label: 'Tremor', icon: Zap, color: 'yellow' as const, quickOptions: ['Right side', 'Left side', 'Both sides'] },
-  { id: 'stiffness', label: 'Stiffness', icon: Activity, color: 'blue' as const, quickOptions: ['Arms', 'Legs', 'Back', 'Neck'] },
-  { id: 'balance', label: 'Balance', icon: Scale, color: 'red' as const, quickOptions: ['Walking', 'Standing', 'Turning'] },
-  { id: 'movement', label: 'Slow Movement', icon: Shuffle, color: 'blue' as const, quickOptions: ['Getting up', 'Walking', 'Writing'] },
-];
-
-const nonMotorSymptoms = [
-  { id: 'fatigue', label: 'Fatigue', icon: Clock, color: 'yellow' as const, quickOptions: ['Physical', 'Mental', 'Both'] },
-  { id: 'sleep', label: 'Sleep Issues', icon: Moon, color: 'blue' as const, quickOptions: ['Trouble falling asleep', 'Frequent waking', 'Early waking'] },
-  { id: 'vision', label: 'Vision', icon: Eye, color: 'yellow' as const, quickOptions: ['Blurry', 'Double vision', 'Dry eyes'] },
-];
-
-const cognitiveSymptoms = [
-  { id: 'mood', label: 'Mood', icon: Heart, color: 'green' as const, quickOptions: ['Anxious', 'Sad', 'Frustrated', 'Content'] },
-  { id: 'memory', label: 'Memory', icon: Brain, color: 'blue' as const, quickOptions: ['Forgetful', 'Confused', 'Focused'] },
-];
+import SymptomTrendsChart from '../components/SymptomTrendsChart';
+import SuccessAnimation from '../components/SuccessAnimation';
+import { 
+  Brain, 
+  Zap, 
+  Users, 
+  Eye, 
+  Activity, 
+  Moon,
+  TrendingUp,
+  Thermometer
+} from 'lucide-react';
 
 const SymptomsPage: React.FC = () => {
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
+  const [showTrends, setShowTrends] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleSymptomSelect = (symptomId: string) => {
+  const symptoms = [
+    {
+      id: 'tremor',
+      label: 'Tremor',
+      icon: Zap,
+      color: 'blue' as const,
+      quickOptions: ['Resting', 'Action', 'Postural', 'Mild shaking']
+    },
+    {
+      id: 'stiffness',
+      label: 'Stiffness',
+      icon: Activity,
+      color: 'red' as const,
+      quickOptions: ['Neck', 'Arms', 'Legs', 'Back']
+    },
+    {
+      id: 'balance',
+      label: 'Balance',
+      icon: Users,
+      color: 'yellow' as const,
+      quickOptions: ['Unsteady', 'Dizzy', 'Falling', 'Walking difficulty']
+    },
+    {
+      id: 'mood',
+      label: 'Mood',
+      icon: Brain,
+      color: 'green' as const,
+      quickOptions: ['Anxious', 'Sad', 'Frustrated', 'Worried']
+    },
+    {
+      id: 'vision',
+      label: 'Vision',
+      icon: Eye,
+      color: 'blue' as const,
+      quickOptions: ['Blurry', 'Double vision', 'Dry eyes', 'Light sensitive']
+    },
+    {
+      id: 'sleep',
+      label: 'Sleep',
+      icon: Moon,
+      color: 'green' as const,
+      quickOptions: ['Restless', 'Insomnia', 'Vivid dreams', 'Fatigue']
+    },
+    {
+      id: 'pain',
+      label: 'Pain',
+      icon: Thermometer,
+      color: 'red' as const,
+      quickOptions: ['Headache', 'Joint pain', 'Muscle pain', 'Cramping']
+    },
+    {
+      id: 'cognitive',
+      label: 'Thinking',
+      icon: Brain,
+      color: 'yellow' as const,
+      quickOptions: ['Forgetful', 'Confused', 'Slow thinking', 'Word finding']
+    }
+  ];
+
+  const handleSymptomClick = (symptomId: string) => {
     setSelectedSymptom(symptomId);
   };
 
   const handleSymptomSave = (severity: number, notes?: string) => {
-    console.log('Saving symptom:', selectedSymptom, 'Severity:', severity, 'Notes:', notes);
+    const symptom = symptoms.find(s => s.id === selectedSymptom);
     setSelectedSymptom(null);
+    setSuccessMessage(`${symptom?.label} logged successfully!`);
+    setShowSuccess(true);
   };
 
   const handleSymptomCancel = () => {
     setSelectedSymptom(null);
   };
 
-  const allSymptoms = [...motorSymptoms, ...nonMotorSymptoms, ...cognitiveSymptoms];
-  const currentSymptom = allSymptoms.find(s => s.id === selectedSymptom);
+  const handleViewTrends = () => {
+    setShowTrends(true);
+  };
 
-  if (selectedSymptom && currentSymptom) {
+  const handleCloseTrends = () => {
+    setShowTrends(false);
+  };
+
+  const selectedSymptomData = symptoms.find(s => s.id === selectedSymptom);
+
+  if (showTrends) {
+    return <SymptomTrendsChart symptomName="All Symptoms" onClose={handleCloseTrends} />;
+  }
+
+  if (selectedSymptom && selectedSymptomData) {
     return (
       <SymptomLogger
-        symptomName={currentSymptom.label}
+        symptomName={selectedSymptomData.label}
         onSave={handleSymptomSave}
         onCancel={handleSymptomCancel}
-        quickOptions={currentSymptom.quickOptions}
+        quickOptions={selectedSymptomData.quickOptions}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-ojas-mist-white pb-20">
       <div className="max-w-md mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-wellness-calm-800 mb-2">
+          <h1 className="text-3xl font-bold text-ojas-charcoal-gray mb-3">
             How are you feeling?
           </h1>
-          <p className="text-wellness-calm-600 text-lg">
-            Tap any symptom you'd like to log
+          <p className="text-ojas-slate-gray text-lg">
+            Track your symptoms to help your care team
           </p>
         </div>
 
-        {/* Motor Symptoms */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-wellness-calm-800 mb-4 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-wellness-blue" />
-            Movement & Motor
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            {motorSymptoms.map(symptom => (
-              <SymptomButton
-                key={symptom.id}
-                icon={symptom.icon}
-                label={symptom.label}
-                color={symptom.color}
-                onClick={() => handleSymptomSelect(symptom.id)}
-              />
-            ))}
-          </div>
+        {/* Symptoms Grid */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {symptoms.map(symptom => (
+            <SymptomButton
+              key={symptom.id}
+              icon={symptom.icon}
+              label={symptom.label}
+              onClick={() => handleSymptomClick(symptom.id)}
+              color={symptom.color}
+            />
+          ))}
         </div>
 
-        {/* Non-Motor Symptoms */}
+        {/* View Trends Button */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-wellness-calm-800 mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-wellness-yellow" />
-            Non-Motor
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            {nonMotorSymptoms.map(symptom => (
-              <SymptomButton
-                key={symptom.id}
-                icon={symptom.icon}
-                label={symptom.label}
-                color={symptom.color}
-                onClick={() => handleSymptomSelect(symptom.id)}
-              />
-            ))}
-          </div>
+          <button
+            onClick={handleViewTrends}
+            className="w-full px-8 py-4 bg-white border-2 border-ojas-primary-blue text-ojas-primary-blue rounded-2xl font-semibold text-lg transition-all duration-200 hover:bg-ojas-primary-blue hover:text-white active:scale-95 shadow-ojas-soft flex items-center justify-center gap-3"
+          >
+            <TrendingUp className="w-6 h-6" />
+            View Trends & Insights
+          </button>
         </div>
 
-        {/* Cognitive/Psychological Symptoms */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-wellness-calm-800 mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-wellness-green" />
-            Cognitive & Mood
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            {cognitiveSymptoms.map(symptom => (
-              <SymptomButton
-                key={symptom.id}
-                icon={symptom.icon}
-                label={symptom.label}
-                color={symptom.color}
-                onClick={() => handleSymptomSelect(symptom.id)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Entries */}
-        <div className="ojas-card">
-          <h3 className="text-lg font-semibold text-wellness-calm-800 mb-4">
-            Recent entries
+        {/* Quick Tips */}
+        <div className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6">
+          <h3 className="text-lg font-semibold text-ojas-charcoal-gray mb-4">
+            💡 Tracking Tips
           </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-wellness-yellow" />
-                <span className="text-wellness-calm-700">Tremor</span>
-                <span className="text-sm text-wellness-calm-500">Yesterday</span>
-                <span className="text-xs bg-wellness-yellow/20 text-wellness-yellow px-2 py-1 rounded-full">Moderate</span>
-              </div>
-              <span className="font-medium text-wellness-calm-800">4/10</span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-wellness-blue" />
-                <span className="text-wellness-calm-700">Balance</span>
-                <span className="text-sm text-wellness-calm-500">2 days ago</span>
-                <span className="text-xs bg-wellness-green/20 text-wellness-green px-2 py-1 rounded-full">Mild</span>
-              </div>
-              <span className="font-medium text-wellness-calm-800">2/10</span>
-            </div>
+          <div className="space-y-3 text-sm text-ojas-slate-gray">
+            <p>• Log symptoms as they happen for the most accurate tracking</p>
+            <p>• Rate severity honestly - this helps your doctor understand patterns</p>
+            <p>• Add notes about what might have triggered or helped symptoms</p>
           </div>
         </div>
       </div>
+
+      {/* Success Animation */}
+      {showSuccess && (
+        <SuccessAnimation
+          message={successMessage}
+          onComplete={() => setShowSuccess(false)}
+        />
+      )}
     </div>
   );
 };

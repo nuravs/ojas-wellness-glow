@@ -7,16 +7,49 @@ import {
   MessageSquare, 
   Clock,
   MapPin,
-  Plus 
+  Plus,
+  Upload,
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 
 const DoctorsHubPage: React.FC = () => {
+  const upcomingAppointments = [
+    {
+      id: '1',
+      doctor: 'Dr. Sarah Chen',
+      specialty: 'Neurologist',
+      date: 'June 15, 2:30 PM',
+      location: 'Downtown Medical Center',
+      status: 'confirmed',
+      avatar: '👩‍⚕️'
+    }
+  ];
+
+  const recentResults = [
+    {
+      id: '1',
+      type: 'Blood Work',
+      date: 'June 10',
+      status: 'new',
+      critical: false,
+      doctor: 'Dr. Sarah Chen'
+    },
+    {
+      id: '2',
+      type: 'MRI Scan',
+      date: 'June 8',
+      status: 'critical',
+      critical: true,
+      doctor: 'Dr. Sarah Chen'
+    }
+  ];
+
   const doctors = [
     {
       id: '1',
       name: 'Dr. Sarah Chen',
       specialty: 'Neurologist',
-      nextAppt: 'June 15, 2:30 PM',
       phone: '(555) 123-4567',
       location: 'Downtown Medical Center',
       avatar: '👩‍⚕️'
@@ -25,112 +58,164 @@ const DoctorsHubPage: React.FC = () => {
       id: '2',
       name: 'Dr. Michael Rodriguez',
       specialty: 'Physical Therapist',
-      nextAppt: 'June 12, 10:00 AM',
       phone: '(555) 987-6543',
       location: 'Wellness Therapy Clinic',
       avatar: '👨‍⚕️'
     }
   ];
 
-  const quickActions = [
-    {
-      id: 'schedule',
-      title: 'Schedule Appointment',
-      icon: Calendar,
-      color: 'wellness-green'
-    },
-    {
-      id: 'message',
-      title: 'Send Message',
-      icon: MessageSquare,
-      color: 'wellness-blue'
-    },
-    {
-      id: 'emergency',
-      title: 'Emergency Contact',
-      icon: Phone,
-      color: 'wellness-red'
-    }
-  ];
-
-  const getActionColorClasses = (color: string) => {
-    switch (color) {
-      case 'wellness-green': return 'bg-wellness-green/10 hover:bg-wellness-green/20 text-wellness-green border-wellness-green/20';
-      case 'wellness-blue': return 'bg-wellness-blue/10 hover:bg-wellness-blue/20 text-wellness-blue border-wellness-blue/20';
-      case 'wellness-red': return 'bg-wellness-red/10 hover:bg-wellness-red/20 text-wellness-red border-wellness-red/20';
-      default: return 'bg-calm-100 hover:bg-calm-200 text-calm-700 border-calm-200';
-    }
+  const handleUpload = () => {
+    console.log('Upload lab report or prescription');
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-ojas-mist-white pb-20">
       <div className="max-w-md mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-calm-800 mb-2">
+            <h1 className="text-3xl font-bold text-ojas-charcoal-gray mb-2">
               My Doctors
             </h1>
-            <p className="text-calm-600 text-lg">
+            <p className="text-ojas-slate-gray text-lg">
               Your healthcare team
             </p>
           </div>
-          <button className="w-12 h-12 bg-wellness-green rounded-full flex items-center justify-center text-white hover:bg-wellness-green/90 transition-colors duration-200">
-            <Plus className="w-6 h-6" />
+          <button 
+            onClick={handleUpload}
+            className="w-12 h-12 bg-ojas-primary-blue rounded-full flex items-center justify-center text-white hover:bg-ojas-primary-blue-hover transition-colors duration-200 shadow-ojas-medium"
+          >
+            <Upload className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {quickActions.map(action => (
-            <button
-              key={action.id}
-              className={`ojas-card ${getActionColorClasses(action.color)} hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[100px] flex flex-col items-center justify-center gap-2 border-2`}
-            >
-              <action.icon className="w-6 h-6"  />
-              <span className="text-sm font-medium">{action.title}</span>
-            </button>
-          ))}
-        </div>
+        {/* Upcoming Appointments */}
+        {upcomingAppointments.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-ojas-charcoal-gray mb-4">
+              Upcoming Appointments
+            </h2>
+            {upcomingAppointments.map(appointment => (
+              <div key={appointment.id} className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6 mb-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-ojas-primary-blue/10 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+                    {appointment.avatar}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-ojas-charcoal-gray mb-1">
+                      {appointment.doctor}
+                    </h3>
+                    <p className="text-ojas-primary-blue font-medium mb-2">
+                      {appointment.specialty}
+                    </p>
+                    
+                    <div className="space-y-2 text-sm text-ojas-slate-gray mb-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-ojas-primary-blue" />
+                        <span>{appointment.date}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-ojas-primary-blue" />
+                        <span>{appointment.location}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button className="flex-1 px-4 py-3 bg-ojas-primary-blue text-white rounded-xl font-semibold text-sm transition-all duration-200 hover:bg-ojas-primary-blue-hover active:scale-95">
+                        Confirm
+                      </button>
+                      <button className="flex-1 px-4 py-3 bg-white border-2 border-ojas-cloud-silver text-ojas-charcoal-gray rounded-xl font-semibold text-sm transition-all duration-200 hover:bg-gray-50 active:scale-95">
+                        Reschedule
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Doctors List */}
+        {/* Recent Results */}
+        {recentResults.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-ojas-charcoal-gray mb-4">
+              Recent Results
+            </h2>
+            <div className="space-y-3">
+              {recentResults.map(result => (
+                <div 
+                  key={result.id} 
+                  className={`bg-white rounded-2xl shadow-ojas-soft p-4 border-2 ${
+                    result.critical 
+                      ? 'border-ojas-vibrant-coral animate-pulse-gentle' 
+                      : result.status === 'new'
+                        ? 'border-ojas-soft-gold'
+                        : 'border-ojas-cloud-silver'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      result.critical 
+                        ? 'bg-ojas-vibrant-coral/10 text-ojas-vibrant-coral' 
+                        : 'bg-ojas-primary-blue/10 text-ojas-primary-blue'
+                    }`}>
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-ojas-charcoal-gray">{result.type}</h3>
+                        {result.critical && (
+                          <div className="w-2 h-2 bg-ojas-vibrant-coral rounded-full animate-pulse"></div>
+                        )}
+                        {result.status === 'new' && (
+                          <span className="px-2 py-1 bg-ojas-soft-gold/20 text-ojas-soft-gold text-xs font-medium rounded-full">
+                            New
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-ojas-slate-gray">{result.date} • {result.doctor}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Healthcare Team */}
         <div className="space-y-4 mb-8">
-          <h2 className="text-xl font-semibold text-calm-800 mb-4">
+          <h2 className="text-xl font-semibold text-ojas-charcoal-gray mb-4">
             Healthcare Team
           </h2>
           {doctors.map(doctor => (
-            <div key={doctor.id} className="ojas-card hover:shadow-md transition-all duration-200">
+            <div key={doctor.id} className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-wellness-blue/10 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
+                <div className="w-16 h-16 bg-ojas-calming-green/10 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
                   {doctor.avatar}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-calm-800 mb-1">
+                  <h3 className="text-lg font-semibold text-ojas-charcoal-gray mb-1">
                     {doctor.name}
                   </h3>
-                  <p className="text-wellness-blue font-medium mb-2">
+                  <p className="text-ojas-primary-blue font-medium mb-2">
                     {doctor.specialty}
                   </p>
                   
-                  <div className="space-y-2 text-sm text-calm-600">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span>Next: {doctor.nextAppt}</span>
-                    </div>
+                  <div className="space-y-2 text-sm text-ojas-slate-gray mb-4">
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       <span>{doctor.location}</span>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 mt-4">
-                    <button className="flex-1 ojas-button-secondary text-sm py-2">
+                  <div className="flex gap-2">
+                    <button className="flex-1 px-4 py-3 bg-white border-2 border-ojas-cloud-silver text-ojas-charcoal-gray rounded-xl font-semibold text-sm transition-all duration-200 hover:bg-gray-50 active:scale-95 flex items-center justify-center gap-2">
                       <Phone className="w-4 h-4" />
                       Call
                     </button>
-                    <button className="flex-1 ojas-button-primary text-sm py-2">
-                      <Calendar className="w-4 h-4" />
-                      Schedule
+                    <button className="flex-1 px-4 py-3 bg-ojas-primary-blue text-white rounded-xl font-semibold text-sm transition-all duration-200 hover:bg-ojas-primary-blue-hover active:scale-95 flex items-center justify-center gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      Message
                     </button>
                   </div>
                 </div>
@@ -140,16 +225,19 @@ const DoctorsHubPage: React.FC = () => {
         </div>
 
         {/* Emergency Contact */}
-        <div className="ojas-card bg-wellness-red/5 border-2 border-wellness-red/20">
-          <h3 className="text-lg font-semibold text-wellness-red mb-2">
-            🚨 Emergency Contact
-          </h3>
-          <p className="text-calm-700 mb-3">
+        <div className="bg-white rounded-2xl shadow-ojas-soft border-2 border-ojas-vibrant-coral/20 p-6">
+          <div className="flex items-center gap-3 mb-3">
+            <AlertCircle className="w-6 h-6 text-ojas-vibrant-coral" />
+            <h3 className="text-lg font-semibold text-ojas-vibrant-coral">
+              Emergency Contact
+            </h3>
+          </div>
+          <p className="text-ojas-charcoal-gray mb-4">
             If you're experiencing a medical emergency, call 911 immediately.
           </p>
-          <button className="ojas-button bg-wellness-red text-white hover:bg-wellness-red/90">
+          <button className="w-full px-6 py-4 bg-ojas-vibrant-coral text-white rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-ojas-vibrant-coral-hover active:scale-95 flex items-center justify-center gap-3">
             <Phone className="w-5 h-5" />
-            Emergency Services: 911
+            Emergency: 911
           </button>
         </div>
       </div>

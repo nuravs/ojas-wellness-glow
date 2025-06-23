@@ -63,21 +63,21 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// New Ojas Accessible Color Palette
+				// New Ojas Accessible Color Palette - Updated
 				ojas: {
-					primary: '#0077B6',        // Primary Blue - Main buttons, pulse, icons
-					'primary-hover': '#005E8A', // Darker blue for hover states
-					success: '#00B488',        // Calming Green - Success, wellness, completed states
-					'success-hover': '#009670', // Darker green for hover
-					alert: '#FFC300',          // Soft Gold - Alerts, attention banners, skip buttons
-					'alert-hover': '#E6B000',  // Darker gold for hover
-					error: '#FF4E4E',          // Vibrant Coral - Errors, urgency, overdue badges
-					'error-hover': '#E63946',  // Darker coral for hover
-					'bg-light': '#F5F8FA',     // Mist White - App main background
-					'bg-dark': '#18233A',      // Soft Midnight Blue - High contrast mode
-					'text-main': '#22292F',    // Charcoal Gray - Standard text, icons
-					'text-secondary': '#6C7683', // Slate Gray - Secondary/less prominent text
-					border: '#E1E4EA'          // Cloud Silver - Card borders, separators
+					'primary-blue': '#0077B6',      // Main buttons, pulse, icons  
+					'primary-blue-hover': '#005E8A', // Darker blue for hover states
+					'calming-green': '#00B488',     // Wellness, success, completed actions
+					'calming-green-hover': '#009670', // Darker green for hover
+					'soft-gold': '#FFC300',         // Alerts, attention banners, skip buttons
+					'soft-gold-hover': '#E6B000',   // Darker gold for hover
+					'vibrant-coral': '#FF4E4E',     // Errors, urgency, SOS badges
+					'vibrant-coral-hover': '#E63946', // Darker coral for hover
+					'mist-white': '#F5F8FA',        // Backgrounds
+					'soft-midnight': '#18233A',     // High contrast mode
+					'charcoal-gray': '#22292F',     // Main text/icons
+					'slate-gray': '#6C7683',        // Secondary text
+					'cloud-silver': '#E1E4EA'       // Dividers, card outlines
 				}
 			},
 			borderRadius: {
@@ -166,29 +166,28 @@ export default {
 						opacity: '1'
 					}
 				},
-				'card-highlight': {
+				'success-pulse': {
 					'0%': {
 						transform: 'scale(1)',
-						boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+						boxShadow: '0 0 0 0 rgba(0, 180, 136, 0.7)'
+					},
+					'70%': {
+						transform: 'scale(1.05)',
+						boxShadow: '0 0 0 10px rgba(0, 180, 136, 0)'
 					},
 					'100%': {
-						transform: 'scale(1.02)',
-						boxShadow: '0 8px 32px rgba(0, 119, 182, 0.15)'
+						transform: 'scale(1)',
+						boxShadow: '0 0 0 0 rgba(0, 180, 136, 0)'
 					}
 				},
-				'pill-bottle-fill': {
-					'0%': {
-						transform: 'scale(0.8)',
-						opacity: '0.5'
-					},
-					'50%': {
-						transform: 'scale(1.1)',
-						opacity: '0.8'
-					},
-					'100%': {
-						transform: 'scale(1)',
-						opacity: '1'
-					}
+				'shake': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'25%': { transform: 'translateX(-5px)' },
+					'75%': { transform: 'translateX(5px)' }
+				},
+				'confetti': {
+					'0%': { transform: 'translateY(-100px) rotate(0deg)', opacity: '1' },
+					'100%': { transform: 'translateY(100px) rotate(720deg)', opacity: '0' }
 				}
 			},
 			animation: {
@@ -199,8 +198,9 @@ export default {
 				'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
 				'pulse-urgent': 'pulse-urgent 2s ease-in-out infinite',
 				'success-check': 'success-check 0.5s ease-out',
-				'card-highlight': 'card-highlight 0.3s ease-out forwards',
-				'pill-bottle-fill': 'pill-bottle-fill 1.5s ease-out'
+				'success-pulse': 'success-pulse 1s ease-out',
+				'shake': 'shake 0.5s ease-in-out',
+				'confetti': 'confetti 3s ease-out'
 			},
 			boxShadow: {
 				'ojas-soft': '0 2px 8px rgba(34, 41, 47, 0.08)',

@@ -4,12 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ojas Wellness Design System - Empathetic design for neurological wellness */
+/* Ojas Wellness Design System - Enhanced with New Accessible Color Palette */
 
 @layer base {
   :root {
-    --background: 245 248 250; /* ojas-bg-light */
-    --foreground: 34 41 47; /* ojas-text-main */
+    --background: 245 248 250; /* ojas-mist-white */
+    --foreground: 34 41 47; /* ojas-charcoal-gray */
 
     --card: 255 255 255;
     --card-foreground: 34 41 47;
@@ -17,30 +17,30 @@
     --popover: 255 255 255;
     --popover-foreground: 34 41 47;
 
-    --primary: 0 119 182; /* ojas-primary */
+    --primary: 0 119 182; /* ojas-primary-blue */
     --primary-foreground: 255 255 255;
 
-    --secondary: 225 228 234; /* ojas-border */
+    --secondary: 225 228 234; /* ojas-cloud-silver */
     --secondary-foreground: 34 41 47;
 
     --muted: 225 228 234;
-    --muted-foreground: 108 118 131; /* ojas-text-secondary */
+    --muted-foreground: 108 118 131; /* ojas-slate-gray */
 
     --accent: 225 228 234;
     --accent-foreground: 34 41 47;
 
-    --destructive: 255 78 78; /* ojas-error */
+    --destructive: 255 78 78; /* ojas-vibrant-coral */
     --destructive-foreground: 255 255 255;
 
-    --border: 225 228 234; /* ojas-border */
+    --border: 225 228 234; /* ojas-cloud-silver */
     --input: 225 228 234;
-    --ring: 0 119 182; /* ojas-primary */
+    --ring: 0 119 182; /* ojas-primary-blue */
 
     --radius: 16px; /* Larger radius for softer, friendlier feel */
   }
 
   .dark {
-    --background: 24 35 58; /* ojas-bg-dark */
+    --background: 24 35 58; /* ojas-soft-midnight */
     --foreground: 245 248 250;
 
     --card: 34 41 47;
@@ -68,6 +68,34 @@
     --input: 108 118 131;
     --ring: 0 119 182;
   }
+
+  /* High Contrast Mode */
+  .high-contrast {
+    --background: 0 0 0;
+    --foreground: 255 255 255;
+    --card: 0 0 0;
+    --card-foreground: 255 255 255;
+    --border: 255 255 255;
+    --primary: 255 255 255;
+    --primary-foreground: 0 0 0;
+  }
+
+  /* Large Fonts Mode */
+  .large-fonts {
+    font-size: 1.25rem;
+  }
+
+  .large-fonts h1 {
+    font-size: 2.5rem;
+  }
+
+  .large-fonts h2 {
+    font-size: 2rem;
+  }
+
+  .large-fonts h3 {
+    font-size: 1.75rem;
+  }
 }
 
 @layer base {
@@ -76,14 +104,14 @@
   }
 
   body {
-    @apply bg-ojas-bg-light text-ojas-text-main font-ojas;
+    @apply bg-ojas-mist-white text-ojas-charcoal-gray font-ojas;
     font-size: 18px; /* Larger base font for accessibility */
     line-height: 1.7;
   }
 
   /* Enhanced focus indicators for accessibility */
   *:focus-visible {
-    @apply outline-none ring-4 ring-ojas-primary/40 ring-offset-2 ring-offset-background;
+    @apply outline-none ring-4 ring-ojas-primary-blue/40 ring-offset-2 ring-offset-background;
   }
 
   /* Ensure all interactive elements meet minimum tap target size */
@@ -94,41 +122,13 @@
 }
 
 @layer components {
-  /* Enhanced Wellness Ring - Core interactive component */
-  .ojas-wellness-ring {
-    @apply relative rounded-full border-8 transition-all duration-500 ease-out cursor-pointer;
-  }
-  
-  .ojas-wellness-ring.status-good {
-    @apply border-ojas-success bg-ojas-success/10;
-    box-shadow: 0 0 0 12px rgb(0 180 136 / 0.08), 0 4px 16px rgb(0 180 136 / 0.15);
-  }
-  
-  .ojas-wellness-ring.status-attention {
-    @apply border-ojas-alert bg-ojas-alert/10;
-    box-shadow: 0 0 0 12px rgb(255 195 0 / 0.08), 0 4px 16px rgb(255 195 0 / 0.15);
-  }
-  
-  .ojas-wellness-ring.status-urgent {
-    @apply border-ojas-error bg-ojas-error/10;
-    box-shadow: 0 0 0 12px rgb(255 78 78 / 0.08), 0 4px 16px rgb(255 78 78 / 0.15);
-  }
-
-  .ojas-wellness-ring:hover {
-    @apply scale-105;
-  }
-
-  .ojas-wellness-ring:active {
-    @apply scale-95;
-  }
-
-  /* Enhanced card styling with priority support */
+  /* Enhanced card styling with new color palette */
   .ojas-card {
-    @apply bg-white rounded-2xl shadow-ojas-soft border border-ojas-border p-6 transition-all duration-300 hover:shadow-ojas-medium;
+    @apply bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6 transition-all duration-300 hover:shadow-ojas-medium;
   }
 
   .ojas-card.priority-high {
-    @apply scale-105 shadow-ojas-medium border-ojas-primary/20;
+    @apply scale-105 shadow-ojas-medium border-ojas-primary-blue/20;
     animation: pulse-glow 3s ease-in-out infinite;
   }
 
@@ -136,29 +136,29 @@
     @apply -translate-y-1 shadow-ojas-strong;
   }
 
-  /* Enhanced primary action buttons - tap-first design */
+  /* Enhanced primary action buttons with new colors */
   .ojas-button {
     @apply px-8 py-4 rounded-2xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-ojas-soft;
   }
 
   .ojas-button-primary {
-    @apply ojas-button bg-ojas-primary text-white hover:bg-ojas-primary-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover active:scale-95 shadow-ojas-medium font-semibold;
   }
 
   .ojas-button-success {
-    @apply ojas-button bg-ojas-success text-white hover:bg-ojas-success-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-calming-green text-white hover:bg-ojas-calming-green-hover active:scale-95 shadow-ojas-medium font-semibold;
   }
 
   .ojas-button-secondary {
-    @apply ojas-button bg-white text-ojas-text-main hover:bg-gray-50 active:scale-95 border-2 border-ojas-border font-medium;
+    @apply ojas-button bg-white text-ojas-charcoal-gray hover:bg-gray-50 active:scale-95 border-2 border-ojas-cloud-silver font-medium;
   }
 
   .ojas-button-alert {
-    @apply ojas-button bg-ojas-alert text-ojas-text-main hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover active:scale-95 shadow-ojas-medium font-semibold;
   }
 
   .ojas-button-error {
-    @apply ojas-button bg-ojas-error text-white hover:bg-ojas-error-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-vibrant-coral text-white hover:bg-ojas-vibrant-coral-hover active:scale-95 shadow-ojas-medium font-semibold;
   }
 
   /* Large, accessible medication action buttons */
@@ -167,81 +167,60 @@
   }
 
   .medication-taken-button {
-    @apply medication-action-button bg-ojas-primary text-white hover:bg-ojas-primary-hover shadow-ojas-medium;
+    @apply medication-action-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover shadow-ojas-medium;
   }
 
   .medication-skip-button {
-    @apply medication-action-button bg-ojas-alert text-ojas-text-main hover:bg-ojas-alert-hover shadow-ojas-medium;
+    @apply medication-action-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover shadow-ojas-medium;
   }
 
-  /* Tab navigation with empathetic styling */
+  /* Tab navigation with new color palette */
   .ojas-tab {
     @apply flex-1 py-4 px-6 text-center rounded-2xl transition-all duration-300 min-h-[64px] flex flex-col items-center justify-center gap-2;
   }
 
   .ojas-tab.active {
-    @apply bg-ojas-primary text-white font-semibold shadow-ojas-medium;
+    @apply bg-ojas-primary-blue text-white font-semibold shadow-ojas-medium;
   }
 
   .ojas-tab.inactive {
-    @apply bg-white text-ojas-text-secondary hover:bg-gray-50 font-medium;
+    @apply bg-white text-ojas-slate-gray hover:bg-gray-50 font-medium;
   }
 
   /* Accessible form inputs */
   .ojas-input {
-    @apply w-full px-6 py-4 rounded-2xl border-2 border-ojas-border bg-white text-ojas-text-main placeholder-ojas-text-secondary focus:border-ojas-primary focus:ring-4 focus:ring-ojas-primary/20 transition-all duration-200 text-lg;
+    @apply w-full px-6 py-4 rounded-2xl border-2 border-ojas-cloud-silver bg-white text-ojas-charcoal-gray placeholder-ojas-slate-gray focus:border-ojas-primary-blue focus:ring-4 focus:ring-ojas-primary-blue/20 transition-all duration-200 text-lg;
   }
 
-  /* Status indicators with accessibility */
+  /* Status indicators with new color palette */
   .status-indicator {
     @apply flex items-center gap-2 text-sm font-medium;
   }
 
   .status-good {
-    @apply text-ojas-success;
+    @apply text-ojas-calming-green;
   }
 
   .status-attention {
-    @apply text-ojas-alert;
+    @apply text-ojas-soft-gold;
   }
 
   .status-urgent {
-    @apply text-ojas-error;
+    @apply text-ojas-vibrant-coral;
   }
 
   .status-overdue {
-    @apply text-ojas-error animate-pulse;
+    @apply text-ojas-vibrant-coral animate-pulse;
   }
 
-  /* Symptom grid buttons - custom styled */
+  /* Enhanced symptom button styling */
   .symptom-grid-button {
-    @apply ojas-card hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[120px] flex flex-col items-center justify-center gap-3 border-2 cursor-pointer;
-  }
-
-  .symptom-grid-button.ojas-success {
-    @apply bg-ojas-success/10 hover:bg-ojas-success/20 text-ojas-success border-ojas-success/30;
-  }
-
-  .symptom-grid-button.ojas-primary {
-    @apply bg-ojas-primary/10 hover:bg-ojas-primary/20 text-ojas-primary border-ojas-primary/30;
-  }
-
-  .symptom-grid-button.ojas-alert {
-    @apply bg-ojas-alert/10 hover:bg-ojas-alert/20 text-ojas-alert border-ojas-alert/30;  
-  }
-
-  .symptom-grid-button.ojas-error {
-    @apply bg-ojas-error/10 hover:bg-ojas-error/20 text-ojas-error border-ojas-error/30;
-  }
-
-  /* Success animation for completed actions */
-  .success-animation {
-    @apply animate-success-check;
+    @apply bg-white rounded-2xl shadow-ojas-soft hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[140px] flex flex-col items-center justify-center gap-4 cursor-pointer p-6 border-2;
   }
 
   /* Floating action button */
   .ojas-fab {
-    @apply w-16 h-16 bg-ojas-primary rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-primary-hover transition-all duration-200 hover:scale-110 active:scale-95;
+    @apply w-16 h-16 bg-ojas-primary-blue rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-primary-blue-hover transition-all duration-200 hover:scale-110 active:scale-95;
   }
 
   /* Timeline specific styles */
@@ -250,19 +229,29 @@
   }
 
   .timeline-dot.completed {
-    @apply bg-ojas-success border-ojas-success;
+    @apply bg-ojas-calming-green border-ojas-calming-green;
   }
 
   .timeline-dot.overdue {
-    @apply bg-ojas-error border-ojas-error animate-pulse-urgent;
+    @apply bg-ojas-vibrant-coral border-ojas-vibrant-coral animate-pulse-urgent;
   }
 
   .timeline-dot.current {
-    @apply bg-ojas-primary border-ojas-primary animate-pulse-glow;
+    @apply bg-ojas-primary-blue border-ojas-primary-blue animate-pulse-glow;
   }
 
   .timeline-dot.pending {
-    @apply bg-white border-ojas-border;
+    @apply bg-white border-ojas-cloud-silver;
+  }
+
+  /* Error state animation */
+  .error-shake {
+    @apply animate-shake;
+  }
+
+  /* Success celebration styles */
+  .celebration-confetti {
+    @apply animate-confetti;
   }
 }
 
@@ -272,16 +261,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(245 248 250);
+  background: #F5F8FA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(225 228 234);
+  background: #E1E4EA;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(108 118 131);
+  background: #6C7683;
 }
 
 /* Reduced motion preferences */
@@ -292,5 +281,14 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Haptic feedback simulation for desktop */
+@media (hover: hover) {
+  .ojas-button:active,
+  .medication-action-button:active,
+  .symptom-grid-button:active {
+    transform: scale(0.95);
   }
 }

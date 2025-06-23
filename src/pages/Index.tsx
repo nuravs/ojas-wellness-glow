@@ -5,7 +5,9 @@ import MedicationsPage from './MedicationsPage';
 import WellnessCenterPage from './WellnessCenterPage';
 import RecordsPage from './RecordsPage';
 import MorePage from './MorePage';
+import SymptomsPage from './SymptomsPage';
 import Navigation from '../components/Navigation';
+import FloatingHelpButton from '../components/FloatingHelpButton';
 import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
@@ -106,9 +108,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background font-wellness">
+    <div className="min-h-screen bg-ojas-mist-white font-ojas">
       {renderCurrentPage()}
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <FloatingHelpButton />
     </div>
   );
 };

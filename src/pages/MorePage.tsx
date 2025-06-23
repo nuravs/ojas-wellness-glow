@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   UserCircle, 
   Settings, 
@@ -10,15 +10,19 @@ import {
   Info,
   ChevronRight 
 } from 'lucide-react';
+import SettingsPage from './SettingsPage';
+import DoctorsHubPage from './DoctorsHubPage';
 
 const MorePage: React.FC = () => {
+  const [currentView, setCurrentView] = useState<'main' | 'settings' | 'doctors'>('main');
+
   const menuItems = [
     {
       id: 'doctors',
       title: 'My Doctors',
       description: 'Healthcare team and appointments',
       icon: Stethoscope,
-      color: 'wellness-blue',
+      color: 'primary-blue',
       priority: 'high'
     },
     {
@@ -26,23 +30,23 @@ const MorePage: React.FC = () => {
       title: 'Patient Profile',
       description: 'Personal information and preferences',
       icon: UserCircle,
-      color: 'wellness-green',
+      color: 'calming-green',
       priority: 'medium'
     },
     {
       id: 'settings',
       title: 'Settings',
-      description: 'App preferences and notifications',
+      description: 'App preferences and accessibility',
       icon: Settings,
-      color: 'calm-600',
-      priority: 'medium'
+      color: 'charcoal-gray',
+      priority: 'high'
     },
     {
       id: 'privacy',
       title: 'Privacy & Security',
       description: 'Data protection and security settings',
       icon: Shield,
-      color: 'wellness-yellow',
+      color: 'soft-gold',
       priority: 'low'
     },
     {
@@ -50,7 +54,7 @@ const MorePage: React.FC = () => {
       title: 'Contact Support',
       description: 'Get help when you need it',
       icon: Phone,
-      color: 'wellness-green',
+      color: 'calming-green',
       priority: 'medium'
     },
     {
@@ -58,49 +62,61 @@ const MorePage: React.FC = () => {
       title: 'About Ojas',
       description: 'App version and information',
       icon: Info,
-      color: 'calm-600',
+      color: 'charcoal-gray',
       priority: 'low'
     }
   ];
 
   const getColorClasses = (color: string) => {
     switch (color) {
-      case 'wellness-green': return 'text-wellness-green bg-wellness-green/10';
-      case 'wellness-blue': return 'text-wellness-blue bg-wellness-blue/10';
-      case 'wellness-yellow': return 'text-wellness-yellow bg-wellness-yellow/10';
-      default: return 'text-calm-600 bg-calm-100';
+      case 'calming-green': return 'text-ojas-calming-green bg-ojas-calming-green/10';
+      case 'primary-blue': return 'text-ojas-primary-blue bg-ojas-primary-blue/10';
+      case 'soft-gold': return 'text-ojas-soft-gold bg-ojas-soft-gold/10';
+      case 'charcoal-gray': return 'text-ojas-charcoal-gray bg-ojas-charcoal-gray/10';
+      default: return 'text-ojas-charcoal-gray bg-gray-100';
     }
   };
 
   const handleItemTap = (itemId: string) => {
     switch (itemId) {
       case 'doctors':
-        // TODO: Navigate to DoctorsHubScreen
-        console.log('Navigate to Doctors Hub');
+        setCurrentView('doctors');
+        break;
+      case 'settings':
+        setCurrentView('settings');
         break;
       case 'profile':
         console.log('Navigate to Profile');
-        break;
-      case 'settings':
-        console.log('Navigate to Settings');
         break;
       default:
         console.log(`Navigate to ${itemId}`);
     }
   };
 
+  const handleBackToMain = () => {
+    setCurrentView('main');
+  };
+
+  if (currentView === 'settings') {
+    return <SettingsPage onBack={handleBackToMain} />;
+  }
+
+  if (currentView === 'doctors') {
+    return <DoctorsHubPage />;
+  }
+
   const priorityItems = menuItems.filter(item => item.priority === 'high');
   const regularItems = menuItems.filter(item => item.priority !== 'high');
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-ojas-mist-white pb-20">
       <div className="max-w-md mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-calm-800 mb-2">
+          <h1 className="text-3xl font-bold text-ojas-charcoal-gray mb-2">
             More
           </h1>
-          <p className="text-calm-600 text-lg">
+          <p className="text-ojas-slate-gray text-lg">
             Settings, support, and additional features
           </p>
         </div>
@@ -108,7 +124,7 @@ const MorePage: React.FC = () => {
         {/* High Priority Items */}
         {priorityItems.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-calm-800 mb-4">
+            <h2 className="text-xl font-semibold text-ojas-charcoal-gray mb-4">
               Quick Access
             </h2>
             <div className="space-y-3">
@@ -116,21 +132,21 @@ const MorePage: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => handleItemTap(item.id)}
-                  className="ojas-card hover:shadow-md transition-all duration-200 w-full text-left"
+                  className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver hover:shadow-ojas-medium transition-all duration-200 w-full text-left p-6"
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-full ${getColorClasses(item.color)} flex items-center justify-center flex-shrink-0`}>
                       <item.icon className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-calm-800 mb-1">
+                      <h3 className="text-lg font-semibold text-ojas-charcoal-gray mb-1">
                         {item.title}
                       </h3>
-                      <p className="text-calm-600 text-sm">
+                      <p className="text-ojas-slate-gray text-sm">
                         {item.description}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-calm-400" />
+                    <ChevronRight className="w-5 h-5 text-ojas-slate-gray" />
                   </div>
                 </button>
               ))}
@@ -140,7 +156,7 @@ const MorePage: React.FC = () => {
 
         {/* Regular Items */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-calm-800 mb-4">
+          <h2 className="text-xl font-semibold text-ojas-charcoal-gray mb-4">
             Settings & Support
           </h2>
           <div className="space-y-3">
@@ -148,21 +164,21 @@ const MorePage: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => handleItemTap(item.id)}
-                className="ojas-card hover:shadow-md transition-all duration-200 w-full text-left"
+                className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver hover:shadow-ojas-medium transition-all duration-200 w-full text-left p-6"
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-full ${getColorClasses(item.color)} flex items-center justify-center flex-shrink-0`}>
                     <item.icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-medium text-calm-800 mb-1">
+                    <h3 className="text-lg font-medium text-ojas-charcoal-gray mb-1">
                       {item.title}
                     </h3>
-                    <p className="text-calm-600 text-sm">
+                    <p className="text-ojas-slate-gray text-sm">
                       {item.description}
                     </p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-calm-400" />
+                  <ChevronRight className="w-5 h-5 text-ojas-slate-gray" />
                 </div>
               </button>
             ))}
