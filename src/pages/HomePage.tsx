@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import WellnessRing from '../components/WellnessRing';
 import MedicationCard from '../components/MedicationCard';
@@ -15,12 +14,14 @@ interface HomePageProps {
   }>;
   onToggleMedication: (id: string) => void;
   onPostponeMedication: (id: string) => void;
+  userRole: 'patient' | 'caregiver';
 }
 
 const HomePage: React.FC<HomePageProps> = ({ 
   medications, 
   onToggleMedication, 
-  onPostponeMedication 
+  onPostponeMedication,
+  userRole
 }) => {
   const [dismissedInsights, setDismissedInsights] = useState<Set<string>>(new Set());
 
@@ -82,10 +83,10 @@ const HomePage: React.FC<HomePageProps> = ({
         {/* Enhanced Personalized Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-ojas-text-main mb-4 font-heading">
-            Good morning, Sarah
+            Good morning, {userRole === 'caregiver' ? 'Caregiver' : 'Sarah'}
           </h1>
           <p className="text-ojas-text-secondary text-xl">
-            Let's see how you're doing today
+            {userRole === 'caregiver' ? "Let's check on your patient's progress" : "Let's see how you're doing today"}
           </p>
         </div>
 
