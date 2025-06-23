@@ -132,7 +132,7 @@ const Index = () => {
       case 'more':
         return <MorePage />;
       default:
-        return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostpone={handlePostponeMedication} userRole={userRole} />;
+        return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostponeMedication={handlePostponeMedication} userRole={userRole} />;
     }
   };
 
