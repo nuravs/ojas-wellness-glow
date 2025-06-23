@@ -2,16 +2,16 @@
 import React from 'react';
 import { Phone } from 'lucide-react';
 
-const FloatingHelpButton: React.FC = () => {
-  const handleSOS = () => {
-    // In a real app, this would trigger emergency contacts or help system
-    alert('Emergency help feature - would contact your emergency contacts or medical team');
+const EmergencyButton: React.FC = () => {
+  const handleEmergencyCall = () => {
+    // In a real app, this would trigger emergency contacts or 911
+    alert('Emergency services would be contacted. In development mode.');
   };
 
   return (
     <div className="fixed top-6 right-6 z-50 group">
       <button
-        onClick={handleSOS}
+        onClick={handleEmergencyCall}
         className="w-16 h-16 bg-ojas-vibrant-coral rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-vibrant-coral-hover transition-all duration-200 hover:scale-110 active:scale-95 animate-pulse-gentle"
         aria-label="Emergency - Call for help"
         title="Emergency - Call for help"
@@ -28,4 +28,4 @@ const FloatingHelpButton: React.FC = () => {
   );
 };
 
-export default FloatingHelpButton;
+export default EmergencyButton;

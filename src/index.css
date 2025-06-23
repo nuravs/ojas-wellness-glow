@@ -80,21 +80,38 @@
     --primary-foreground: 0 0 0;
   }
 
+  .high-contrast * {
+    background-color: black !important;
+    color: white !important;
+    border-color: white !important;
+  }
+
+  .high-contrast button {
+    background-color: white !important;
+    color: black !important;
+    border: 2px solid white !important;
+  }
+
   /* Large Fonts Mode */
   .large-fonts {
-    font-size: 1.25rem;
+    font-size: 1.5rem !important;
   }
 
   .large-fonts h1 {
-    font-size: 2.5rem;
+    font-size: 3rem !important;
   }
 
   .large-fonts h2 {
-    font-size: 2rem;
+    font-size: 2.5rem !important;
   }
 
   .large-fonts h3 {
-    font-size: 1.75rem;
+    font-size: 2rem !important;
+  }
+
+  .large-fonts button {
+    font-size: 1.5rem !important;
+    padding: 1rem 2rem !important;
   }
 }
 
@@ -119,12 +136,26 @@
     min-height: 48px;
     min-width: 48px;
   }
+
+  /* Enhanced button accessibility */
+  button:focus-visible {
+    @apply ring-4 ring-ojas-primary-blue/60 ring-offset-2;
+  }
+
+  /* High contrast button outlines */
+  button {
+    border: 2px solid transparent;
+  }
+
+  button:hover {
+    border-color: currentColor;
+  }
 }
 
 @layer components {
   /* Enhanced card styling with new color palette */
   .ojas-card {
-    @apply bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6 transition-all duration-300 hover:shadow-ojas-medium;
+    @apply bg-white rounded-2xl shadow-ojas-soft border-2 border-ojas-cloud-silver p-6 transition-all duration-300 hover:shadow-ojas-medium;
   }
 
   .ojas-card.priority-high {
@@ -138,63 +169,63 @@
 
   /* Enhanced primary action buttons with new colors */
   .ojas-button {
-    @apply px-8 py-4 rounded-2xl font-medium text-lg transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-ojas-soft;
+    @apply px-8 py-4 rounded-2xl font-bold text-xl transition-all duration-200 min-h-[56px] flex items-center justify-center gap-3 shadow-ojas-soft border-2 border-transparent;
   }
 
   .ojas-button-primary {
-    @apply ojas-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-primary-blue;
   }
 
   .ojas-button-success {
-    @apply ojas-button bg-ojas-calming-green text-white hover:bg-ojas-calming-green-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-calming-green text-white hover:bg-ojas-calming-green-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-calming-green;
   }
 
   .ojas-button-secondary {
-    @apply ojas-button bg-white text-ojas-charcoal-gray hover:bg-gray-50 active:scale-95 border-2 border-ojas-cloud-silver font-medium;
+    @apply ojas-button bg-white text-ojas-charcoal-gray hover:bg-gray-50 active:scale-95 border-2 border-ojas-cloud-silver font-bold;
   }
 
   .ojas-button-alert {
-    @apply ojas-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-soft-gold;
   }
 
   .ojas-button-error {
-    @apply ojas-button bg-ojas-vibrant-coral text-white hover:bg-ojas-vibrant-coral-hover active:scale-95 shadow-ojas-medium font-semibold;
+    @apply ojas-button bg-ojas-vibrant-coral text-white hover:bg-ojas-vibrant-coral-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-vibrant-coral;
   }
 
   /* Large, accessible medication action buttons */
   .medication-action-button {
-    @apply flex-1 min-h-[60px] rounded-2xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 active:scale-95;
+    @apply flex-1 min-h-[60px] rounded-2xl font-bold text-xl transition-all duration-200 flex items-center justify-center gap-3 active:scale-95 border-2;
   }
 
   .medication-taken-button {
-    @apply medication-action-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover shadow-ojas-medium;
+    @apply medication-action-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover shadow-ojas-medium border-ojas-primary-blue;
   }
 
-  .medication-skip-button {
-    @apply medication-action-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover shadow-ojas-medium;
+  .medication-missed-button {
+    @apply medication-action-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover shadow-ojas-medium border-ojas-soft-gold;
   }
 
   /* Tab navigation with new color palette */
   .ojas-tab {
-    @apply flex-1 py-4 px-6 text-center rounded-2xl transition-all duration-300 min-h-[64px] flex flex-col items-center justify-center gap-2;
+    @apply flex-1 py-4 px-3 text-center rounded-2xl transition-all duration-300 min-h-[68px] flex flex-col items-center justify-center gap-2 border-2 border-transparent;
   }
 
   .ojas-tab.active {
-    @apply bg-ojas-primary-blue text-white font-semibold shadow-ojas-medium;
+    @apply bg-ojas-primary-blue text-white font-bold shadow-ojas-medium border-ojas-primary-blue;
   }
 
   .ojas-tab.inactive {
-    @apply bg-white text-ojas-slate-gray hover:bg-gray-50 font-medium;
+    @apply bg-white text-ojas-slate-gray hover:bg-gray-50 font-semibold hover:border-ojas-primary-blue/50;
   }
 
   /* Accessible form inputs */
   .ojas-input {
-    @apply w-full px-6 py-4 rounded-2xl border-2 border-ojas-cloud-silver bg-white text-ojas-charcoal-gray placeholder-ojas-slate-gray focus:border-ojas-primary-blue focus:ring-4 focus:ring-ojas-primary-blue/20 transition-all duration-200 text-lg;
+    @apply w-full px-6 py-4 rounded-2xl border-3 border-ojas-cloud-silver bg-white text-ojas-charcoal-gray placeholder-ojas-slate-gray focus:border-ojas-primary-blue focus:ring-4 focus:ring-ojas-primary-blue/20 transition-all duration-200 text-xl font-medium;
   }
 
   /* Status indicators with new color palette */
   .status-indicator {
-    @apply flex items-center gap-2 text-sm font-medium;
+    @apply flex items-center gap-2 text-base font-bold;
   }
 
   .status-good {
@@ -215,17 +246,17 @@
 
   /* Enhanced symptom button styling */
   .symptom-grid-button {
-    @apply bg-white rounded-2xl shadow-ojas-soft hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[140px] flex flex-col items-center justify-center gap-4 cursor-pointer p-6 border-2;
+    @apply bg-white rounded-2xl shadow-ojas-soft hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[160px] flex flex-col items-center justify-center gap-4 cursor-pointer p-8 border-3 border-ojas-cloud-silver hover:border-ojas-primary-blue/50;
   }
 
   /* Floating action button */
   .ojas-fab {
-    @apply w-16 h-16 bg-ojas-primary-blue rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-primary-blue-hover transition-all duration-200 hover:scale-110 active:scale-95;
+    @apply w-16 h-16 bg-ojas-primary-blue rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-primary-blue-hover transition-all duration-200 hover:scale-110 active:scale-95 border-2 border-ojas-primary-blue;
   }
 
   /* Timeline specific styles */
   .timeline-dot {
-    @apply w-4 h-4 rounded-full border-2 transition-all duration-300;
+    @apply w-5 h-5 rounded-full border-3 transition-all duration-300;
   }
 
   .timeline-dot.completed {
@@ -253,11 +284,16 @@
   .celebration-confetti {
     @apply animate-confetti;
   }
+
+  /* Border width utilities for accessibility */
+  .border-3 {
+    border-width: 3px;
+  }
 }
 
 /* Enhanced scrollbar for better UX */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
 }
 
 ::-webkit-scrollbar-track {
@@ -266,7 +302,7 @@
 
 ::-webkit-scrollbar-thumb {
   background: #E1E4EA;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -291,4 +327,44 @@
   .symptom-grid-button:active {
     transform: scale(0.95);
   }
+}
+
+/* Range input styling for accessibility */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: #0077B6;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: #0077B6;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.3);
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.3);
 }

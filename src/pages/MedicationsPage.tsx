@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import MedicationCard from '../components/MedicationCard';
 import MedicationTimeline from '../components/MedicationTimeline';
+import RefillAlert from '../components/RefillAlert';
 import { Plus, Camera, Upload } from 'lucide-react';
 
 interface MedicationsPageProps {
@@ -24,9 +25,16 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
   onAddMedication 
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [dismissedRefills, setDismissedRefills] = useState<string[]>([]);
   
   const pendingMeds = medications.filter(med => !med.taken);
   const completedMeds = medications.filter(med => med.taken);
+
+  // Mock refill data - in real app this would come from backend
+  const refillAlerts = [
+    { id: '1', medicationName: 'Levodopa', daysLeft: 2 },
+    { id: '2', medicationName: 'Evening Supplement', daysLeft: 5 }
+  ].filter(alert => !dismissedRefills.includes(alert.id));
 
   // Sort pending meds by overdue status and time
   const sortedPendingMeds = pendingMeds.sort((a, b) => {
@@ -52,6 +60,14 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
     }, 1500);
   };
 
+  const handleRefillAction = (medicationName: string) => {
+    alert(`Would redirect to pharmacy or doctor to refill ${medicationName}`);
+  };
+
+  const handleDismissRefill = (id: string) => {
+    setDismissedRefills(prev => [...prev, id]);
+  };
+
   return (
     <div className="min-h-screen bg-ojas-bg-light pb-20">
       <div className="max-w-md mx-auto px-6 py-8">
@@ -65,30 +81,50 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
               Today's schedule
             </p>
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={handleCameraUpload}
-              className={`w-12 h-12 bg-ojas-primary rounded-full flex items-center justify-center text-white hover:bg-ojas-primary-hover transition-all duration-200 shadow-ojas-medium ${
-                isUploading ? 'animate-pill-bottle-fill' : ''
-              }`}
-              aria-label="Upload prescription"
-              disabled={isUploading}
-            >
-              {isUploading ? (
-                <Upload className="w-6 h-6 animate-pulse" />
-              ) : (
-                <Camera className="w-6 h-6" />
-              )}
-            </button>
-            <button
-              onClick={onAddMedication}
-              className="w-12 h-12 bg-ojas-primary rounded-full flex items-center justify-center text-white hover:bg-ojas-primary-hover transition-all duration-200 shadow-ojas-medium"
-              aria-label="Add new medication"
-            >
-              <Plus className="w-6 h-6" />
-            </button>
+          
+          {/* Enhanced Action Buttons */}
+          <div className="flex gap-4">
+            <div className="text-center">
+              <button
+                onClick={handleCameraUpload}
+                className={`w-16 h-16 bg-white border-3 border-ojas-primary-blue rounded-2xl flex items-center justify-center text-ojas-primary-blue hover:bg-ojas-primary-blue hover:text-white transition-all duration-200 shadow-ojas-medium mb-2 ${
+                  isUploading ? 'animate-pill-bottle-fill' : ''
+                }`}
+                aria-label="Scan prescription"
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Upload className="w-7 h-7 animate-pulse" />
+                ) : (
+                  <Camera className="w-7 h-7" />
+                )}
+              </button>
+              <span className="text-sm font-semibold text-ojas-charcoal-gray">Scan Rx</span>
+            </div>
+            
+            <div className="text-center">
+              <button
+                onClick={onAddMedication}
+                className="w-16 h-16 bg-white border-3 border-ojas-calming-green rounded-2xl flex items-center justify-center text-ojas-calming-green hover:bg-ojas-calming-green hover:text-white transition-all duration-200 shadow-ojas-medium mb-2"
+                aria-label="Add new medication"
+              >
+                <Plus className="w-7 h-7" />
+              </button>
+              <span className="text-sm font-semibold text-ojas-charcoal-gray">Add Med</span>
+            </div>
           </div>
         </div>
+
+        {/* Refill Alerts */}
+        {refillAlerts.map(alert => (
+          <RefillAlert
+            key={alert.id}
+            medicationName={alert.medicationName}
+            daysLeft={alert.daysLeft}
+            onRefillAction={() => handleRefillAction(alert.medicationName)}
+            onDismiss={() => handleDismissRefill(alert.id)}
+          />
+        ))}
 
         {/* Timeline */}
         {medications.length > 0 && (
