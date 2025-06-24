@@ -289,6 +289,69 @@
   .border-3 {
     border-width: 3px;
   }
+
+  /* New animations for enhanced wellness halo */
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-pulse-urgent {
+    animation: pulse-urgent 1.5s ease-in-out infinite;
+  }
+
+  .animate-gentle-fade-in {
+    animation: gentle-fade-in 0.5s ease-out;
+  }
+
+  .animate-success-check {
+    animation: success-check 0.6s ease-out;
+  }
+}
+
+/* Enhanced animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 119, 182, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 119, 182, 0.6);
+  }
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(244, 67, 54, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(244, 67, 54, 0.6);
+  }
+}
+
+@keyframes gentle-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes success-check {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Enhanced scrollbar for better UX */
