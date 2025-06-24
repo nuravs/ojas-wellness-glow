@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,21 +62,46 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// New Ojas Accessible Color Palette - Updated
+				// Enhanced Ojas Color System with Proper Definitions
 				ojas: {
-					'primary-blue': '#0077B6',      // Main buttons, pulse, icons  
-					'primary-blue-hover': '#005E8A', // Darker blue for hover states
-					'calming-green': '#00B488',     // Wellness, success, completed actions
-					'calming-green-hover': '#009670', // Darker green for hover
-					'soft-gold': '#FFC300',         // Alerts, attention banners, skip buttons
-					'soft-gold-hover': '#E6B000',   // Darker gold for hover
-					'vibrant-coral': '#FF4E4E',     // Errors, urgency, SOS badges
-					'vibrant-coral-hover': '#E63946', // Darker coral for hover
-					'mist-white': '#F5F8FA',        // Backgrounds
-					'soft-midnight': '#18233A',     // High contrast mode
-					'charcoal-gray': '#22292F',     // Main text/icons
-					'slate-gray': '#6C7683',        // Secondary text
-					'cloud-silver': '#E1E4EA'       // Dividers, card outlines
+					// Primary colors with variants
+					'primary': '#0077B6',
+					'primary-hover': '#005E8A',
+					'primary-blue': '#0077B6',      
+					'primary-blue-hover': '#005E8A', 
+					
+					// Success/wellness colors
+					'success': '#00B488',
+					'success-hover': '#009670',
+					'calming-green': '#00B488',     
+					'calming-green-hover': '#009670', 
+					
+					// Warning/attention colors
+					'alert': '#FFC300',
+					'alert-hover': '#E6B000',
+					'soft-gold': '#FFC300',         
+					'soft-gold-hover': '#E6B000',   
+					
+					// Error/urgent colors
+					'error': '#FF4E4E',
+					'error-hover': '#E63946',
+					'vibrant-coral': '#FF4E4E',     
+					'vibrant-coral-hover': '#E63946', 
+					
+					// Background and neutral colors
+					'bg-light': '#F5F8FA',
+					'mist-white': '#F5F8FA',        
+					'soft-midnight': '#18233A',     
+					
+					// Text colors
+					'text-main': '#22292F',
+					'text-secondary': '#6C7683',
+					'charcoal-gray': '#22292F',     
+					'slate-gray': '#6C7683',        
+					
+					// Border and divider colors
+					'border': '#E1E4EA',
+					'cloud-silver': '#E1E4EA'       
 				}
 			},
 			borderRadius: {

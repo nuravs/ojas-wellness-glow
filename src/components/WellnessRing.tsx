@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3, Minus } from 'lucide-react';
 
 interface WellnessRingProps {
   status: 'good' | 'attention' | 'urgent';
@@ -28,45 +28,46 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
     switch (status) {
       case 'good': 
         return { 
-          icon: <CheckCircle className="w-16 h-16 text-ojas-success" />, 
+          icon: <CheckCircle className="w-12 h-12 text-ojas-success" />, 
           label: 'Excellent',
           description: 'All systems looking great',
           accessibilityLabel: 'Excellent health status - Everything is on track',
-          statusIcon: <Check className="w-6 h-6" />,
+          statusIcon: <Check className="w-5 h-5" />,
           score: Math.round((medsCount.taken / medsCount.total) * 100) || 100,
-          glowColor: 'shadow-ojas-success/30',
-          ringColor: 'border-ojas-success'
+          ringColor: '#00B488',
+          glowColor: 'rgba(0, 180, 136, 0.3)'
         };
       case 'attention': 
         return { 
-          icon: <Clock3 className="w-16 h-16 text-ojas-alert" />, 
+          icon: <Clock3 className="w-12 h-12 text-ojas-alert" />, 
           label: 'Good',
           description: 'Minor attention needed',
           accessibilityLabel: 'Good health status - Small reminders pending',
-          statusIcon: <Clock className="w-6 h-6" />,
+          statusIcon: <Clock className="w-5 h-5" />,
           score: Math.round((medsCount.taken / medsCount.total) * 100) || 75,
-          glowColor: 'shadow-ojas-alert/30',
-          ringColor: 'border-ojas-alert'
+          ringColor: '#FFC300',
+          glowColor: 'rgba(255, 195, 0, 0.3)'
         };
       case 'urgent': 
         return { 
-          icon: <AlertCircle className="w-16 h-16 text-ojas-error" />, 
+          icon: <AlertCircle className="w-12 h-12 text-ojas-error" />, 
           label: 'Needs Attention',
           description: 'Important items require action',
           accessibilityLabel: 'Health status needs attention - Action required',
-          statusIcon: <AlertTriangle className="w-6 h-6" />,
+          statusIcon: <AlertTriangle className="w-5 h-5" />,
           score: Math.round((medsCount.taken / medsCount.total) * 100) || 50,
-          glowColor: 'shadow-ojas-error/30',
-          ringColor: 'border-ojas-error'
+          ringColor: '#FF4E4E',
+          glowColor: 'rgba(255, 78, 78, 0.4)'
         };
     }
   };
 
   const statusConfig = getStatusConfig();
 
-  // Calculate progress percentage for the animated ring
+  // Calculate progress percentage for the animated ring - Fixed calculation
   const progressPercentage = statusConfig.score;
-  const circumference = 2 * Math.PI * 120; // radius of 120px
+  const radius = 110; // Adjusted radius for better proportions
+  const circumference = 2 * Math.PI * radius;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
 
@@ -76,21 +77,21 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
         label: 'Medications',
         value: `${medsCount.taken}/${medsCount.total} taken`,
         status: medsCount.taken === medsCount.total ? 'good' : 'attention',
-        icon: medsCount.taken === medsCount.total ? <Check className="w-5 h-5" /> : <Clock className="w-5 h-5" />,
+        icon: medsCount.taken === medsCount.total ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />,
         textStatus: medsCount.taken === medsCount.total ? 'Complete' : 'Pending'
       },
       {
         label: 'Symptoms',
         value: symptomsLogged ? 'Logged today' : 'No entries yet',
         status: symptomsLogged ? 'good' : 'neutral',
-        icon: symptomsLogged ? <Check className="w-5 h-5" /> : <Minus className="w-5 h-5" />,
+        icon: symptomsLogged ? <Check className="w-4 h-4" /> : <Minus className="w-4 h-4" />,
         textStatus: symptomsLogged ? 'Logged' : 'None'
       },
       {
         label: 'Next Appointment',
         value: nextAppointment || 'None scheduled',
         status: 'neutral',
-        icon: <Clock className="w-5 h-5" />,
+        icon: <Clock className="w-4 h-4" />,
         textStatus: nextAppointment ? 'Upcoming' : 'None'
       }
     ];
@@ -98,109 +99,103 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      {/* Enhanced Animated Halo Ring */}
+      {/* Enhanced Animated Halo Ring - Fixed SVG Implementation */}
       <button
         onClick={handleTap}
-        className={`relative w-80 h-80 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-300 ${
+        className={`relative w-72 h-72 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-300 ${
           status === 'attention' ? 'animate-pulse-glow' : ''
         }`}
         aria-label={`Health status: ${statusConfig.accessibilityLabel}. Tap to ${isExpanded ? 'hide' : 'view'} details.`}
         aria-expanded={isExpanded}
-      >
-        {/* Outer Glow Ring */}
-        <div className={`absolute inset-0 rounded-full ${statusConfig.glowColor} ${
-          status !== 'good' ? 'animate-pulse' : ''
-        }`} 
         style={{
-          boxShadow: `0 0 40px rgba(${
-            status === 'good' ? '76, 175, 80' : 
-            status === 'attention' ? '255, 193, 7' : 
-            '244, 67, 54'
-          }, 0.4)`
-        }} />
-        
-        {/* Animated Progress Ring */}
-        <svg className="absolute inset-4 w-72 h-72 transform -rotate-90" viewBox="0 0 240 240">
+          boxShadow: `0 0 30px ${statusConfig.glowColor}`
+        }}
+      >
+        {/* Fixed Animated Progress Ring */}
+        <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 240 240">
           {/* Background Circle */}
           <circle
             cx="120"
             cy="120"
-            r="120"
+            r={radius}
             stroke="rgba(225, 228, 234, 0.3)"
             strokeWidth="8"
             fill="none"
           />
-          {/* Progress Circle */}
+          {/* Progress Circle - Fixed implementation */}
           <circle
             cx="120"
             cy="120"
-            r="120"
-            stroke={status === 'good' ? '#4CAF50' : status === 'attention' ? '#FFC107' : '#F44336'}
+            r={radius}
+            stroke={statusConfig.ringColor}
             strokeWidth="8"
             fill="none"
             strokeDasharray={strokeDasharray}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
             className="transition-all duration-1000 ease-out"
+            style={{
+              filter: `drop-shadow(0 0 8px ${statusConfig.glowColor})`
+            }}
           />
         </svg>
 
-        {/* Center Content */}
-        <div className="relative z-10 text-center bg-white rounded-full w-56 h-56 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white">
-          {/* Ojas Logo/Mascot Placeholder */}
-          <div className="mb-2">
-            <div className="w-12 h-12 bg-ojas-primary/10 rounded-full flex items-center justify-center mb-2">
-              <span className="text-2xl font-bold text-ojas-primary">O</span>
+        {/* Center Content - Enhanced */}
+        <div className="relative z-10 text-center bg-white rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white">
+          {/* Ojas Logo/Mascot */}
+          <div className="mb-3">
+            <div className="w-10 h-10 bg-ojas-primary/10 rounded-full flex items-center justify-center mb-2">
+              <span className="text-lg font-bold text-ojas-primary">O</span>
             </div>
           </div>
           
           {statusConfig.icon}
           
           {/* Health Score */}
-          <div className="mt-4 mb-2">
-            <div className="text-4xl font-bold text-ojas-text-main">
+          <div className="mt-3 mb-2">
+            <div className="text-3xl font-bold text-ojas-text-main">
               {statusConfig.score}
             </div>
-            <div className="text-sm text-ojas-text-secondary font-medium">
+            <div className="text-xs text-ojas-text-secondary font-medium">
               Health Score
             </div>
           </div>
           
           {/* Status Label */}
-          <p className="text-xl font-semibold text-ojas-text-main mb-2">
+          <p className="text-lg font-semibold text-ojas-text-main mb-1">
             {statusConfig.label}
           </p>
           
           {/* Status Details */}
-          <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="flex items-center justify-center gap-2 mb-2">
             {statusConfig.statusIcon}
-            <p className="text-base font-medium text-ojas-text-secondary">
+            <p className="text-sm font-medium text-ojas-text-secondary">
               {statusConfig.accessibilityLabel.split(' - ')[0]}
             </p>
           </div>
           
-          <p className="text-sm text-ojas-text-secondary">
+          <p className="text-xs text-ojas-text-secondary">
             {isExpanded ? 'Tap to collapse' : 'Tap to expand'}
           </p>
         </div>
       </button>
 
       {/* Status Summary */}
-      <p className="text-center mt-8 text-ojas-text-secondary text-xl font-medium">
+      <p className="text-center mt-6 text-ojas-text-secondary text-lg font-medium">
         {statusConfig.description}
       </p>
 
       {/* Enhanced Expanded Interactive Summary */}
       {isExpanded && (
-        <div className="mt-10 animate-gentle-fade-in">
-          <div className="ojas-card">
-            <h3 className="text-2xl font-semibold text-ojas-text-main mb-8 text-center">Today's Overview</h3>
+        <div className="mt-8 animate-gentle-fade-in">
+          <div className="bg-white rounded-2xl shadow-ojas-soft border-2 border-ojas-border p-6">
+            <h3 className="text-xl font-semibold text-ojas-text-main mb-6 text-center">Today's Overview</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               {getSummaryItems().map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-4 px-3 rounded-xl hover:bg-ojas-bg-light transition-colors duration-200">
-                  <div className="flex items-center gap-5">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                <div key={index} className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-ojas-bg-light transition-colors duration-200">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
                       item.status === 'good' ? 'bg-ojas-success' : 
                       item.status === 'attention' ? 'bg-ojas-alert' : 
                       'bg-ojas-text-secondary'
@@ -209,10 +204,10 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
                         <div className="w-2 h-2 bg-white rounded-full" />
                       )}
                     </div>
-                    <span className="text-ojas-text-main font-medium text-lg">{item.label}</span>
+                    <span className="text-ojas-text-main font-medium">{item.label}</span>
                     <div className="flex items-center gap-2">
                       {item.icon}
-                      <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                         item.status === 'good' 
                           ? 'bg-ojas-success/20 text-ojas-success' 
                           : item.status === 'attention'
@@ -223,15 +218,15 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="font-semibold text-ojas-text-main text-right text-lg">
+                  <span className="font-semibold text-ojas-text-main text-right">
                     {item.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-ojas-border">
-              <p className="text-center text-ojas-text-secondary text-base">
+            <div className="mt-6 pt-4 border-t border-ojas-border">
+              <p className="text-center text-ojas-text-secondary text-sm">
                 Your wellness summary updates throughout the day
               </p>
             </div>

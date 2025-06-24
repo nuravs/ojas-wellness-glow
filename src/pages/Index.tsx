@@ -6,6 +6,8 @@ import WellnessCenterPage from './WellnessCenterPage';
 import RecordsPage from './RecordsPage';
 import MorePage from './MorePage';
 import SymptomsPage from './SymptomsPage';
+import DoctorsHubPage from './DoctorsHubPage';
+import SettingsPage from './SettingsPage';
 import RoleSelector from '../components/RoleSelector';
 import Navigation from '../components/Navigation';
 import FloatingHelpButton from '../components/FloatingHelpButton';
@@ -13,6 +15,7 @@ import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
+  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings'>('main');
   const [userRole, setUserRole] = useState<'patient' | 'caregiver' | null>(null);
   const { toast } = useToast();
 
@@ -98,9 +101,30 @@ const Index = () => {
     });
   };
 
+  const handleNavigateToDoctors = () => {
+    setCurrentPage('doctors');
+  };
+
+  const handleNavigateToSettings = () => {
+    setCurrentPage('settings');
+  };
+
+  const handleBackToMain = () => {
+    setCurrentPage('main');
+  };
+
   // Show role selector if no role is selected
   if (!userRole) {
     return <RoleSelector onRoleSelected={handleRoleSelected} />;
+  }
+
+  // Handle special page navigation
+  if (currentPage === 'doctors') {
+    return <DoctorsHubPage onBack={handleBackToMain} />;
+  }
+
+  if (currentPage === 'settings') {
+    return <SettingsPage onBack={handleBackToMain} />;
   }
 
   const renderCurrentPage = () => {
@@ -130,7 +154,7 @@ const Index = () => {
       case 'records':
         return <RecordsPage />;
       case 'more':
-        return <MorePage />;
+        return <MorePage onNavigateToDoctors={handleNavigateToDoctors} onNavigateToSettings={handleNavigateToSettings} />;
       default:
         return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostponeMedication={handlePostponeMedication} userRole={userRole} />;
     }

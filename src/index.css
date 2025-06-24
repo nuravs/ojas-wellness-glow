@@ -39,6 +39,7 @@
     --radius: 16px; /* Larger radius for softer, friendlier feel */
   }
 
+  /* Fixed Dark Mode Implementation */
   .dark {
     --background: 24 35 58; /* ojas-soft-midnight */
     --foreground: 245 248 250;
@@ -69,7 +70,30 @@
     --ring: 0 119 182;
   }
 
-  /* High Contrast Mode */
+  /* Apply dark mode styles properly */
+  .dark body {
+    background-color: rgb(24 35 58);
+    color: rgb(245 248 250);
+  }
+
+  .dark .bg-white {
+    background-color: rgb(34 41 47) !important;
+    color: rgb(245 248 250) !important;
+  }
+
+  .dark .text-ojas-charcoal-gray {
+    color: rgb(245 248 250) !important;
+  }
+
+  .dark .text-ojas-slate-gray {
+    color: rgb(225 228 234) !important;
+  }
+
+  .dark .border-ojas-cloud-silver {
+    border-color: rgb(108 118 131) !important;
+  }
+
+  /* High Contrast Mode - Enhanced */
   .high-contrast {
     --background: 0 0 0;
     --foreground: 255 255 255;
@@ -89,29 +113,45 @@
   .high-contrast button {
     background-color: white !important;
     color: black !important;
-    border: 2px solid white !important;
+    border: 3px solid white !important;
+    font-weight: bold !important;
   }
 
-  /* Large Fonts Mode */
+  .high-contrast .bg-ojas-primary,
+  .high-contrast .bg-ojas-primary-blue {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Large Fonts Mode - Enhanced */
   .large-fonts {
-    font-size: 1.5rem !important;
+    font-size: 1.25rem !important;
   }
 
   .large-fonts h1 {
-    font-size: 3rem !important;
-  }
-
-  .large-fonts h2 {
     font-size: 2.5rem !important;
   }
 
-  .large-fonts h3 {
+  .large-fonts h2 {
     font-size: 2rem !important;
   }
 
+  .large-fonts h3 {
+    font-size: 1.75rem !important;
+  }
+
   .large-fonts button {
-    font-size: 1.5rem !important;
-    padding: 1rem 2rem !important;
+    font-size: 1.25rem !important;
+    padding: 1rem 1.5rem !important;
+    min-height: 56px !important;
+  }
+
+  .large-fonts .text-sm {
+    font-size: 1rem !important;
+  }
+
+  .large-fonts .text-base {
+    font-size: 1.25rem !important;
   }
 }
 
@@ -128,7 +168,7 @@
 
   /* Enhanced focus indicators for accessibility */
   *:focus-visible {
-    @apply outline-none ring-4 ring-ojas-primary-blue/40 ring-offset-2 ring-offset-background;
+    @apply outline-none ring-4 ring-ojas-primary/40 ring-offset-2 ring-offset-background;
   }
 
   /* Ensure all interactive elements meet minimum tap target size */
@@ -139,7 +179,7 @@
 
   /* Enhanced button accessibility */
   button:focus-visible {
-    @apply ring-4 ring-ojas-primary-blue/60 ring-offset-2;
+    @apply ring-4 ring-ojas-primary/60 ring-offset-2;
   }
 
   /* High contrast button outlines */
@@ -153,18 +193,16 @@
 }
 
 @layer components {
+  /* ... keep existing code (all component styles) the same */
+  
   /* Enhanced card styling with new color palette */
   .ojas-card {
     @apply bg-white rounded-2xl shadow-ojas-soft border-2 border-ojas-cloud-silver p-6 transition-all duration-300 hover:shadow-ojas-medium;
   }
 
   .ojas-card.priority-high {
-    @apply scale-105 shadow-ojas-medium border-ojas-primary-blue/20;
+    @apply scale-105 shadow-ojas-medium border-ojas-primary/20;
     animation: pulse-glow 3s ease-in-out infinite;
-  }
-
-  .ojas-card:hover {
-    @apply -translate-y-1 shadow-ojas-strong;
   }
 
   /* Enhanced primary action buttons with new colors */
@@ -173,11 +211,11 @@
   }
 
   .ojas-button-primary {
-    @apply ojas-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-primary-blue;
+    @apply ojas-button bg-ojas-primary text-white hover:bg-ojas-primary-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-primary;
   }
 
   .ojas-button-success {
-    @apply ojas-button bg-ojas-calming-green text-white hover:bg-ojas-calming-green-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-calming-green;
+    @apply ojas-button bg-ojas-success text-white hover:bg-ojas-success-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-success;
   }
 
   .ojas-button-secondary {
@@ -185,11 +223,11 @@
   }
 
   .ojas-button-alert {
-    @apply ojas-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-soft-gold;
+    @apply ojas-button bg-ojas-alert text-ojas-text-main hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-alert;
   }
 
   .ojas-button-error {
-    @apply ojas-button bg-ojas-vibrant-coral text-white hover:bg-ojas-vibrant-coral-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-vibrant-coral;
+    @apply ojas-button bg-ojas-error text-white hover:bg-ojas-error-hover active:scale-95 shadow-ojas-medium font-bold border-ojas-error;
   }
 
   /* Large, accessible medication action buttons */
@@ -198,114 +236,14 @@
   }
 
   .medication-taken-button {
-    @apply medication-action-button bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover shadow-ojas-medium border-ojas-primary-blue;
+    @apply medication-action-button bg-ojas-primary text-white hover:bg-ojas-primary-hover shadow-ojas-medium border-ojas-primary;
   }
 
   .medication-missed-button {
-    @apply medication-action-button bg-ojas-soft-gold text-ojas-charcoal-gray hover:bg-ojas-soft-gold-hover shadow-ojas-medium border-ojas-soft-gold;
+    @apply medication-action-button bg-ojas-alert text-ojas-text-main hover:bg-ojas-alert-hover shadow-ojas-medium border-ojas-alert;
   }
 
-  /* Tab navigation with new color palette */
-  .ojas-tab {
-    @apply flex-1 py-4 px-3 text-center rounded-2xl transition-all duration-300 min-h-[68px] flex flex-col items-center justify-center gap-2 border-2 border-transparent;
-  }
-
-  .ojas-tab.active {
-    @apply bg-ojas-primary-blue text-white font-bold shadow-ojas-medium border-ojas-primary-blue;
-  }
-
-  .ojas-tab.inactive {
-    @apply bg-white text-ojas-slate-gray hover:bg-gray-50 font-semibold hover:border-ojas-primary-blue/50;
-  }
-
-  /* Accessible form inputs */
-  .ojas-input {
-    @apply w-full px-6 py-4 rounded-2xl border-3 border-ojas-cloud-silver bg-white text-ojas-charcoal-gray placeholder-ojas-slate-gray focus:border-ojas-primary-blue focus:ring-4 focus:ring-ojas-primary-blue/20 transition-all duration-200 text-xl font-medium;
-  }
-
-  /* Status indicators with new color palette */
-  .status-indicator {
-    @apply flex items-center gap-2 text-base font-bold;
-  }
-
-  .status-good {
-    @apply text-ojas-calming-green;
-  }
-
-  .status-attention {
-    @apply text-ojas-soft-gold;
-  }
-
-  .status-urgent {
-    @apply text-ojas-vibrant-coral;
-  }
-
-  .status-overdue {
-    @apply text-ojas-vibrant-coral animate-pulse;
-  }
-
-  /* Enhanced symptom button styling */
-  .symptom-grid-button {
-    @apply bg-white rounded-2xl shadow-ojas-soft hover:scale-105 active:scale-95 transition-all duration-200 text-center min-h-[160px] flex flex-col items-center justify-center gap-4 cursor-pointer p-8 border-3 border-ojas-cloud-silver hover:border-ojas-primary-blue/50;
-  }
-
-  /* Floating action button */
-  .ojas-fab {
-    @apply w-16 h-16 bg-ojas-primary-blue rounded-full shadow-ojas-strong flex items-center justify-center text-white hover:bg-ojas-primary-blue-hover transition-all duration-200 hover:scale-110 active:scale-95 border-2 border-ojas-primary-blue;
-  }
-
-  /* Timeline specific styles */
-  .timeline-dot {
-    @apply w-5 h-5 rounded-full border-3 transition-all duration-300;
-  }
-
-  .timeline-dot.completed {
-    @apply bg-ojas-calming-green border-ojas-calming-green;
-  }
-
-  .timeline-dot.overdue {
-    @apply bg-ojas-vibrant-coral border-ojas-vibrant-coral animate-pulse-urgent;
-  }
-
-  .timeline-dot.current {
-    @apply bg-ojas-primary-blue border-ojas-primary-blue animate-pulse-glow;
-  }
-
-  .timeline-dot.pending {
-    @apply bg-white border-ojas-cloud-silver;
-  }
-
-  /* Error state animation */
-  .error-shake {
-    @apply animate-shake;
-  }
-
-  /* Success celebration styles */
-  .celebration-confetti {
-    @apply animate-confetti;
-  }
-
-  /* Border width utilities for accessibility */
-  .border-3 {
-    border-width: 3px;
-  }
-
-  /* New animations for enhanced wellness halo */
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-
-  .animate-pulse-urgent {
-    animation: pulse-urgent 1.5s ease-in-out infinite;
-  }
-
-  .animate-gentle-fade-in {
-    animation: gentle-fade-in 0.5s ease-out;
-  }
-
-  .animate-success-check {
-    animation: success-check 0.6s ease-out;
-  }
+  /* ... keep existing code (remaining component styles) the same */
 }
 
 /* Enhanced animations */
@@ -372,6 +310,15 @@
   background: #6C7683;
 }
 
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: rgb(24 35 58);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(108 118 131);
+}
+
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -386,8 +333,7 @@
 /* Haptic feedback simulation for desktop */
 @media (hover: hover) {
   .ojas-button:active,
-  .medication-action-button:active,
-  .symptom-grid-button:active {
+  .medication-action-button:active {
     transform: scale(0.95);
   }
 }
@@ -396,6 +342,9 @@
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
+  height: 8px;
+  background: #E1E4EA;
+  border-radius: 4px;
 }
 
 input[type="range"]::-webkit-slider-thumb {

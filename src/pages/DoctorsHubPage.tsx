@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Stethoscope, 
@@ -10,10 +9,15 @@ import {
   Plus,
   Upload,
   FileText,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react';
 
-const DoctorsHubPage: React.FC = () => {
+interface DoctorsHubPageProps {
+  onBack?: () => void;
+}
+
+const DoctorsHubPage: React.FC<DoctorsHubPageProps> = ({ onBack }) => {
   const upcomingAppointments = [
     {
       id: '1',
@@ -68,12 +72,28 @@ const DoctorsHubPage: React.FC = () => {
     console.log('Upload lab report or prescription');
   };
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      // Fallback navigation
+      window.history.back();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-ojas-mist-white pb-20">
       <div className="max-w-md mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
+        {/* Enhanced Header with Back Navigation */}
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={handleBack}
+            className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-ojas-soft border-2 border-ojas-cloud-silver hover:bg-gray-50 transition-colors duration-200 focus:ring-4 focus:ring-ojas-primary/20"
+            aria-label="Go back to previous screen"
+          >
+            <ArrowLeft className="w-6 h-6 text-ojas-charcoal-gray" />
+          </button>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-ojas-charcoal-gray mb-2">
               My Doctors
             </h1>
@@ -83,7 +103,8 @@ const DoctorsHubPage: React.FC = () => {
           </div>
           <button 
             onClick={handleUpload}
-            className="w-12 h-12 bg-ojas-primary-blue rounded-full flex items-center justify-center text-white hover:bg-ojas-primary-blue-hover transition-colors duration-200 shadow-ojas-medium"
+            className="w-12 h-12 bg-ojas-primary-blue rounded-full flex items-center justify-center text-white hover:bg-ojas-primary-blue-hover transition-colors duration-200 shadow-ojas-medium focus:ring-4 focus:ring-ojas-primary/20"
+            aria-label="Upload medical documents"
           >
             <Upload className="w-6 h-6" />
           </button>
