@@ -154,14 +154,14 @@ const Index = () => {
       case 'records':
         return <RecordsPage />;
       case 'more':
-        return <MorePage onNavigateToDoctors={handleNavigateToDoctors} onNavigateToSettings={handleNavigateToSettings} />;
+        return <MorePage />;
       default:
         return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostponeMedication={handlePostponeMedication} userRole={userRole} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-ojas-mist-white font-ojas">
+    <div className="min-h-screen bg-ojas-mist-white dark:bg-ojas-charcoal-gray font-ojas transition-colors duration-300">
       {renderCurrentPage()}
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
       <FloatingHelpButton />
