@@ -64,12 +64,13 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
 
   const statusConfig = getStatusConfig();
 
-  // Calculate progress percentage for the animated ring - Fixed calculation
+  // Fixed implementation: Always show a complete circle
   const progressPercentage = statusConfig.score;
-  const radius = 110; // Adjusted radius for better proportions
+  const radius = 110;
   const circumference = 2 * Math.PI * radius;
-  const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
+  
+  // Calculate the progress arc length
+  const progressLength = (progressPercentage / 100) * circumference;
 
   const getSummaryItems = () => {
     return [
@@ -99,7 +100,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      {/* Enhanced Animated Halo Ring - Fixed SVG Implementation */}
+      {/* Fixed Complete Circle Implementation */}
       <button
         onClick={handleTap}
         className={`relative w-72 h-72 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-300 ${
@@ -111,38 +112,39 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           boxShadow: `0 0 30px ${statusConfig.glowColor}`
         }}
       >
-        {/* Fixed Animated Progress Ring */}
+        {/* Complete SVG Ring - Fixed Implementation */}
         <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 240 240">
-          {/* Background Circle */}
+          {/* Always visible background circle */}
           <circle
             cx="120"
             cy="120"
             r={radius}
-            stroke="rgba(225, 228, 234, 0.3)"
-            strokeWidth="8"
+            stroke="rgba(225, 228, 234, 0.4)"
+            strokeWidth="12"
             fill="none"
           />
-          {/* Progress Circle - Fixed implementation */}
+          
+          {/* Complete colored ring - always full circle */}
           <circle
             cx="120"
             cy="120"
             r={radius}
             stroke={statusConfig.ringColor}
-            strokeWidth="8"
+            strokeWidth="12"
             fill="none"
-            strokeDasharray={strokeDasharray}
-            strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
             className="transition-all duration-1000 ease-out"
             style={{
-              filter: `drop-shadow(0 0 8px ${statusConfig.glowColor})`
+              filter: `drop-shadow(0 0 12px ${statusConfig.glowColor})`,
+              strokeDasharray: `${progressLength} ${circumference}`,
+              strokeDashoffset: 0
             }}
           />
         </svg>
 
-        {/* Center Content - Enhanced */}
-        <div className="relative z-10 text-center bg-white rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white">
-          {/* Ojas Logo/Mascot */}
+        {/* Enhanced Center Content */}
+        <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray">
+          {/* Ojas Logo */}
           <div className="mb-3">
             <div className="w-10 h-10 bg-ojas-primary/10 rounded-full flex items-center justify-center mb-2">
               <span className="text-lg font-bold text-ojas-primary">O</span>
@@ -153,47 +155,47 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           
           {/* Health Score */}
           <div className="mt-3 mb-2">
-            <div className="text-3xl font-bold text-ojas-text-main">
+            <div className="text-3xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
               {statusConfig.score}
             </div>
-            <div className="text-xs text-ojas-text-secondary font-medium">
+            <div className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver font-medium">
               Health Score
             </div>
           </div>
           
           {/* Status Label */}
-          <p className="text-lg font-semibold text-ojas-text-main mb-1">
+          <p className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-1">
             {statusConfig.label}
           </p>
           
           {/* Status Details */}
           <div className="flex items-center justify-center gap-2 mb-2">
             {statusConfig.statusIcon}
-            <p className="text-sm font-medium text-ojas-text-secondary">
+            <p className="text-sm font-medium text-ojas-text-secondary dark:text-ojas-cloud-silver">
               {statusConfig.accessibilityLabel.split(' - ')[0]}
             </p>
           </div>
           
-          <p className="text-xs text-ojas-text-secondary">
+          <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
             {isExpanded ? 'Tap to collapse' : 'Tap to expand'}
           </p>
         </div>
       </button>
 
       {/* Status Summary */}
-      <p className="text-center mt-6 text-ojas-text-secondary text-lg font-medium">
+      <p className="text-center mt-6 text-ojas-text-secondary dark:text-ojas-cloud-silver text-lg font-medium">
         {statusConfig.description}
       </p>
 
       {/* Enhanced Expanded Interactive Summary */}
       {isExpanded && (
         <div className="mt-8 animate-gentle-fade-in">
-          <div className="bg-white rounded-2xl shadow-ojas-soft border-2 border-ojas-border p-6">
-            <h3 className="text-xl font-semibold text-ojas-text-main mb-6 text-center">Today's Overview</h3>
+          <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft border-2 border-ojas-border dark:border-ojas-slate-gray p-6">
+            <h3 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-6 text-center">Today's Overview</h3>
             
             <div className="space-y-4">
               {getSummaryItems().map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-ojas-bg-light transition-colors duration-200">
+                <div key={index} className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-ojas-bg-light dark:hover:bg-ojas-slate-gray/20 transition-colors duration-200">
                   <div className="flex items-center gap-4">
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
                       item.status === 'good' ? 'bg-ojas-success' : 
@@ -204,7 +206,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
                         <div className="w-2 h-2 bg-white rounded-full" />
                       )}
                     </div>
-                    <span className="text-ojas-text-main font-medium">{item.label}</span>
+                    <span className="text-ojas-text-main dark:text-ojas-mist-white font-medium">{item.label}</span>
                     <div className="flex items-center gap-2">
                       {item.icon}
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -218,15 +220,15 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="font-semibold text-ojas-text-main text-right">
+                  <span className="font-semibold text-ojas-text-main dark:text-ojas-mist-white text-right">
                     {item.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-ojas-border">
-              <p className="text-center text-ojas-text-secondary text-sm">
+            <div className="mt-6 pt-4 border-t border-ojas-border dark:border-ojas-slate-gray">
+              <p className="text-center text-ojas-text-secondary dark:text-ojas-cloud-silver text-sm">
                 Your wellness summary updates throughout the day
               </p>
             </div>
