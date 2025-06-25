@@ -64,13 +64,8 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
 
   const statusConfig = getStatusConfig();
 
-  // Fixed implementation: Always show a complete circle
-  const progressPercentage = statusConfig.score;
+  // Simplified: Always show a complete circle
   const radius = 110;
-  const circumference = 2 * Math.PI * radius;
-  
-  // Calculate the progress arc length
-  const progressLength = (progressPercentage / 100) * circumference;
 
   const getSummaryItems = () => {
     return [
@@ -100,7 +95,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      {/* Fixed Complete Circle Implementation */}
+      {/* Complete Circle Implementation */}
       <button
         onClick={handleTap}
         className={`relative w-72 h-72 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-300 ${
@@ -112,9 +107,9 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           boxShadow: `0 0 30px ${statusConfig.glowColor}`
         }}
       >
-        {/* Complete SVG Ring - Fixed Implementation */}
+        {/* Complete SVG Ring - Always Full Circle */}
         <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 240 240">
-          {/* Always visible background circle */}
+          {/* Background circle */}
           <circle
             cx="120"
             cy="120"
@@ -124,7 +119,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
             fill="none"
           />
           
-          {/* Complete colored ring - always full circle */}
+          {/* Always complete colored ring */}
           <circle
             cx="120"
             cy="120"
@@ -135,9 +130,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
             strokeLinecap="round"
             className="transition-all duration-1000 ease-out"
             style={{
-              filter: `drop-shadow(0 0 12px ${statusConfig.glowColor})`,
-              strokeDasharray: `${progressLength} ${circumference}`,
-              strokeDashoffset: 0
+              filter: `drop-shadow(0 0 12px ${statusConfig.glowColor})`
             }}
           />
         </svg>
