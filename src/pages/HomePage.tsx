@@ -77,8 +77,8 @@ const HomePage: React.FC<HomePageProps> = ({
           onDismissBanner={handleDismissBanner}
         />
 
-        {/* Fixed Floating Action Button - Increased bottom spacing */}
-        <div className="fixed bottom-36 right-6 z-40">
+        {/* Properly Positioned Floating Action Button */}
+        <div className="fixed bottom-40 right-4 z-40">
           <button
             onClick={handleSymptomLog}
             className="ojas-fab"

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3, Minus } from 'lucide-react';
 
@@ -28,33 +27,33 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
     switch (status) {
       case 'good': 
         return { 
-          icon: <CheckCircle className="w-12 h-12 text-ojas-success" />, 
+          icon: <CheckCircle className="w-10 h-10 text-ojas-success" />, 
           label: 'Excellent',
           description: 'All systems looking great',
           accessibilityLabel: 'Excellent health status - Everything is on track',
-          statusIcon: <Check className="w-5 h-5" />,
+          statusIcon: <Check className="w-4 h-4" />,
           score: Math.round((medsCount.taken / medsCount.total) * 100) || 100,
           ringColor: '#00B488',
           glowColor: 'rgba(0, 180, 136, 0.3)'
         };
       case 'attention': 
         return { 
-          icon: <Clock3 className="w-12 h-12 text-ojas-alert" />, 
+          icon: <Clock3 className="w-10 h-10 text-ojas-alert" />, 
           label: 'Good',
           description: 'Minor attention needed',
           accessibilityLabel: 'Good health status - Small reminders pending',
-          statusIcon: <Clock className="w-5 h-5" />,
+          statusIcon: <Clock className="w-4 h-4" />,
           score: Math.round((medsCount.taken / medsCount.total) * 100) || 75,
           ringColor: '#FFC300',
           glowColor: 'rgba(255, 195, 0, 0.3)'
         };
       case 'urgent': 
         return { 
-          icon: <AlertCircle className="w-12 h-12 text-ojas-error" />, 
+          icon: <AlertCircle className="w-10 h-10 text-ojas-error" />, 
           label: 'Needs Attention',
           description: 'Important items require action',
           accessibilityLabel: 'Health status needs attention - Action required',
-          statusIcon: <AlertTriangle className="w-5 h-5" />,
+          statusIcon: <AlertTriangle className="w-4 h-4" />,
           score: Math.round((medsCount.taken / medsCount.total) * 100) || 50,
           ringColor: '#FF4E4E',
           glowColor: 'rgba(255, 78, 78, 0.4)'
@@ -135,20 +134,17 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           />
         </svg>
 
-        {/* Enhanced Center Content */}
+        {/* Enhanced Center Content - Improved Layout */}
         <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray">
-          {/* Ojas Logo */}
-          <div className="mb-3">
-            <div className="w-10 h-10 bg-ojas-primary/10 rounded-full flex items-center justify-center mb-2">
-              <span className="text-lg font-bold text-ojas-primary">O</span>
-            </div>
+          
+          {/* Status Icon */}
+          <div className="mb-2">
+            {statusConfig.icon}
           </div>
           
-          {statusConfig.icon}
-          
           {/* Health Score */}
-          <div className="mt-3 mb-2">
-            <div className="text-3xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
+          <div className="mb-2">
+            <div className="text-2xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
               {statusConfig.score}
             </div>
             <div className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver font-medium">
@@ -157,14 +153,16 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           </div>
           
           {/* Status Label */}
-          <p className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-1">
-            {statusConfig.label}
-          </p>
+          <div className="mb-2">
+            <p className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
+              {statusConfig.label}
+            </p>
+          </div>
           
           {/* Status Details */}
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-1 mb-1">
             {statusConfig.statusIcon}
-            <p className="text-sm font-medium text-ojas-text-secondary dark:text-ojas-cloud-silver">
+            <p className="text-xs font-medium text-ojas-text-secondary dark:text-ojas-cloud-silver">
               {statusConfig.accessibilityLabel.split(' - ')[0]}
             </p>
           </div>
