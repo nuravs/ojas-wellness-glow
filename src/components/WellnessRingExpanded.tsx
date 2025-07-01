@@ -24,21 +24,21 @@ const WellnessRingExpanded: React.FC<WellnessRingExpandedProps> = ({
       {
         label: 'Medications',
         value: `${medsCount.taken}/${medsCount.total} taken`,
-        status: medsCount.taken === medsCount.total ? 'good' : 'attention' as const,
+        status: (medsCount.taken === medsCount.total ? 'good' : 'attention') as 'good' | 'attention' | 'neutral',
         icon: medsCount.taken === medsCount.total ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />,
         textStatus: medsCount.taken === medsCount.total ? 'Complete' : 'Pending'
       },
       {
         label: 'Symptoms',
         value: symptomsLogged ? 'Logged today' : 'No entries yet',
-        status: symptomsLogged ? 'good' : 'neutral' as const,
+        status: (symptomsLogged ? 'good' : 'neutral') as 'good' | 'attention' | 'neutral',
         icon: symptomsLogged ? <Check className="w-4 h-4" /> : <Minus className="w-4 h-4" />,
         textStatus: symptomsLogged ? 'Logged' : 'None'
       },
       {
         label: 'Next Appointment',
         value: nextAppointment || 'None scheduled',
-        status: 'neutral' as const,
+        status: 'neutral' as 'good' | 'attention' | 'neutral',
         icon: <Clock className="w-4 h-4" />,
         textStatus: nextAppointment ? 'Upcoming' : 'None'
       }
