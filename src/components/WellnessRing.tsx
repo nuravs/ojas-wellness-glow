@@ -1,5 +1,8 @@
+
 import React, { useState } from 'react';
-import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3, Minus } from 'lucide-react';
+import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3 } from 'lucide-react';
+import WellnessRingCenter from './WellnessRingCenter';
+import WellnessRingExpanded from './WellnessRingExpanded';
 
 interface WellnessRingProps {
   status: 'good' | 'attention' | 'urgent';
@@ -62,35 +65,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
   };
 
   const statusConfig = getStatusConfig();
-
-  // Simplified: Always show a complete circle
   const radius = 110;
-
-  const getSummaryItems = () => {
-    return [
-      {
-        label: 'Medications',
-        value: `${medsCount.taken}/${medsCount.total} taken`,
-        status: medsCount.taken === medsCount.total ? 'good' : 'attention',
-        icon: medsCount.taken === medsCount.total ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />,
-        textStatus: medsCount.taken === medsCount.total ? 'Complete' : 'Pending'
-      },
-      {
-        label: 'Symptoms',
-        value: symptomsLogged ? 'Logged today' : 'No entries yet',
-        status: symptomsLogged ? 'good' : 'neutral',
-        icon: symptomsLogged ? <Check className="w-4 h-4" /> : <Minus className="w-4 h-4" />,
-        textStatus: symptomsLogged ? 'Logged' : 'None'
-      },
-      {
-        label: 'Next Appointment',
-        value: nextAppointment || 'None scheduled',
-        status: 'neutral',
-        icon: <Clock className="w-4 h-4" />,
-        textStatus: nextAppointment ? 'Upcoming' : 'None'
-      }
-    ];
-  };
 
   return (
     <div className="w-full max-w-sm mx-auto">
@@ -135,42 +110,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
         </svg>
 
         {/* Enhanced Center Content - Improved Layout */}
-        <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray">
-          
-          {/* Status Icon */}
-          <div className="mb-2">
-            {statusConfig.icon}
-          </div>
-          
-          {/* Health Score */}
-          <div className="mb-2">
-            <div className="text-2xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
-              {statusConfig.score}
-            </div>
-            <div className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver font-medium">
-              Health Score
-            </div>
-          </div>
-          
-          {/* Status Label */}
-          <div className="mb-2">
-            <p className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-              {statusConfig.label}
-            </p>
-          </div>
-          
-          {/* Status Details */}
-          <div className="flex items-center justify-center gap-1 mb-1">
-            {statusConfig.statusIcon}
-            <p className="text-xs font-medium text-ojas-text-secondary dark:text-ojas-cloud-silver">
-              {statusConfig.accessibilityLabel.split(' - ')[0]}
-            </p>
-          </div>
-          
-          <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
-            {isExpanded ? 'Tap to collapse' : 'Tap to expand'}
-          </p>
-        </div>
+        <WellnessRingCenter statusConfig={statusConfig} isExpanded={isExpanded} />
       </button>
 
       {/* Status Summary */}
@@ -180,51 +120,11 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
 
       {/* Enhanced Expanded Interactive Summary */}
       {isExpanded && (
-        <div className="mt-8 animate-gentle-fade-in">
-          <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft border-2 border-ojas-border dark:border-ojas-slate-gray p-6">
-            <h3 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-6 text-center">Today's Overview</h3>
-            
-            <div className="space-y-4">
-              {getSummaryItems().map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-ojas-bg-light dark:hover:bg-ojas-slate-gray/20 transition-colors duration-200">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                      item.status === 'good' ? 'bg-ojas-success' : 
-                      item.status === 'attention' ? 'bg-ojas-alert' : 
-                      'bg-ojas-text-secondary'
-                    }`}>
-                      {item.status !== 'neutral' && (
-                        <div className="w-2 h-2 bg-white rounded-full" />
-                      )}
-                    </div>
-                    <span className="text-ojas-text-main dark:text-ojas-mist-white font-medium">{item.label}</span>
-                    <div className="flex items-center gap-2">
-                      {item.icon}
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        item.status === 'good' 
-                          ? 'bg-ojas-success/20 text-ojas-success' 
-                          : item.status === 'attention'
-                          ? 'bg-ojas-alert/20 text-ojas-alert'
-                          : 'bg-ojas-border text-ojas-text-secondary'
-                      }`}>
-                        {item.textStatus}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="font-semibold text-ojas-text-main dark:text-ojas-mist-white text-right">
-                    {item.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-ojas-border dark:border-ojas-slate-gray">
-              <p className="text-center text-ojas-text-secondary dark:text-ojas-cloud-silver text-sm">
-                Your wellness summary updates throughout the day
-              </p>
-            </div>
-          </div>
-        </div>
+        <WellnessRingExpanded 
+          medsCount={medsCount}
+          symptomsLogged={symptomsLogged}
+          nextAppointment={nextAppointment}
+        />
       )}
     </div>
   );
