@@ -4,6 +4,8 @@ import SymptomButton from '../components/SymptomButton';
 import SymptomLogger from '../components/SymptomLogger';
 import SymptomTrendsChart from '../components/SymptomTrendsChart';
 import SuccessAnimation from '../components/SuccessAnimation';
+import SafeAreaContainer from '../components/SafeAreaContainer';
+import { getCopyForRole } from '../utils/roleBasedCopy';
 import { 
   Brain, 
   Zap, 
@@ -12,10 +14,15 @@ import {
   Activity, 
   Moon,
   TrendingUp,
-  Thermometer
+  Thermometer,
+  RotateCcw
 } from 'lucide-react';
 
-const SymptomsPage: React.FC = () => {
+interface SymptomsPageProps {
+  userRole?: 'patient' | 'caregiver';
+}
+
+const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => {
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
   const [showTrends, setShowTrends] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -77,6 +84,13 @@ const SymptomsPage: React.FC = () => {
       icon: Brain,
       color: 'yellow' as const,
       quickOptions: ['Forgetful', 'Confused', 'Slow thinking', 'Word finding']
+    },
+    {
+      id: 'giddiness',
+      label: 'Giddiness/Dizziness',
+      icon: RotateCcw,
+      color: 'blue' as const,
+      quickOptions: ['Light-headed', 'Spinning', 'Off-balance', 'Nauseous']
     }
   ];
 
@@ -121,15 +135,15 @@ const SymptomsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-ojas-mist-white pb-20">
-      <div className="max-w-md mx-auto px-6 py-8">
-        {/* Header */}
+    <div className="min-h-screen bg-ojas-mist-white pb-28">
+      <SafeAreaContainer>
+        {/* Header with Role-Based Copy */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-ojas-charcoal-gray mb-3">
-            How are you feeling?
+            {getCopyForRole('symptomPrompt', userRole)}
           </h1>
           <p className="text-ojas-slate-gray text-lg">
-            Track your symptoms to help your care team
+            Track symptoms to help your care team
           </p>
         </div>
 
@@ -151,6 +165,7 @@ const SymptomsPage: React.FC = () => {
           <button
             onClick={handleViewTrends}
             className="w-full px-8 py-4 bg-white border-2 border-ojas-primary-blue text-ojas-primary-blue rounded-2xl font-semibold text-lg transition-all duration-200 hover:bg-ojas-primary-blue hover:text-white active:scale-95 shadow-ojas-soft flex items-center justify-center gap-3"
+            style={{ minHeight: '44px' }}
           >
             <TrendingUp className="w-6 h-6" />
             View Trends & Insights
@@ -168,7 +183,7 @@ const SymptomsPage: React.FC = () => {
             <p>• Add notes about what might have triggered or helped symptoms</p>
           </div>
         </div>
-      </div>
+      </SafeAreaContainer>
 
       {/* Success Animation */}
       {showSuccess && (

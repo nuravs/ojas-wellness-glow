@@ -10,7 +10,6 @@ import DoctorsHubPage from './DoctorsHubPage';
 import SettingsPage from './SettingsPage';
 import RoleSelector from '../components/RoleSelector';
 import Navigation from '../components/Navigation';
-import FloatingHelpButton from '../components/FloatingHelpButton';
 import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
@@ -145,10 +144,11 @@ const Index = () => {
             onToggleMedication={handleToggleMedication}
             onPostponeMedication={handlePostponeMedication}
             onAddMedication={handleAddMedication}
+            userRole={userRole}
           />
         );
       case 'symptoms':
-        return <SymptomsPage />;
+        return <SymptomsPage userRole={userRole} />;
       case 'wellness':
         return <WellnessCenterPage />;
       case 'records':
@@ -164,7 +164,6 @@ const Index = () => {
     <div className="min-h-screen bg-ojas-mist-white dark:bg-ojas-charcoal-gray font-ojas transition-colors duration-300">
       {renderCurrentPage()}
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-      <FloatingHelpButton />
     </div>
   );
 };
