@@ -1,15 +1,13 @@
+
 import React, { useState } from 'react';
 import EnhancedWellnessRing from '../components/EnhancedWellnessRing';
-import SmartBannersSection from '../components/SmartBannersSection';
+import TodaysActionSummary from '../components/TodaysActionSummary';
 import MedicationSection from '../components/MedicationSection';
-import InsightsSection from '../components/InsightsSection';
-import EmptyState from '../components/EmptyState';
 import HomeHeader from '../components/HomeHeader';
 import AIAssistantFAB from '../components/AIAssistantFAB';
 import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import { Activity } from 'lucide-react';
-import { getCopyForRole } from '../utils/roleBasedCopy';
 
 interface HomePageProps {
   medications: Array<{
@@ -30,9 +28,6 @@ const HomePage: React.FC<HomePageProps> = ({
   onPostponeMedication,
   userRole
 }) => {
-  const [dismissedInsights, setDismissedInsights] = useState<Set<string>>(new Set());
-  const [dismissedBanners, setDismissedBanners] = useState<Set<string>>(new Set());
-
   // Calculate wellness status and score
   const takenMeds = medications.filter(med => med.taken).length;
   const totalMeds = medications.length;
@@ -55,16 +50,16 @@ const HomePage: React.FC<HomePageProps> = ({
   const wellnessScore = calculateWellnessScore();
   const wellnessStatus = getWellnessStatus();
 
-  const handleDismissInsight = (id: string) => {
-    setDismissedInsights(prev => new Set([...prev, id]));
-  };
-
-  const handleDismissBanner = (id: string) => {
-    setDismissedBanners(prev => new Set([...prev, id]));
+  const handleViewAllActions = () => {
+    console.log('Navigate to detailed actions view');
   };
 
   const handleSymptomLog = () => {
     console.log('Open symptom logging');
+  };
+
+  const handleWellnessExpand = () => {
+    console.log('Navigate to trends and detailed wellness view');
   };
 
   return (
@@ -81,31 +76,49 @@ const HomePage: React.FC<HomePageProps> = ({
             symptomsLogged={false}
             nextAppointment="June 15"
             score={wellnessScore}
+            userRole={userRole}
+            onExpand={handleWellnessExpand}
           />
         </div>
 
-        {/* Smart AI Banners */}
-        <SmartBannersSection
-          medications={medications}
-          dismissedBanners={dismissedBanners}
-          onDismissBanner={handleDismissBanner}
-        />
+        {/* Today's Action Summary - Compact */}
+        <div className="mb-8">
+          <TodaysActionSummary 
+            medsCount={{ taken: takenMeds, total: totalMeds }}
+            symptomsLogged={false}
+            nextAppointment="June 15"
+            userRole={userRole}
+            onViewAll={handleViewAllActions}
+          />
+        </div>
 
-        {/* Medication Sections */}
-        <MedicationSection
-          medications={medications}
-          onToggleMedication={onToggleMedication}
-          onPostponeMedication={onPostponeMedication}
-        />
-
-        {/* Enhanced Wellness Insights */}
-        <InsightsSection
-          dismissedInsights={dismissedInsights}
-          onDismissInsight={handleDismissInsight}
-        />
-
-        {/* Enhanced Empty State */}
-        {medications.length === 0 && <EmptyState />}
+        {/* Show only urgent medications on home screen */}
+        {medications.filter(med => !med.taken).length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-ojas-text-main mb-4">
+              Medication Reminders
+            </h2>
+            <div className="space-y-4">
+              {medications.filter(med => !med.taken).slice(0, 2).map(medication => (
+                <div key={medication.id} className="bg-white rounded-xl shadow-ojas-soft border border-ojas-border p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-ojas-text-main">{medication.name}</h3>
+                      <p className="text-sm text-ojas-text-secondary">{medication.dosage} • {medication.time}</p>
+                    </div>
+                    <button
+                      onClick={() => onToggleMedication(medication.id)}
+                      className="px-4 py-2 bg-ojas-primary text-white rounded-xl font-medium hover:bg-ojas-primary-hover transition-colors duration-200"
+                      style={{ minHeight: '44px' }}
+                    >
+                      Mark Taken
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </SafeAreaContainer>
 
       {/* Enhanced Floating Action Buttons with Safe Area */}

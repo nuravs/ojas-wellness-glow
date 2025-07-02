@@ -125,12 +125,14 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
 
   if (selectedSymptom && selectedSymptomData) {
     return (
-      <SymptomLogger
-        symptomName={selectedSymptomData.label}
-        onSave={handleSymptomSave}
-        onCancel={handleSymptomCancel}
-        quickOptions={selectedSymptomData.quickOptions}
-      />
+      <div className="pb-24"> {/* Extra padding to ensure buttons are always visible */}
+        <SymptomLogger
+          symptomName={selectedSymptomData.label}
+          onSave={handleSymptomSave}
+          onCancel={handleSymptomCancel}
+          quickOptions={selectedSymptomData.quickOptions}
+        />
+      </div>
     );
   }
 

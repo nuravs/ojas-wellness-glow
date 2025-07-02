@@ -2,10 +2,9 @@
 import React, { useState } from 'react';
 import MedicationCard from '../components/MedicationCard';
 import MedicationTimeline from '../components/MedicationTimeline';
-import RefillAlert from '../components/RefillAlert';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import { getCopyForRole } from '../utils/roleBasedCopy';
-import { Plus, Camera, Upload, Calendar } from 'lucide-react';
+import { Plus, Camera, Upload } from 'lucide-react';
 
 interface MedicationsPageProps {
   medications: Array<{
@@ -75,7 +74,7 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
   return (
     <div className="min-h-screen bg-ojas-bg-light pb-28">
       <SafeAreaContainer>
-        {/* Header with Role-Based Copy */}
+        {/* Header with Role-Based Copy - Removed "Today's Schedule" */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-ojas-text-main mb-2">
@@ -155,40 +154,42 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
           <MedicationTimeline medications={medications} />
         )}
 
-        {/* Pending Medications */}
+        {/* Pending Medications - Standardized Height ~120dp */}
         {sortedPendingMeds.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-ojas-text-main mb-6">
               Still to take ({sortedPendingMeds.length})
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-4"> {/* Reduced spacing for more cards per view */}
               {sortedPendingMeds.map(medication => (
-                <MedicationCard
-                  key={medication.id}
-                  medication={medication}
-                  onToggle={onToggleMedication}
-                  onPostpone={onPostponeMedication}
-                  userRole={userRole}
-                />
+                <div key={medication.id} style={{ minHeight: '120px' }}>
+                  <MedicationCard
+                    medication={medication}
+                    onToggle={onToggleMedication}
+                    onPostpone={onPostponeMedication}
+                    userRole={userRole}
+                  />
+                </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Completed Medications */}
+        {/* Completed Medications - Standardized Height */}
         {completedMeds.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-ojas-text-main mb-6">
               Completed today ({completedMeds.length})
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-4">
               {completedMeds.map(medication => (
-                <MedicationCard
-                  key={medication.id}
-                  medication={medication}
-                  onToggle={onToggleMedication}
-                  userRole={userRole}
-                />
+                <div key={medication.id} style={{ minHeight: '120px' }}>
+                  <MedicationCard
+                    medication={medication}
+                    onToggle={onToggleMedication}
+                    userRole={userRole}
+                  />
+                </div>
               ))}
             </div>
           </div>

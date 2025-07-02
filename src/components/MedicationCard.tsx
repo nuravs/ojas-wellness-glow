@@ -29,7 +29,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Check if medication is overdue
+  // Check if medication is overdue (missed)
   const isOverdue = () => {
     if (medication.taken) return false;
     
@@ -68,7 +68,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   // Completed medication state
   if (medication.taken) {
     return (
-      <div className="relative bg-white rounded-2xl shadow-ojas-soft border border-ojas-border overflow-hidden animate-gentle-fade-in">
+      <div className="relative bg-white rounded-2xl shadow-ojas-soft border border-ojas-border overflow-hidden animate-gentle-fade-in" style={{ minHeight: '120px' }}>
         {/* Left sidebar - success */}
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-ojas-success"></div>
         
@@ -99,21 +99,24 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
     );
   }
 
-  // Pending medication state
+  // Pending medication state - Standardized height
   return (
     <div className={`relative bg-white rounded-2xl shadow-ojas-soft border border-ojas-border overflow-hidden transition-all duration-300 hover:shadow-ojas-medium ${
       isPriority ? 'scale-105 shadow-ojas-medium' : ''
     } ${isAnimating ? 'animate-pulse-gentle' : ''} ${
       overdueStatus ? 'animate-pulse-urgent' : ''
-    }`}>
+    }`} style={{ minHeight: '120px' }}>
       {/* Left sidebar */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${
         overdueStatus ? 'bg-ojas-error' : 'bg-ojas-primary'
       }`}></div>
       
-      {/* Overdue badge */}
+      {/* Overdue badge - Only show "Missed" if time window elapsed */}
       {overdueStatus && (
-        <div className="absolute top-4 right-4 w-3 h-3 bg-ojas-error rounded-full animate-pulse-urgent"></div>
+        <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 bg-ojas-error/10 rounded-full">
+          <AlertCircle className="w-3 h-3 text-ojas-error" />
+          <span className="text-xs font-medium text-ojas-error">Missed</span>
+        </div>
       )}
       
       <div className="flex items-start gap-6 p-6">
@@ -130,20 +133,12 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             <h3 className="text-xl font-semibold text-ojas-text-main">
               {medication.name}
             </h3>
-            <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${
-              overdueStatus 
-                ? 'bg-ojas-error/10' 
-                : 'bg-ojas-alert/10'
-            }`}>
-              <AlertCircle className={`w-4 h-4 ${
-                overdueStatus ? 'text-ojas-error' : 'text-ojas-alert'
-              }`} />
-              <span className={`text-sm font-medium ${
-                overdueStatus ? 'text-ojas-error' : 'text-ojas-alert'
-              }`}>
-                {overdueStatus ? 'Overdue' : 'Pending'}
-              </span>
-            </div>
+            {!overdueStatus && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-ojas-alert/10 rounded-full">
+                <Clock className="w-4 h-4 text-ojas-alert" />
+                <span className="text-sm font-medium text-ojas-alert">Pending</span>
+              </div>
+            )}
           </div>
           
           <p className="text-ojas-text-secondary font-medium mb-3">
@@ -161,18 +156,18 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
           <div className="flex gap-4">
             <button
               onClick={handleTaken}
-              className="flex-1 min-h-[56px] bg-ojas-primary text-white rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 hover:bg-ojas-primary-hover active:scale-95 shadow-ojas-medium"
+              className="flex-1 min-h-[44px] bg-ojas-primary text-white rounded-xl font-semibold text-base transition-all duration-200 flex items-center justify-center gap-3 hover:bg-ojas-primary-hover active:scale-95 shadow-ojas-medium"
               aria-label={`Mark ${medication.name} as taken`}
               disabled={isAnimating}
             >
               {showSuccess ? (
                 <>
-                  <CheckCircle className="w-6 h-6 animate-success-check" />
+                  <CheckCircle className="w-5 h-5 animate-success-check" />
                   <span>Success!</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle className="w-6 h-6" />
+                  <CheckCircle className="w-5 h-5" />
                   <span>{getCopyForRole('medicationMarkTaken', userRole)}</span>
                 </>
               )}
@@ -181,10 +176,10 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             {onPostpone && (
               <button
                 onClick={handleSkip}
-                className="flex-1 min-h-[56px] bg-ojas-alert text-ojas-text-main rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium"
+                className="flex-1 min-h-[44px] bg-ojas-alert text-ojas-text-main rounded-xl font-semibold text-base transition-all duration-200 flex items-center justify-center gap-3 hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium"
                 aria-label={`Postpone ${medication.name}`}
               >
-                <Calendar className="w-6 h-6" />
+                <Calendar className="w-5 h-5" />
                 <span>{getCopyForRole('medicationPostpone', userRole)}</span>
               </button>
             )}

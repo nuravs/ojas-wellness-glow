@@ -12,6 +12,11 @@ interface CopyConfig {
   symptomPrompt: RoleBasedCopy;
   wellnessPrompt: RoleBasedCopy;
   dashboardTitle: RoleBasedCopy;
+  wellnessRingTooltip: RoleBasedCopy;
+  todaysActionTitle: RoleBasedCopy;
+  nextMedication: RoleBasedCopy;
+  nextWellness: RoleBasedCopy;
+  lastSymptom: RoleBasedCopy;
 }
 
 export const roleBasedCopy: CopyConfig = {
@@ -42,6 +47,26 @@ export const roleBasedCopy: CopyConfig = {
   dashboardTitle: {
     patient: "Your Medications",
     caregiver: "Jane's Medications"
+  },
+  wellnessRingTooltip: {
+    patient: "Your health score details",
+    caregiver: "Jane's health score details"
+  },
+  todaysActionTitle: {
+    patient: "Today's Action Summary",
+    caregiver: "Today's Summary for Jane"
+  },
+  nextMedication: {
+    patient: "Next Med:",
+    caregiver: "Jane's Next Med:"
+  },
+  nextWellness: {
+    patient: "Next Wellness:",
+    caregiver: "Jane's Wellness:"
+  },
+  lastSymptom: {
+    patient: "Last Symptom:",
+    caregiver: "Jane's Last Symptom:"
   }
 };
 

@@ -1,22 +1,23 @@
 
 import React from 'react';
 import { Pill, Activity, Calendar, ChevronRight } from 'lucide-react';
+import { getCopyForRole } from '../utils/roleBasedCopy';
 
 interface TodaysActionSummaryProps {
   medsCount: { taken: number; total: number };
   symptomsLogged: boolean;
   nextAppointment?: string;
-  isExpanded: boolean;
+  userRole?: 'patient' | 'caregiver';
+  onViewAll?: () => void;
 }
 
 const TodaysActionSummary: React.FC<TodaysActionSummaryProps> = ({
   medsCount,
   symptomsLogged,
   nextAppointment,
-  isExpanded
+  userRole = 'patient',
+  onViewAll
 }) => {
-  if (isExpanded) return null;
-
   const nextMedStatus = medsCount.taken === medsCount.total ? 'All taken' : `${medsCount.total - medsCount.taken} pending`;
   const nextWellnessStatus = 'Stretching ready';
   const lastSymptomStatus = symptomsLogged ? 'Logged today' : 'No entries yet';
@@ -25,9 +26,13 @@ const TodaysActionSummary: React.FC<TodaysActionSummaryProps> = ({
     <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-          Today's Action Summary
+          {getCopyForRole('todaysActionTitle', userRole)}
         </h3>
-        <button className="flex items-center gap-1 text-ojas-primary hover:text-ojas-primary-hover transition-colors duration-200">
+        <button 
+          onClick={onViewAll}
+          className="flex items-center gap-1 text-ojas-primary hover:text-ojas-primary-hover transition-colors duration-200"
+          style={{ minHeight: '44px', minWidth: '44px' }}
+        >
           <span className="text-sm font-medium">View All</span>
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -45,7 +50,7 @@ const TodaysActionSummary: React.FC<TodaysActionSummaryProps> = ({
           </div>
           <div className="flex-1">
             <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-              Next Med: 
+              {getCopyForRole('nextMedication', userRole)} 
             </span>
             <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver ml-1">
               {nextMedStatus}
@@ -60,7 +65,7 @@ const TodaysActionSummary: React.FC<TodaysActionSummaryProps> = ({
           </div>
           <div className="flex-1">
             <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-              Next Wellness: 
+              {getCopyForRole('nextWellness', userRole)} 
             </span>
             <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver ml-1">
               {nextWellnessStatus}
@@ -79,7 +84,7 @@ const TodaysActionSummary: React.FC<TodaysActionSummaryProps> = ({
           </div>
           <div className="flex-1">
             <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-              Last Symptom: 
+              {getCopyForRole('lastSymptom', userRole)} 
             </span>
             <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver ml-1">
               {lastSymptomStatus}
