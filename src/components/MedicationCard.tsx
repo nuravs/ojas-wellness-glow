@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Pill, Clock, Check, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
+import { getCopyForRole } from '../utils/roleBasedCopy';
 
 interface Medication {
   id: string;
@@ -15,13 +16,15 @@ interface MedicationCardProps {
   onToggle: (id: string) => void;
   onPostpone?: (id: string) => void;
   isPriority?: boolean;
+  userRole?: 'patient' | 'caregiver';
 }
 
 const MedicationCard: React.FC<MedicationCardProps> = ({ 
   medication, 
   onToggle, 
   onPostpone,
-  isPriority = false
+  isPriority = false,
+  userRole = 'patient'
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -154,7 +157,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             </span>
           </div>
           
-          {/* Action buttons */}
+          {/* Action buttons with role-based copy */}
           <div className="flex gap-4">
             <button
               onClick={handleTaken}
@@ -170,7 +173,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
               ) : (
                 <>
                   <CheckCircle className="w-6 h-6" />
-                  <span>Taken</span>
+                  <span>{getCopyForRole('medicationMarkTaken', userRole)}</span>
                 </>
               )}
             </button>
@@ -179,10 +182,10 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
               <button
                 onClick={handleSkip}
                 className="flex-1 min-h-[56px] bg-ojas-alert text-ojas-text-main rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium"
-                aria-label={`Skip ${medication.name}`}
+                aria-label={`Postpone ${medication.name}`}
               >
                 <Calendar className="w-6 h-6" />
-                <span>Skip</span>
+                <span>{getCopyForRole('medicationPostpone', userRole)}</span>
               </button>
             )}
           </div>
