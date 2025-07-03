@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Info, TrendingUp } from 'lucide-react';
+import { X, TrendingUp } from 'lucide-react';
 import { getCopyForRole } from '../utils/roleBasedCopy';
 
 interface EnhancedWellnessRingProps {
@@ -23,6 +23,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   onExpand 
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
 
   const getScoreZone = (score: number) => {
     if (score >= 80) return { zone: 'good', color: '#00B488', label: 'Good' };
@@ -41,18 +42,38 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
 
   const handleDetailsClick = () => {
     onExpand?.();
+    setShowTooltip(false);
+  };
+
+  const handleCloseTooltip = () => {
+    setShowTooltip(false);
+  };
+
+  const handleOutsideClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setShowTooltip(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto">
+    <div className="w-full max-w-sm mx-auto relative">
       {/* Progress Ring */}
       <div className="relative">
         <button
           onClick={handleRingTap}
-          className="relative w-72 h-72 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-300"
+          onMouseDown={() => setIsPressed(true)}
+          onMouseUp={() => setIsPressed(false)}
+          onMouseLeave={() => setIsPressed(false)}
+          onTouchStart={() => setIsPressed(true)}
+          onTouchEnd={() => setIsPressed(false)}
+          className={`relative w-72 h-72 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-200 ${
+            isPressed ? 'scale-95' : 'scale-100'
+          } active:scale-95`}
           aria-label={`Health status: ${score} - ${scoreZone.label}. Tap for details.`}
           style={{
-            boxShadow: `0 0 30px ${scoreZone.color}30`
+            boxShadow: `0 0 30px ${scoreZone.color}30`,
+            minWidth: '44px',
+            minHeight: '44px'
           }}
         >
           {/* SVG Progress Ring */}
@@ -85,7 +106,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
             />
           </svg>
 
-          {/* Center Content - Single Line Score */}
+          {/* Center Content */}
           <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray">
             <div className="text-3xl font-bold text-ojas-text-main dark:text-ojas-mist-white mb-2">
               {score} – {scoreZone.label}
@@ -96,42 +117,45 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
           </div>
         </button>
 
-        {/* Tooltip */}
+        {/* Tooltip Overlay */}
         {showTooltip && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-ojas-charcoal-gray text-white px-4 py-3 rounded-xl shadow-ojas-strong z-20 max-w-xs animate-gentle-fade-in">
-            <p className="text-sm font-medium mb-2">{getCopyForRole('wellnessRingTooltip', userRole)}</p>
-            <p className="text-xs text-ojas-cloud-silver mb-3">
-              {score}/100 – {scoreZone.label}
-            </p>
-            <button
-              onClick={handleDetailsClick}
-              className="w-full px-3 py-2 bg-ojas-primary text-white rounded-lg text-sm font-medium hover:bg-ojas-primary-hover transition-colors duration-200"
-              style={{ minHeight: '44px' }}
-            >
-              View Trends & Details
-            </button>
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-ojas-charcoal-gray"></div>
+          <div 
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-gentle-fade-in"
+            onClick={handleOutsideClick}
+          >
+            <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-strong max-w-xs mx-4 relative">
+              <button
+                onClick={handleCloseTooltip}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Close details"
+                style={{ minWidth: '44px', minHeight: '44px' }}
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <div className="p-6 pt-12">
+                <p className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
+                  {getCopyForRole('wellnessRingTooltip', userRole)}
+                </p>
+                <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver mb-4">
+                  {score}/100 – {scoreZone.label}
+                </p>
+                <button
+                  onClick={handleDetailsClick}
+                  className="w-full px-4 py-3 bg-ojas-primary text-white rounded-xl text-sm font-medium hover:bg-ojas-primary-hover transition-colors duration-200 flex items-center justify-center gap-2"
+                  style={{ minHeight: '44px' }}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  View Trends & Details
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Info Icon - Outside Ring */}
-      <div className="flex items-center justify-center mt-4 mb-6">
-        <button
-          onClick={handleRingTap}
-          className="flex items-center gap-2 text-ojas-text-secondary hover:text-ojas-primary transition-colors duration-200"
-          aria-label="Show health score details"
-          style={{ minHeight: '44px', minWidth: '44px' }}
-        >
-          <Info className="w-4 h-4" />
-          <span className="text-sm font-medium">
-            Tap ring for details
-          </span>
-        </button>
-      </div>
-
       {/* Score Legend */}
-      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mb-6">
+      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mt-6">
         <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-3 text-center">
           Health Score Zones
         </h4>

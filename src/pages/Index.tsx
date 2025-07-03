@@ -7,9 +7,10 @@ import RecordsPage from './RecordsPage';
 import MorePage from './MorePage';
 import SymptomsPage from './SymptomsPage';
 import DoctorsHubPage from './DoctorsHubPage';
-import SettingsPage from './SettingsPage';
+import EnhancedSettingsPage from './EnhancedSettingsPage';
 import RoleSelector from '../components/RoleSelector';
 import Navigation from '../components/Navigation';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
@@ -114,16 +115,28 @@ const Index = () => {
 
   // Show role selector if no role is selected
   if (!userRole) {
-    return <RoleSelector onRoleSelected={handleRoleSelected} />;
+    return (
+      <ThemeProvider>
+        <RoleSelector onRoleSelected={handleRoleSelected} />
+      </ThemeProvider>
+    );
   }
 
   // Handle special page navigation
   if (currentPage === 'doctors') {
-    return <DoctorsHubPage onBack={handleBackToMain} />;
+    return (
+      <ThemeProvider>
+        <DoctorsHubPage onBack={handleBackToMain} />
+      </ThemeProvider>
+    );
   }
 
   if (currentPage === 'settings') {
-    return <SettingsPage onBack={handleBackToMain} />;
+    return (
+      <ThemeProvider>
+        <EnhancedSettingsPage onBack={handleBackToMain} />
+      </ThemeProvider>
+    );
   }
 
   const renderCurrentPage = () => {
@@ -161,10 +174,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ojas-mist-white dark:bg-ojas-charcoal-gray font-ojas transition-colors duration-300">
-      {renderCurrentPage()}
-      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight font-ojas transition-colors duration-300">
+        {renderCurrentPage()}
+        <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
+    </ThemeProvider>
   );
 };
 

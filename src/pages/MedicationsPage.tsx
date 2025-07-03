@@ -73,42 +73,55 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-ojas-bg-light pb-28">
-      <SafeAreaContainer>
-        <MedicationActionsHeader
-          userRole={userRole}
-          isUploading={isUploading}
-          onCameraUpload={handleCameraUpload}
-          onAddMedication={onAddMedication}
-        />
-
-        <RefillAlertsSection
-          refillAlerts={refillAlerts}
-          onRefillAction={handleRefillAction}
-          onDismissRefill={handleDismissRefill}
-        />
-
-        {/* Timeline */}
-        {medications.length > 0 && (
-          <MedicationTimeline medications={medications} />
-        )}
-
-        {/* Medications List or Empty State */}
-        {medications.length === 0 ? (
-          <MedicationEmptyState
-            onAddMedication={onAddMedication}
-            onCameraUpload={handleCameraUpload}
-          />
-        ) : (
-          <MedicationsList
-            pendingMeds={sortedPendingMeds}
-            completedMeds={completedMeds}
-            onToggleMedication={onToggleMedication}
-            onPostponeMedication={onPostponeMedication}
+    <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
+      <div className="overflow-y-auto pb-32" style={{ padding: '0 16px' }}>
+        <SafeAreaContainer>
+          <MedicationActionsHeader
             userRole={userRole}
+            isUploading={isUploading}
+            onCameraUpload={handleCameraUpload}
+            onAddMedication={onAddMedication}
           />
-        )}
-      </SafeAreaContainer>
+
+          {/* Today's Schedule - Now at the top */}
+          {medications.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-6">
+                Today's Schedule
+              </h2>
+              <MedicationTimeline medications={medications} />
+            </div>
+          )}
+
+          {/* Refill Reminders - Separate section */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-6">
+              Refill Reminders
+            </h2>
+            <RefillAlertsSection
+              refillAlerts={refillAlerts}
+              onRefillAction={handleRefillAction}
+              onDismissRefill={handleDismissRefill}
+            />
+          </div>
+
+          {/* Medications List or Empty State */}
+          {medications.length === 0 ? (
+            <MedicationEmptyState
+              onAddMedication={onAddMedication}
+              onCameraUpload={handleCameraUpload}
+            />
+          ) : (
+            <MedicationsList
+              pendingMeds={sortedPendingMeds}
+              completedMeds={completedMeds}
+              onToggleMedication={onToggleMedication}
+              onPostponeMedication={onPostponeMedication}
+              userRole={userRole}
+            />
+          )}
+        </SafeAreaContainer>
+      </div>
     </div>
   );
 };
