@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bot } from 'lucide-react';
+import { Wave } from 'lucide-react';
 
 const AIAssistantFAB: React.FC = () => {
   const handleAIAssistant = () => {
@@ -21,7 +21,7 @@ const AIAssistantFAB: React.FC = () => {
           minHeight: '44px'
         }}
       >
-        <Bot className="w-7 h-7" />
+        <Wave className="w-7 h-7" />
       </button>
       
       {/* Tooltip */}

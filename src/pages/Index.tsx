@@ -109,8 +109,9 @@ const Index = () => {
     setCurrentPage('settings');
   };
 
-  const handleBackToMain = () => {
+  const handleBackToMore = () => {
     setCurrentPage('main');
+    setActiveTab('more'); // Return to More tab
   };
 
   // Show role selector if no role is selected
@@ -122,11 +123,11 @@ const Index = () => {
     );
   }
 
-  // Handle special page navigation
+  // Handle special page navigation - now properly returns to More
   if (currentPage === 'doctors') {
     return (
       <ThemeProvider>
-        <DoctorsHubPage onBack={handleBackToMain} />
+        <DoctorsHubPage onBack={handleBackToMore} />
       </ThemeProvider>
     );
   }
@@ -134,7 +135,7 @@ const Index = () => {
   if (currentPage === 'settings') {
     return (
       <ThemeProvider>
-        <EnhancedSettingsPage onBack={handleBackToMain} />
+        <EnhancedSettingsPage onBack={handleBackToMore} />
       </ThemeProvider>
     );
   }
@@ -167,7 +168,12 @@ const Index = () => {
       case 'records':
         return <RecordsPage />;
       case 'more':
-        return <MorePage />;
+        return (
+          <MorePage 
+            onNavigateToDoctors={handleNavigateToDoctors}
+            onNavigateToSettings={handleNavigateToSettings}
+          />
+        );
       default:
         return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostponeMedication={handlePostponeMedication} userRole={userRole} />;
     }

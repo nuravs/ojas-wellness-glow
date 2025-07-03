@@ -10,12 +10,16 @@ import {
   Info,
   ChevronRight 
 } from 'lucide-react';
-import SettingsPage from './SettingsPage';
-import DoctorsHubPage from './DoctorsHubPage';
 
-const MorePage: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'main' | 'settings' | 'doctors'>('main');
+interface MorePageProps {
+  onNavigateToDoctors?: () => void;
+  onNavigateToSettings?: () => void;
+}
 
+const MorePage: React.FC<MorePageProps> = ({ 
+  onNavigateToDoctors, 
+  onNavigateToSettings 
+}) => {
   const menuItems = [
     {
       id: 'doctors',
@@ -80,10 +84,10 @@ const MorePage: React.FC = () => {
   const handleItemTap = (itemId: string) => {
     switch (itemId) {
       case 'doctors':
-        setCurrentView('doctors');
+        onNavigateToDoctors?.();
         break;
       case 'settings':
-        setCurrentView('settings');
+        onNavigateToSettings?.();
         break;
       case 'profile':
         console.log('Navigate to Profile');
@@ -93,30 +97,18 @@ const MorePage: React.FC = () => {
     }
   };
 
-  const handleBackToMain = () => {
-    setCurrentView('main');
-  };
-
-  if (currentView === 'settings') {
-    return <SettingsPage onBack={handleBackToMain} />;
-  }
-
-  if (currentView === 'doctors') {
-    return <DoctorsHubPage />;
-  }
-
   const priorityItems = menuItems.filter(item => item.priority === 'high');
   const regularItems = menuItems.filter(item => item.priority !== 'high');
 
   return (
-    <div className="min-h-screen bg-ojas-mist-white pb-20">
-      <div className="max-w-md mx-auto px-6 py-8">
-        {/* Header */}
+    <div className="min-h-screen bg-ojas-mist-white pb-20" style={{ padding: '16px 16px 80px 16px' }}>
+      <div className="max-w-md mx-auto">
+        {/* Header with proper spacing */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-ojas-charcoal-gray mb-2">
+          <h1 className="text-2xl font-bold text-ojas-charcoal-gray mb-2">
             More
           </h1>
-          <p className="text-ojas-slate-gray text-lg">
+          <p className="text-ojas-slate-gray text-base">
             Settings, support, and additional features
           </p>
         </div>
@@ -133,6 +125,7 @@ const MorePage: React.FC = () => {
                   key={item.id}
                   onClick={() => handleItemTap(item.id)}
                   className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver hover:shadow-ojas-medium transition-all duration-200 w-full text-left p-6"
+                  style={{ minHeight: '44px', minWidth: '44px' }}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-full ${getColorClasses(item.color)} flex items-center justify-center flex-shrink-0`}>
@@ -165,6 +158,7 @@ const MorePage: React.FC = () => {
                 key={item.id}
                 onClick={() => handleItemTap(item.id)}
                 className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver hover:shadow-ojas-medium transition-all duration-200 w-full text-left p-6"
+                style={{ minHeight: '44px', minWidth: '44px' }}
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-full ${getColorClasses(item.color)} flex items-center justify-center flex-shrink-0`}>

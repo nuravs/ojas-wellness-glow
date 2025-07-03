@@ -5,8 +5,8 @@ import TodaysActionSummary from '../components/TodaysActionSummary';
 import HomeHeader from '../components/HomeHeader';
 import AIAssistantFAB from '../components/AIAssistantFAB';
 import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton';
+import CoachMark from '../components/CoachMark';
 import SafeAreaContainer from '../components/SafeAreaContainer';
-import { Activity } from 'lucide-react';
 
 interface HomePageProps {
   medications: Array<{
@@ -53,23 +53,19 @@ const HomePage: React.FC<HomePageProps> = ({
     console.log('Navigate to detailed actions view');
   };
 
-  const handleSymptomLog = () => {
-    console.log('Open symptom logging');
-  };
-
   const handleWellnessExpand = () => {
     console.log('Navigate to trends and detailed wellness view');
   };
 
   return (
     <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
-      <div className="overflow-y-auto pb-32">
+      <div className="overflow-y-auto pb-32 px-grid-16">
         <SafeAreaContainer>
           {/* Enhanced Personalized Header with Role-Based Copy */}
           <HomeHeader userRole={userRole} />
 
           {/* Enhanced Interactive Wellness Ring with Progress Zones */}
-          <div className="mb-8">
+          <div className="mb-8 relative">
             <EnhancedWellnessRing
               status={wellnessStatus}
               medsCount={{ taken: takenMeds, total: totalMeds }}
@@ -78,6 +74,16 @@ const HomePage: React.FC<HomePageProps> = ({
               score={wellnessScore}
               userRole={userRole}
               onExpand={handleWellnessExpand}
+            />
+            
+            {/* Coach Mark for Ring Interaction */}
+            <CoachMark
+              id="wellness-ring-tap"
+              message="Tap the ring to see your detailed health overview"
+              position={{
+                top: '50%',
+                right: '-220px'
+              }}
             />
           </div>
 
@@ -100,7 +106,7 @@ const HomePage: React.FC<HomePageProps> = ({
               </h2>
               <div className="space-y-4">
                 {medications.filter(med => !med.taken).slice(0, 2).map(medication => (
-                  <div key={medication.id} className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4">
+                  <div key={medication.id} className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-grid-16">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold text-ojas-text-main dark:text-ojas-mist-white">{medication.name}</h3>
@@ -122,21 +128,9 @@ const HomePage: React.FC<HomePageProps> = ({
         </SafeAreaContainer>
       </div>
 
-      {/* Enhanced Floating Action Buttons with Safe Area */}
+      {/* Enhanced Floating Action Buttons with Safe Area - Only 2 FABs */}
       <AIAssistantFAB />
       <EnhancedFloatingHelpButton />
-      
-      {/* Symptom Log FAB */}
-      <div className="fixed bottom-28 right-20 z-40">
-        <button
-          onClick={handleSymptomLog}
-          className="w-12 h-12 bg-ojas-calming-green text-white rounded-full shadow-ojas-medium flex items-center justify-center transition-all duration-200 hover:bg-ojas-calming-green-hover hover:scale-105 active:scale-95 border-2 border-white dark:border-ojas-charcoal-gray"
-          aria-label="Log symptoms"
-          style={{ minWidth: '44px', minHeight: '44px' }}
-        >
-          <Activity className="w-6 h-6" />
-        </button>
-      </div>
     </div>
   );
 };
