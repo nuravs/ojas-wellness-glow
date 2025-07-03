@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
 import WellnessCenterPage from './WellnessCenterPage';
@@ -8,26 +9,37 @@ import MorePage from './MorePage';
 import SymptomsPage from './SymptomsPage';
 import DoctorsHubPage from './DoctorsHubPage';
 import EnhancedSettingsPage from './EnhancedSettingsPage';
-import RoleSelector from '../components/RoleSelector';
 import Navigation from '../components/Navigation';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings'>('main');
-  const [userRole, setUserRole] = useState<'patient' | 'caregiver' | null>(null);
+  const { user, userProfile, loading } = useAuth();
   const { toast } = useToast();
 
-  // Check if user has selected a role on app start
-  useEffect(() => {
-    const savedRole = localStorage.getItem('ojas-user-role');
-    if (savedRole === 'patient' || savedRole === 'caregiver') {
-      setUserRole(savedRole);
-    }
-  }, []);
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <ThemeProvider>
+        <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-ojas-slate-gray">Loading...</p>
+          </div>
+        </div>
+      </ThemeProvider>
+    );
+  }
 
-  // Sample medication data
+  // Redirect to auth if not logged in
+  if (!user || !userProfile) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Sample medication data (will be replaced with real data in Phase 2)
   const [medications, setMedications] = useState([
     {
       id: '1',
@@ -51,17 +63,6 @@ const Index = () => {
       taken: true
     }
   ]);
-
-  const handleRoleSelected = (role: 'patient' | 'caregiver') => {
-    setUserRole(role);
-    localStorage.setItem('ojas-user-role', role);
-    
-    toast({
-      title: `Welcome, ${role}! 👋`,
-      description: `Your app is now personalized for ${role === 'patient' ? 'patient' : 'caregiver'} use.`,
-      duration: 4000,
-    });
-  };
 
   const handleToggleMedication = (id: string) => {
     setMedications(prev => 
@@ -111,19 +112,10 @@ const Index = () => {
 
   const handleBackToMore = () => {
     setCurrentPage('main');
-    setActiveTab('more'); // Return to More tab
+    setActiveTab('more');
   };
 
-  // Show role selector if no role is selected
-  if (!userRole) {
-    return (
-      <ThemeProvider>
-        <RoleSelector onRoleSelected={handleRoleSelected} />
-      </ThemeProvider>
-    );
-  }
-
-  // Handle special page navigation - now properly returns to More
+  // Handle special page navigation
   if (currentPage === 'doctors') {
     return (
       <ThemeProvider>
@@ -148,7 +140,7 @@ const Index = () => {
             medications={medications}
             onToggleMedication={handleToggleMedication}
             onPostponeMedication={handlePostponeMedication}
-            userRole={userRole}
+            userRole={userProfile.role as 'patient' | 'caregiver'}
           />
         );
       case 'medications':
@@ -158,11 +150,11 @@ const Index = () => {
             onToggleMedication={handleToggleMedication}
             onPostponeMedication={handlePostponeMedication}
             onAddMedication={handleAddMedication}
-            userRole={userRole}
+            userRole={userProfile.role as 'patient' | 'caregiver'}
           />
         );
       case 'symptoms':
-        return <SymptomsPage userRole={userRole} />;
+        return <SymptomsPage userRole={userProfile.role as 'patient' | 'caregiver'} />;
       case 'wellness':
         return <WellnessCenterPage />;
       case 'records':
@@ -175,7 +167,14 @@ const Index = () => {
           />
         );
       default:
-        return <HomePage medications={medications} onToggleMedication={handleToggleMedication} onPostponeMedication={handlePostponeMedication} userRole={userRole} />;
+        return (
+          <HomePage 
+            medications={medications} 
+            onToggleMedication={handleToggleMedication} 
+            onPostponeMedication={handlePostponeMedication} 
+            userRole={userProfile.role as 'patient' | 'caregiver'}  
+          />
+        );
     }
   };
 
