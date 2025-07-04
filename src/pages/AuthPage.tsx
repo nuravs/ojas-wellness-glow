@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, User, Users, Mail, Lock } from 'lucide-react';
 
 const AuthPage = () => {
@@ -13,8 +14,17 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user, userProfile } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (user && userProfile) {
+      console.log('User authenticated, redirecting to home');
+      navigate('/', { replace: true });
+    }
+  }, [user, userProfile, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,8 +32,10 @@ const AuthPage = () => {
 
     try {
       if (isSignUp) {
+        console.log('Attempting signup');
         const { error } = await signUp(email, password, { role, full_name: fullName });
         if (error) {
+          console.error('Signup error:', error);
           toast({
             title: "Sign Up Error",
             description: error.message,
@@ -37,16 +49,26 @@ const AuthPage = () => {
           });
         }
       } else {
+        console.log('Attempting signin');
         const { error } = await signIn(email, password);
         if (error) {
+          console.error('Signin error:', error);
           toast({
             title: "Sign In Error",
             description: error.message,
             variant: "destructive"
           });
+        } else {
+          console.log('Signin successful, waiting for redirect');
+          toast({
+            title: "Success",
+            description: "Signing you in...",
+            duration: 2000
+          });
         }
       }
     } catch (error) {
+      console.error('Auth error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
