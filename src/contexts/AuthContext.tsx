@@ -58,6 +58,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('Setting up auth state listener');
     
+    // Get initial session first
+    const getInitialSession = async () => {
+      console.log('Checking for existing session');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+        } else if (session) {
+          console.log('Found existing session:', session.user.id);
+          setSession(session);
+          setUser(session.user);
+          
+          const profile = await fetchUserProfile(session.user.id);
+          setUserProfile(profile);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+      }
+      
+      setLoading(false);
+    };
+
+    getInitialSession();
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -67,43 +92,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Fetch user profile after a short delay to ensure DB trigger has completed
-          setTimeout(async () => {
-            const profile = await fetchUserProfile(session.user.id);
-            setUserProfile(profile);
-            setLoading(false);
-          }, 100);
+          console.log('User signed in, fetching profile...');
+          setLoading(true);
+          const profile = await fetchUserProfile(session.user.id);
+          setUserProfile(profile);
+          setLoading(false);
         } else {
+          console.log('User signed out');
           setUserProfile(null);
           setLoading(false);
         }
       }
     );
-
-    // Check for existing session
-    const getInitialSession = async () => {
-      console.log('Checking for existing session');
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
-        setLoading(false);
-        return;
-      }
-
-      if (session) {
-        console.log('Found existing session:', session.user.id);
-        setSession(session);
-        setUser(session.user);
-        
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
-      }
-      
-      setLoading(false);
-    };
-
-    getInitialSession();
 
     return () => {
       console.log('Cleaning up auth subscription');
@@ -138,16 +138,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     console.log('Signing in user:', email);
+    setLoading(true);
     
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
 
     if (error) {
       console.error('Sign in error:', error);
+      setLoading(false);
     } else {
-      console.log('Sign in successful');
+      console.log('Sign in successful, user:', data.user?.id);
+      // Don't set loading to false here - let the onAuthStateChange handle it
     }
 
     return { error };
@@ -155,7 +158,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('Signing out user');
+    setLoading(true);
     await supabase.auth.signOut();
+    setLoading(false);
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
