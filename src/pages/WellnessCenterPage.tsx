@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Activity, Apple, Dumbbell, Brain, Users, BookOpen, Heart, Sparkles, Play, Star } from 'lucide-react';
 import SuccessAnimation from '../components/SuccessAnimation';
+import SafeAreaContainer from '../components/SafeAreaContainer';
 
 const WellnessCenterPage: React.FC = () => {
   const [currentStreak, setCurrentStreak] = useState(3);
@@ -82,8 +83,8 @@ const WellnessCenterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ojas-mist-white pb-20">
-      <div className="max-w-md mx-auto px-6 py-8">
+    <div className="min-h-screen bg-ojas-mist-white pb-28">
+      <SafeAreaContainer>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-ojas-calming-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -197,7 +198,7 @@ const WellnessCenterPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </SafeAreaContainer>
 
       {/* Success Animation */}
       {showSuccess && (

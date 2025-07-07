@@ -59,7 +59,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
-      <div className="overflow-y-auto pb-32 px-grid-16">
+      <div className="overflow-y-auto pb-32">
         <SafeAreaContainer>
           {/* Enhanced Personalized Header with Role-Based Copy */}
           <HomeHeader userRole={userRole} />
@@ -76,13 +76,13 @@ const HomePage: React.FC<HomePageProps> = ({
               onExpand={handleWellnessExpand}
             />
             
-            {/* Coach Mark for Ring Interaction */}
+            {/* Coach Mark for Ring Interaction - Fixed positioning */}
             <CoachMark
               id="wellness-ring-tap"
               message="Tap the ring to see your detailed health overview"
               position={{
-                top: '50%',
-                right: '-220px'
+                top: '20%',
+                right: '10px'
               }}
             />
           </div>

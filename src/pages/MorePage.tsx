@@ -10,6 +10,7 @@ import {
   Info,
   ChevronRight 
 } from 'lucide-react';
+import SafeAreaContainer from '../components/SafeAreaContainer';
 
 interface MorePageProps {
   onNavigateToDoctors?: () => void;
@@ -101,8 +102,8 @@ const MorePage: React.FC<MorePageProps> = ({
   const regularItems = menuItems.filter(item => item.priority !== 'high');
 
   return (
-    <div className="min-h-screen bg-ojas-mist-white pb-20" style={{ padding: '16px 16px 80px 16px' }}>
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-ojas-mist-white pb-28">
+      <SafeAreaContainer>
         {/* Header with proper spacing */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-ojas-charcoal-gray mb-2">
@@ -178,7 +179,7 @@ const MorePage: React.FC<MorePageProps> = ({
             ))}
           </div>
         </div>
-      </div>
+      </SafeAreaContainer>
     </div>
   );
 };
