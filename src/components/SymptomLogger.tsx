@@ -93,7 +93,7 @@ const SymptomLogger: React.FC<SymptomLoggerProps> = ({
                     value={severity}
                     onChange={(e) => setSeverity(parseInt(e.target.value))}
                     disabled={loading}
-                    className="w-full h-3 bg-ojas-cloud-silver rounded-lg appearance-none cursor-pointer severity-slider"
+                    className="w-full h-3 bg-ojas-cloud-silver rounded-lg appearance-none cursor-pointer"
                     style={{
                       background: `linear-gradient(to right, #00B488 0%, #FFC300 50%, #FF4E4E 100%)`
                     }}
@@ -196,29 +196,6 @@ const SymptomLogger: React.FC<SymptomLoggerProps> = ({
           </button>
         </div>
       </div>
-
-      <style jsx>{`
-        .severity-slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 24px;
-          height: 24px;
-          background: white;
-          border: 3px solid #2563eb;
-          border-radius: 50%;
-          cursor: pointer;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .severity-slider::-moz-range-thumb {
-          width: 24px;
-          height: 24px;
-          background: white;
-          border: 3px solid #2563eb;
-          border-radius: 50%;
-          cursor: pointer;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
     </div>
   );
 };
