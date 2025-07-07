@@ -5,7 +5,6 @@ import TodaysActionSummary from '../components/TodaysActionSummary';
 import HomeHeader from '../components/HomeHeader';
 import AIAssistantFAB from '../components/AIAssistantFAB';
 import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton';
-import CoachMark from '../components/CoachMark';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 
 interface HomePageProps {
@@ -74,16 +73,6 @@ const HomePage: React.FC<HomePageProps> = ({
               score={wellnessScore}
               userRole={userRole}
               onExpand={handleWellnessExpand}
-            />
-            
-            {/* Coach Mark for Ring Interaction - Fixed positioning */}
-            <CoachMark
-              id="wellness-ring-tap"
-              message="Tap the ring to see your detailed health overview"
-              position={{
-                top: '20%',
-                right: '10px'
-              }}
             />
           </div>
 

@@ -57,7 +57,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
 
   return (
     <div className="w-full max-w-sm mx-auto relative">
-      {/* Progress Ring with Touch Feedback */}
+      {/* Progress Ring with Touch Feedback and Subtle Pulse Animation */}
       <div className="relative">
         <button
           onClick={handleRingTap}
@@ -68,7 +68,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
           onTouchEnd={() => setIsPressed(false)}
           className={`relative w-72 h-72 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-200 ${
             isPressed ? 'scale-95' : 'scale-100'
-          } active:scale-95 hover:scale-105`}
+          } active:scale-95 hover:scale-105 animate-pulse-gentle`}
           aria-label={`Health status: ${score} - ${scoreZone.label}. Tap for details.`}
           style={{
             boxShadow: `0 0 30px ${scoreZone.color}30`,
@@ -77,7 +77,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
             filter: isPressed ? `drop-shadow(0 0 20px ${scoreZone.color}60)` : `drop-shadow(0 0 12px ${scoreZone.color}40)`
           }}
         >
-          {/* SVG Progress Ring */}
+          {/* SVG Progress Ring with Subtle Glow Animation */}
           <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 240 240">
             {/* Background circle */}
             <circle
@@ -89,7 +89,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
               fill="none"
             />
             
-            {/* Progress circle with ripple effect on press */}
+            {/* Progress circle with gentle glow animation */}
             <circle
               cx="120"
               cy="120"
@@ -100,15 +100,15 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={progressOffset}
-              className="transition-all duration-1000 ease-out"
+              className="transition-all duration-1000 ease-out animate-pulse-glow"
               style={{
                 filter: `drop-shadow(0 0 8px ${scoreZone.color}40)`
               }}
             />
           </svg>
 
-          {/* Center Content */}
-          <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray">
+          {/* Center Content with Subtle Scale Animation */}
+          <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray transition-transform duration-200 hover:scale-105">
             <div className="text-3xl font-bold text-ojas-text-main dark:text-ojas-mist-white mb-2">
               {score}
             </div>
@@ -117,6 +117,9 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
             </div>
             <div className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver font-medium">
               Health Score
+            </div>
+            <div className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver mt-2 opacity-70">
+              Tap for details
             </div>
           </div>
         </button>
