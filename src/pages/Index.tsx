@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
@@ -28,7 +27,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings'>('main');
   const [medications, setMedications] = useState<Medication[]>([]);
-  const [loading, setLoading] = useState(false); // Disable auth loading
+  const [appLoading, setAppLoading] = useState(true); // Changed from loading to appLoading
   
   const { user, userProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -125,13 +124,12 @@ const Index = () => {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setAppLoading(false); // Set app loading to false after medications load
     }
   };
 
   useEffect(() => {
     console.log('Index useEffect - user:', !!user, 'userProfile:', !!userProfile);
-    // Always try to load medications, even if user is not logged in
     loadMedications();
   }, [user, userProfile]);
 
@@ -338,8 +336,8 @@ const Index = () => {
     );
   }
 
-  // Show loading only if auth is actually loading
-  if (authLoading) {
+  // Show loading only while app data is loading (not dependent on auth)
+  if (appLoading) {
     return (
       <ThemeProvider>
         <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
