@@ -36,6 +36,8 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
   const { user } = useAuth();
   const { toast } = useToast();
 
+  console.log('SymptomsPage - user:', !!user);
+
   const symptoms = [
     {
       id: 'tremor',
@@ -105,7 +107,11 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
   // Check if user has logged symptoms today
   useEffect(() => {
     const checkTodayLogs = async () => {
-      if (!user) return;
+      // If no user, skip database check
+      if (!user) {
+        console.log('No user logged in, skipping today logs check');
+        return;
+      }
 
       try {
         const today = new Date();
@@ -139,7 +145,7 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
   };
 
   const handleSymptomSave = async (severity: number, notes?: string, quickOptions?: string[]) => {
-    if (!user || !selectedSymptom) return;
+    if (!selectedSymptom) return;
 
     setLoading(true);
     try {
@@ -149,6 +155,22 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
         notes,
         quickOptions
       });
+
+      // If no user, just show success for demo
+      if (!user) {
+        const symptom = symptoms.find(s => s.id === selectedSymptom);
+        setSelectedSymptom(null);
+        setSuccessMessage(`${symptom?.label} logged successfully!`);
+        setShowSuccess(true);
+        setHasLoggedToday(true);
+
+        toast({
+          title: "Symptom logged (Demo)",
+          description: `${symptom?.label} has been recorded`,
+          duration: 3000,
+        });
+        return;
+      }
 
       const { error } = await supabase
         .from('symptoms')

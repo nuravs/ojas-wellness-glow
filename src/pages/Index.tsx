@@ -28,33 +28,30 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings'>('main');
   const [medications, setMedications] = useState<Medication[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Disable auth loading
   
   const { user, userProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
-  // Show loading spinner while checking auth
-  if (authLoading) {
-    return (
-      <ThemeProvider>
-        <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-ojas-slate-gray">Loading...</p>
-          </div>
-        </div>
-      </ThemeProvider>
-    );
-  }
+  console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);
 
-  // Redirect to auth if not logged in
-  if (!user || !userProfile) {
-    return <Navigate to="/auth" replace />;
-  }
+  // Temporarily disable auth requirement - comment out this redirect
+  // if (!user || !userProfile) {
+  //   return <Navigate to="/auth" replace />;
+  // }
 
-  // Load medications from Supabase
+  // Load medications from Supabase - but handle case where user might not be logged in
   const loadMedications = async () => {
     try {
+      console.log('Loading medications...');
+      
+      // If no user, just use empty array for now
+      if (!user) {
+        console.log('No user logged in, using empty medications array');
+        setMedications([]);
+        return;
+      }
+
       console.log('Loading medications for user:', user.id);
       
       // Get user's medications
@@ -133,14 +130,31 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (user && userProfile) {
-      loadMedications();
-    }
+    console.log('Index useEffect - user:', !!user, 'userProfile:', !!userProfile);
+    // Always try to load medications, even if user is not logged in
+    loadMedications();
   }, [user, userProfile]);
 
   const handleToggleMedication = async (id: string) => {
     const medication = medications.find(med => med.id === id);
-    if (!medication || !user) return;
+    if (!medication) return;
+
+    // If no user, just toggle locally for demo purposes
+    if (!user) {
+      setMedications(prev => 
+        prev.map(med => 
+          med.id === id 
+            ? { ...med, taken: !med.taken }
+            : med
+        )
+      );
+      toast({
+        title: medication.taken ? "Unmarked" : "Great job! 🎉",
+        description: `${medication.name} ${medication.taken ? 'unmarked' : 'marked as taken'}.`,
+        duration: 3000,
+      });
+      return;
+    }
 
     try {
       console.log('Toggling medication:', medication);
@@ -232,7 +246,17 @@ const Index = () => {
 
   const handlePostponeMedication = async (id: string) => {
     const medication = medications.find(med => med.id === id);
-    if (!medication || !user) return;
+    if (!medication) return;
+
+    // If no user, just show toast for demo
+    if (!user) {
+      toast({
+        title: "Reminder set",
+        description: `We'll remind you about ${medication.name} in 30 minutes.`,
+        duration: 3000,
+      });
+      return;
+    }
 
     try {
       // Create a postponed log entry
@@ -314,7 +338,8 @@ const Index = () => {
     );
   }
 
-  if (loading) {
+  // Show loading only if auth is actually loading
+  if (authLoading) {
     return (
       <ThemeProvider>
         <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
@@ -328,6 +353,9 @@ const Index = () => {
   }
 
   const renderCurrentPage = () => {
+    // Use demo user role if no user profile
+    const userRole = userProfile?.role as 'patient' | 'caregiver' || 'patient';
+    
     switch (activeTab) {
       case 'home':
         return (
@@ -335,7 +363,7 @@ const Index = () => {
             medications={medications}
             onToggleMedication={handleToggleMedication}
             onPostponeMedication={handlePostponeMedication}
-            userRole={userProfile.role as 'patient' | 'caregiver'}
+            userRole={userRole}
           />
         );
       case 'medications':
@@ -345,11 +373,11 @@ const Index = () => {
             onToggleMedication={handleToggleMedication}
             onPostponeMedication={handlePostponeMedication}
             onAddMedication={handleAddMedication}
-            userRole={userProfile.role as 'patient' | 'caregiver'}
+            userRole={userRole}
           />
         );
       case 'symptoms':
-        return <SymptomsPage userRole={userProfile.role as 'patient' | 'caregiver'} />;
+        return <SymptomsPage userRole={userRole} />;
       case 'wellness':
         return <WellnessCenterPage />;
       case 'records':
@@ -367,7 +395,7 @@ const Index = () => {
             medications={medications} 
             onToggleMedication={handleToggleMedication} 
             onPostponeMedication={handlePostponeMedication} 
-            userRole={userProfile.role as 'patient' | 'caregiver'}  
+            userRole={userRole}  
           />
         );
     }
