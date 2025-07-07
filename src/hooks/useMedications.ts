@@ -1,19 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import HomePage from './HomePage';
-import MedicationsPage from './MedicationsPage';
-import WellnessCenterPage from './WellnessCenterPage';
-import RecordsPage from './RecordsPage';
-import MorePage from './MorePage';
-import SymptomsPage from './SymptomsPage';
-import DoctorsHubPage from './DoctorsHubPage';
-import EnhancedSettingsPage from './EnhancedSettingsPage';
-import Navigation from '../components/Navigation';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../hooks/use-toast';
+import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from './use-toast';
 
 interface Medication {
   id: string;
@@ -24,36 +13,15 @@ interface Medication {
   medication_id?: string;
 }
 
-const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
-  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings'>('main');
+export const useMedications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const { user, userProfile, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
 
-  // Show loading spinner while checking auth
-  if (authLoading) {
-    return (
-      <ThemeProvider>
-        <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-ojas-slate-gray">Loading...</p>
-          </div>
-        </div>
-      </ThemeProvider>
-    );
-  }
-
-  // Redirect to auth if not logged in
-  if (!user || !userProfile) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  // Load medications from Supabase
   const loadMedications = async () => {
+    if (!user) return;
+
     try {
       console.log('Loading medications for user:', user.id);
       
@@ -74,8 +42,6 @@ const Index = () => {
         return;
       }
 
-      console.log('Loaded medications:', userMedications);
-
       // Get today's medication logs
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -92,8 +58,6 @@ const Index = () => {
       if (logsError) {
         console.error('Error loading medication logs:', logsError);
       }
-
-      console.log('Today logs:', todayLogs);
 
       // Transform medications to match the expected format
       const transformedMedications: Medication[] = (userMedications || []).flatMap(med => {
@@ -118,7 +82,6 @@ const Index = () => {
         }));
       });
 
-      console.log('Transformed medications:', transformedMedications);
       setMedications(transformedMedications);
     } catch (error) {
       console.error('Error in loadMedications:', error);
@@ -132,23 +95,14 @@ const Index = () => {
     }
   };
 
-  useEffect(() => {
-    if (user && userProfile) {
-      loadMedications();
-    }
-  }, [user, userProfile]);
-
-  const handleToggleMedication = async (id: string) => {
+  const toggleMedication = async (id: string) => {
     const medication = medications.find(med => med.id === id);
     if (!medication || !user) return;
 
     try {
-      console.log('Toggling medication:', medication);
-      
       if (!medication.taken) {
         // Mark as taken - create a log entry
         const scheduledTime = new Date();
-        // Parse the time and set it for today
         const [timeStr, period] = medication.time.split(' ');
         const [hours, minutes] = timeStr.split(':').map(Number);
         let adjustedHours = hours;
@@ -221,7 +175,7 @@ const Index = () => {
       );
 
     } catch (error) {
-      console.error('Error in handleToggleMedication:', error);
+      console.error('Error in toggleMedication:', error);
       toast({
         title: "Error",
         description: "Failed to update medication",
@@ -230,12 +184,11 @@ const Index = () => {
     }
   };
 
-  const handlePostponeMedication = async (id: string) => {
+  const postponeMedication = async (id: string) => {
     const medication = medications.find(med => med.id === id);
     if (!medication || !user) return;
 
     try {
-      // Create a postponed log entry
       const scheduledTime = new Date();
       const [timeStr, period] = medication.time.split(' ');
       const [hours, minutes] = timeStr.split(':').map(Number);
@@ -272,115 +225,21 @@ const Index = () => {
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error in handlePostponeMedication:', error);
+      console.error('Error in postponeMedication:', error);
     }
   };
 
-  const handleAddMedication = () => {
-    toast({
-      title: "Add Medication",
-      description: "This feature will help you add new medications to your routine.",
-      duration: 3000,
-    });
-  };
-
-  const handleNavigateToDoctors = () => {
-    setCurrentPage('doctors');
-  };
-
-  const handleNavigateToSettings = () => {
-    setCurrentPage('settings');
-  };
-
-  const handleBackToMore = () => {
-    setCurrentPage('main');
-    setActiveTab('more');
-  };
-
-  // Handle special page navigation
-  if (currentPage === 'doctors') {
-    return (
-      <ThemeProvider>
-        <DoctorsHubPage onBack={handleBackToMore} />
-      </ThemeProvider>
-    );
-  }
-
-  if (currentPage === 'settings') {
-    return (
-      <ThemeProvider>
-        <EnhancedSettingsPage onBack={handleBackToMore} />
-      </ThemeProvider>
-    );
-  }
-
-  if (loading) {
-    return (
-      <ThemeProvider>
-        <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-ojas-slate-gray">Loading your health data...</p>
-          </div>
-        </div>
-      </ThemeProvider>
-    );
-  }
-
-  const renderCurrentPage = () => {
-    switch (activeTab) {
-      case 'home':
-        return (
-          <HomePage
-            medications={medications}
-            onToggleMedication={handleToggleMedication}
-            onPostponeMedication={handlePostponeMedication}
-            userRole={userProfile.role as 'patient' | 'caregiver'}
-          />
-        );
-      case 'medications':
-        return (
-          <MedicationsPage
-            medications={medications}
-            onToggleMedication={handleToggleMedication}
-            onPostponeMedication={handlePostponeMedication}
-            onAddMedication={handleAddMedication}
-            userRole={userProfile.role as 'patient' | 'caregiver'}
-          />
-        );
-      case 'symptoms':
-        return <SymptomsPage userRole={userProfile.role as 'patient' | 'caregiver'} />;
-      case 'wellness':
-        return <WellnessCenterPage />;
-      case 'records':
-        return <RecordsPage />;
-      case 'more':
-        return (
-          <MorePage 
-            onNavigateToDoctors={handleNavigateToDoctors}
-            onNavigateToSettings={handleNavigateToSettings}
-          />
-        );
-      default:
-        return (
-          <HomePage 
-            medications={medications} 
-            onToggleMedication={handleToggleMedication} 
-            onPostponeMedication={handlePostponeMedication} 
-            userRole={userProfile.role as 'patient' | 'caregiver'}  
-          />
-        );
+  useEffect(() => {
+    if (user) {
+      loadMedications();
     }
-  };
+  }, [user]);
 
-  return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight font-ojas transition-colors duration-300">
-        {renderCurrentPage()}
-        <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-      </div>
-    </ThemeProvider>
-  );
+  return {
+    medications,
+    loading,
+    toggleMedication,
+    postponeMedication,
+    refetch: loadMedications
+  };
 };
-
-export default Index;

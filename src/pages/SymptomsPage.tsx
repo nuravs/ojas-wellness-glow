@@ -1,11 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SymptomButton from '../components/SymptomButton';
 import SymptomLogger from '../components/SymptomLogger';
 import SymptomTrendsChart from '../components/SymptomTrendsChart';
 import SuccessAnimation from '../components/SuccessAnimation';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import { getCopyForRole } from '../utils/roleBasedCopy';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/use-toast';
+import { supabase } from '../integrations/supabase/client';
 import { 
   Brain, 
   Zap, 
@@ -27,6 +30,11 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
   const [showTrends, setShowTrends] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [hasLoggedToday, setHasLoggedToday] = useState(false);
+
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const symptoms = [
     {
@@ -37,7 +45,7 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
       quickOptions: ['Resting', 'Action', 'Postural', 'Mild shaking']
     },
     {
-      id: 'stiffness',
+      id: 'stiffness',  
       label: 'Stiffness',
       icon: Activity,
       color: 'red' as const,
@@ -94,15 +102,100 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
     }
   ];
 
+  // Check if user has logged symptoms today
+  useEffect(() => {
+    const checkTodayLogs = async () => {
+      if (!user) return;
+
+      try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const { data, error } = await supabase
+          .from('symptoms')
+          .select('id')
+          .gte('logged_at', today.toISOString())
+          .lt('logged_at', tomorrow.toISOString())
+          .limit(1);
+
+        if (error) {
+          console.error('Error checking today logs:', error);
+          return;
+        }
+
+        setHasLoggedToday((data || []).length > 0);
+      } catch (error) {
+        console.error('Error in checkTodayLogs:', error);
+      }
+    };
+
+    checkTodayLogs();
+  }, [user]);
+
   const handleSymptomClick = (symptomId: string) => {
     setSelectedSymptom(symptomId);
   };
 
-  const handleSymptomSave = (severity: number, notes?: string) => {
-    const symptom = symptoms.find(s => s.id === selectedSymptom);
-    setSelectedSymptom(null);
-    setSuccessMessage(`${symptom?.label} logged successfully!`);
-    setShowSuccess(true);
+  const handleSymptomSave = async (severity: number, notes?: string, quickOptions?: string[]) => {
+    if (!user || !selectedSymptom) return;
+
+    setLoading(true);
+    try {
+      console.log('Saving symptom:', {
+        symptomType: selectedSymptom,
+        severity,
+        notes,
+        quickOptions
+      });
+
+      const { error } = await supabase
+        .from('symptoms')
+        .insert({
+          user_id: user.id,
+          symptom_type: selectedSymptom,
+          severity: severity,
+          details: quickOptions ? { options: quickOptions } : null,
+          notes: notes || null,
+          logged_at: new Date().toISOString()
+        });
+
+      if (error) {
+        console.error('Error saving symptom:', error);
+        toast({
+          title: "Error saving symptom",
+          description: "Please try again",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const symptom = symptoms.find(s => s.id === selectedSymptom);
+      setSelectedSymptom(null);
+      setSuccessMessage(`${symptom?.label} logged successfully!`);
+      setShowSuccess(true);
+      setHasLoggedToday(true);
+
+      // Update localStorage for quick tips
+      localStorage.setItem('lastSymptomLog', new Date().toDateString());
+
+      toast({
+        title: "Symptom logged",
+        description: `${symptom?.label} has been recorded`,
+        duration: 3000,
+      });
+
+    } catch (error) {
+      console.error('Error in handleSymptomSave:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save symptom data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSymptomCancel = () => {
@@ -125,12 +218,13 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
 
   if (selectedSymptom && selectedSymptomData) {
     return (
-      <div className="pb-24"> {/* Extra padding to ensure buttons are always visible */}
+      <div className="pb-24">
         <SymptomLogger
           symptomName={selectedSymptomData.label}
           onSave={handleSymptomSave}
           onCancel={handleSymptomCancel}
           quickOptions={selectedSymptomData.quickOptions}
+          loading={loading}
         />
       </div>
     );
@@ -147,6 +241,12 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({ userRole = 'patient' }) => 
           <p className="text-ojas-slate-gray text-lg">
             Track symptoms to help your care team
           </p>
+          {hasLoggedToday && (
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-ojas-calming-green/20 text-ojas-calming-green rounded-full text-sm">
+              <div className="w-2 h-2 bg-ojas-calming-green rounded-full"></div>
+              Symptoms logged today
+            </div>
+          )}
         </div>
 
         {/* Symptoms Grid */}
