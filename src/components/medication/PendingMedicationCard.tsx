@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
-import { Pill, Clock, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
+import { Pill, Clock, CheckCircle, AlertCircle, Calendar, MoreHorizontal } from 'lucide-react';
 import { getCopyForRole } from '../../utils/roleBasedCopy';
 import { isOverdue } from '../../utils/medicationUtils';
+import MedicationLoggedBy from './MedicationLoggedBy';
+import CaregiverVisibilityToggle from './CaregiverVisibilityToggle';
 
 interface Medication {
   id: string;
@@ -10,12 +12,15 @@ interface Medication {
   dosage: string;
   time: string;
   taken: boolean;
+  caregiver_visible?: boolean;
+  logged_by_role?: 'patient' | 'caregiver';
 }
 
 interface PendingMedicationCardProps {
   medication: Medication;
   onToggle: (id: string) => void;
   onPostpone?: (id: string) => void;
+  onToggleVisibility?: (id: string) => void;
   isPriority?: boolean;
   userRole?: 'patient' | 'caregiver';
 }
@@ -24,11 +29,13 @@ const PendingMedicationCard: React.FC<PendingMedicationCardProps> = ({
   medication, 
   onToggle, 
   onPostpone,
+  onToggleVisibility,
   isPriority = false,
   userRole = 'patient'
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
 
   const overdueStatus = isOverdue(medication.time);
 
@@ -51,6 +58,11 @@ const PendingMedicationCard: React.FC<PendingMedicationCardProps> = ({
     onPostpone?.(medication.id);
   };
 
+  const handleToggleVisibility = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleVisibility?.(medication.id);
+  };
+
   return (
     <div className={`relative bg-white rounded-2xl shadow-ojas-soft border border-ojas-border overflow-hidden transition-all duration-300 hover:shadow-ojas-medium ${
       isPriority ? 'scale-105 shadow-ojas-medium' : ''
@@ -68,6 +80,18 @@ const PendingMedicationCard: React.FC<PendingMedicationCardProps> = ({
           <AlertCircle className="w-3 h-3 text-ojas-error" />
           <span className="text-xs font-medium text-ojas-error">Missed</span>
         </div>
+      )}
+
+      {/* Options menu button for patients */}
+      {userRole === 'patient' && (
+        <button
+          onClick={() => setShowOptions(!showOptions)}
+          className="absolute top-4 right-12 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          style={{ minHeight: '44px', minWidth: '44px' }}
+          aria-label="Medication options"
+        >
+          <MoreHorizontal className="w-4 h-4 text-ojas-text-secondary" />
+        </button>
       )}
       
       <div className="flex items-start gap-6 p-6">
@@ -102,6 +126,18 @@ const PendingMedicationCard: React.FC<PendingMedicationCardProps> = ({
               {overdueStatus ? 'Was due at' : 'Scheduled for'} {medication.time}
             </span>
           </div>
+
+          {/* Privacy options dropdown */}
+          {showOptions && userRole === 'patient' && onToggleVisibility && (
+            <div className="mb-4 p-3 bg-ojas-bg-light rounded-lg border">
+              <CaregiverVisibilityToggle
+                isVisible={medication.caregiver_visible ?? true}
+                onToggle={handleToggleVisibility}
+                medicationName={medication.name}
+                userRole={userRole}
+              />
+            </div>
+          )}
           
           {/* Action buttons with role-based copy */}
           <div className="flex gap-4">

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
@@ -11,299 +12,20 @@ import EnhancedSettingsPage from './EnhancedSettingsPage';
 import Navigation from '../components/Navigation';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../hooks/use-toast';
-import { supabase } from '../integrations/supabase/client';
-
-interface Medication {
-  id: string;
-  name: string;
-  dosage: string;
-  time: string;
-  taken: boolean;
-  medication_id?: string;
-}
+import { useMedications } from '../hooks/useMedications';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings'>('main');
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [appLoading, setAppLoading] = useState(true); // Changed from loading to appLoading
   
   const { user, userProfile, loading: authLoading } = useAuth();
-  const { toast } = useToast();
+  const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
 
   console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);
 
-  // Temporarily disable auth requirement - comment out this redirect
-  // if (!user || !userProfile) {
-  //   return <Navigate to="/auth" replace />;
-  // }
-
-  // Load medications from Supabase - but handle case where user might not be logged in
-  const loadMedications = async () => {
-    try {
-      console.log('Loading medications...');
-      
-      // If no user, just use empty array for now
-      if (!user) {
-        console.log('No user logged in, using empty medications array');
-        setMedications([]);
-        return;
-      }
-
-      console.log('Loading medications for user:', user.id);
-      
-      // Get user's medications
-      const { data: userMedications, error: medsError } = await supabase
-        .from('medications')
-        .select('*')
-        .eq('active', true)
-        .order('created_at', { ascending: true });
-
-      if (medsError) {
-        console.error('Error loading medications:', medsError);
-        toast({
-          title: "Error loading medications",
-          description: "Please try refreshing the page",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('Loaded medications:', userMedications);
-
-      // Get today's medication logs
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const { data: todayLogs, error: logsError } = await supabase
-        .from('medication_logs')
-        .select('*')
-        .gte('created_at', today.toISOString())
-        .lt('created_at', tomorrow.toISOString())
-        .eq('status', 'taken');
-
-      if (logsError) {
-        console.error('Error loading medication logs:', logsError);
-      }
-
-      console.log('Today logs:', todayLogs);
-
-      // Transform medications to match the expected format
-      const transformedMedications: Medication[] = (userMedications || []).flatMap(med => {
-        const frequency = med.frequency as { times?: string[] } || { times: ['8:00 AM'] };
-        const times = frequency.times || ['8:00 AM'];
-        
-        return times.map(time => ({
-          id: `${med.id}-${time}`,
-          medication_id: med.id,
-          name: med.name,
-          dosage: med.dosage,
-          time: time,
-          taken: (todayLogs || []).some(log => 
-            log.medication_id === med.id && 
-            log.scheduled_time && 
-            new Date(log.scheduled_time).toLocaleTimeString('en-US', { 
-              hour: 'numeric', 
-              minute: '2-digit',
-              hour12: true 
-            }) === time
-          )
-        }));
-      });
-
-      console.log('Transformed medications:', transformedMedications);
-      setMedications(transformedMedications);
-    } catch (error) {
-      console.error('Error in loadMedications:', error);
-      toast({
-        title: "Error loading data",
-        description: "Please try refreshing the page",
-        variant: "destructive"
-      });
-    } finally {
-      setAppLoading(false); // Set app loading to false after medications load
-    }
-  };
-
-  useEffect(() => {
-    console.log('Index useEffect - user:', !!user, 'userProfile:', !!userProfile);
-    loadMedications();
-  }, [user, userProfile]);
-
-  const handleToggleMedication = async (id: string) => {
-    const medication = medications.find(med => med.id === id);
-    if (!medication) return;
-
-    // If no user, just toggle locally for demo purposes
-    if (!user) {
-      setMedications(prev => 
-        prev.map(med => 
-          med.id === id 
-            ? { ...med, taken: !med.taken }
-            : med
-        )
-      );
-      toast({
-        title: medication.taken ? "Unmarked" : "Great job! 🎉",
-        description: `${medication.name} ${medication.taken ? 'unmarked' : 'marked as taken'}.`,
-        duration: 3000,
-      });
-      return;
-    }
-
-    try {
-      console.log('Toggling medication:', medication);
-      
-      if (!medication.taken) {
-        // Mark as taken - create a log entry
-        const scheduledTime = new Date();
-        // Parse the time and set it for today
-        const [timeStr, period] = medication.time.split(' ');
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        let adjustedHours = hours;
-        if (period === 'PM' && hours !== 12) adjustedHours += 12;
-        if (period === 'AM' && hours === 12) adjustedHours = 0;
-        
-        scheduledTime.setHours(adjustedHours, minutes, 0, 0);
-
-        const { error } = await supabase
-          .from('medication_logs')
-          .insert({
-            medication_id: medication.medication_id || medication.id.split('-')[0],
-            user_id: user.id,
-            scheduled_time: scheduledTime.toISOString(),
-            actual_time: new Date().toISOString(),
-            status: 'taken',
-            notes: 'Marked as taken via app'
-          });
-
-        if (error) {
-          console.error('Error logging medication:', error);
-          toast({
-            title: "Error",
-            description: "Failed to mark medication as taken",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        toast({
-          title: "Great job! 🎉",
-          description: `${medication.name} marked as taken.`,
-          duration: 3000,
-        });
-      } else {
-        // Mark as not taken - remove the log entry
-        const medicationId = medication.medication_id || medication.id.split('-')[0];
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const { error } = await supabase
-          .from('medication_logs')
-          .delete()
-          .eq('medication_id', medicationId)
-          .eq('user_id', user.id)
-          .eq('status', 'taken')
-          .gte('created_at', today.toISOString())
-          .lt('created_at', tomorrow.toISOString());
-
-        if (error) {
-          console.error('Error removing medication log:', error);
-          toast({
-            title: "Error",
-            description: "Failed to update medication status",
-            variant: "destructive"
-          });
-          return;
-        }
-      }
-
-      // Update local state
-      setMedications(prev => 
-        prev.map(med => 
-          med.id === id 
-            ? { ...med, taken: !med.taken }
-            : med
-        )
-      );
-
-    } catch (error) {
-      console.error('Error in handleToggleMedication:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update medication",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handlePostponeMedication = async (id: string) => {
-    const medication = medications.find(med => med.id === id);
-    if (!medication) return;
-
-    // If no user, just show toast for demo
-    if (!user) {
-      toast({
-        title: "Reminder set",
-        description: `We'll remind you about ${medication.name} in 30 minutes.`,
-        duration: 3000,
-      });
-      return;
-    }
-
-    try {
-      // Create a postponed log entry
-      const scheduledTime = new Date();
-      const [timeStr, period] = medication.time.split(' ');
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      let adjustedHours = hours;
-      if (period === 'PM' && hours !== 12) adjustedHours += 12;
-      if (period === 'AM' && hours === 12) adjustedHours = 0;
-      
-      scheduledTime.setHours(adjustedHours, minutes, 0, 0);
-
-      const { error } = await supabase
-        .from('medication_logs')
-        .insert({
-          medication_id: medication.medication_id || medication.id.split('-')[0],
-          user_id: user.id,
-          scheduled_time: scheduledTime.toISOString(),
-          actual_time: null,
-          status: 'postponed',
-          notes: 'Postponed for 30 minutes'
-        });
-
-      if (error) {
-        console.error('Error postponing medication:', error);
-        toast({
-          title: "Error",
-          description: "Failed to postpone medication",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      toast({
-        title: "Reminder set",
-        description: `We'll remind you about ${medication.name} in 30 minutes.`,
-        duration: 3000,
-      });
-    } catch (error) {
-      console.error('Error in handlePostponeMedication:', error);
-    }
-  };
-
   const handleAddMedication = () => {
-    toast({
-      title: "Add Medication",
-      description: "This feature will help you add new medications to your routine.",
-      duration: 3000,
-    });
+    // This would open an add medication modal or navigate to add medication page
+    console.log('Add medication functionality would be implemented here');
   };
 
   const handleNavigateToDoctors = () => {
@@ -336,8 +58,8 @@ const Index = () => {
     );
   }
 
-  // Show loading only while app data is loading (not dependent on auth)
-  if (appLoading) {
+  // Show loading only while app data is loading
+  if (medicationsLoading) {
     return (
       <ThemeProvider>
         <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
@@ -359,8 +81,8 @@ const Index = () => {
         return (
           <HomePage
             medications={medications}
-            onToggleMedication={handleToggleMedication}
-            onPostponeMedication={handlePostponeMedication}
+            onToggleMedication={toggleMedication}
+            onPostponeMedication={postponeMedication}
             userRole={userRole}
           />
         );
@@ -368,8 +90,8 @@ const Index = () => {
         return (
           <MedicationsPage
             medications={medications}
-            onToggleMedication={handleToggleMedication}
-            onPostponeMedication={handlePostponeMedication}
+            onToggleMedication={toggleMedication}
+            onPostponeMedication={postponeMedication}
             onAddMedication={handleAddMedication}
             userRole={userRole}
           />
@@ -391,8 +113,8 @@ const Index = () => {
         return (
           <HomePage 
             medications={medications} 
-            onToggleMedication={handleToggleMedication} 
-            onPostponeMedication={handlePostponeMedication} 
+            onToggleMedication={toggleMedication} 
+            onPostponeMedication={postponeMedication} 
             userRole={userRole}  
           />
         );

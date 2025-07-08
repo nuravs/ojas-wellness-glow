@@ -19,6 +19,7 @@ export type Database = {
           actual_time: string | null
           created_at: string | null
           id: string
+          logged_by: string
           medication_id: string
           notes: string | null
           scheduled_time: string | null
@@ -29,6 +30,7 @@ export type Database = {
           actual_time?: string | null
           created_at?: string | null
           id?: string
+          logged_by: string
           medication_id: string
           notes?: string | null
           scheduled_time?: string | null
@@ -39,6 +41,7 @@ export type Database = {
           actual_time?: string | null
           created_at?: string | null
           id?: string
+          logged_by?: string
           medication_id?: string
           notes?: string | null
           scheduled_time?: string | null
@@ -58,6 +61,7 @@ export type Database = {
       medications: {
         Row: {
           active: boolean | null
+          caregiver_visible: boolean | null
           created_at: string | null
           dosage: string
           frequency: Json | null
@@ -69,6 +73,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          caregiver_visible?: boolean | null
           created_at?: string | null
           dosage: string
           frequency?: Json | null
@@ -80,6 +85,7 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          caregiver_visible?: boolean | null
           created_at?: string | null
           dosage?: string
           frequency?: Json | null

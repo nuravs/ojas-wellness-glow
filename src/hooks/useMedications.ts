@@ -11,12 +11,15 @@ interface Medication {
   time: string;
   taken: boolean;
   medication_id?: string;
+  caregiver_visible?: boolean;
+  logged_by?: string;
+  logged_by_role?: 'patient' | 'caregiver';
 }
 
 export const useMedications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { toast } = useToast();
 
   const loadMedications = async () => {
@@ -42,7 +45,7 @@ export const useMedications = () => {
         return;
       }
 
-      // Get today's medication logs
+      // Get today's medication logs with logged_by information
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
@@ -50,7 +53,12 @@ export const useMedications = () => {
 
       const { data: todayLogs, error: logsError } = await supabase
         .from('medication_logs')
-        .select('*')
+        .select(`
+          *,
+          logged_by_profile:logged_by (
+            id
+          )
+        `)
         .gte('created_at', today.toISOString())
         .lt('created_at', tomorrow.toISOString())
         .eq('status', 'taken');
@@ -59,18 +67,26 @@ export const useMedications = () => {
         console.error('Error loading medication logs:', logsError);
       }
 
+      // Get user profiles to determine roles
+      const userIds = [...new Set([
+        user.id,
+        ...(todayLogs || []).map(log => log.logged_by)
+      ].filter(Boolean))];
+
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p.role]) || []);
+
       // Transform medications to match the expected format
       const transformedMedications: Medication[] = (userMedications || []).flatMap(med => {
         const frequency = med.frequency as { times?: string[] } || { times: ['8:00 AM'] };
         const times = frequency.times || ['8:00 AM'];
         
-        return times.map(time => ({
-          id: `${med.id}-${time}`,
-          medication_id: med.id,
-          name: med.name,
-          dosage: med.dosage,
-          time: time,
-          taken: (todayLogs || []).some(log => 
+        return times.map(time => {
+          const log = (todayLogs || []).find(log => 
             log.medication_id === med.id && 
             log.scheduled_time && 
             new Date(log.scheduled_time).toLocaleTimeString('en-US', { 
@@ -78,8 +94,22 @@ export const useMedications = () => {
               minute: '2-digit',
               hour12: true 
             }) === time
-          )
-        }));
+          );
+
+          return {
+            id: `${med.id}-${time}`,
+            medication_id: med.id,
+            name: med.name,
+            dosage: med.dosage,
+            time: time,
+            taken: !!log,
+            caregiver_visible: med.caregiver_visible,
+            logged_by: log?.logged_by,
+            logged_by_role: log?.logged_by ? 
+              (log.logged_by === med.user_id ? 'patient' : 'caregiver') : 
+              undefined
+          };
+        });
       });
 
       setMedications(transformedMedications);
@@ -115,11 +145,14 @@ export const useMedications = () => {
           .from('medication_logs')
           .insert({
             medication_id: medication.medication_id || medication.id.split('-')[0],
-            user_id: user.id,
+            user_id: medication.logged_by_role === 'caregiver' ? 
+              (await supabase.from('medications').select('user_id').eq('id', medication.medication_id).single()).data?.user_id :
+              user.id,
+            logged_by: user.id,
             scheduled_time: scheduledTime.toISOString(),
             actual_time: new Date().toISOString(),
             status: 'taken',
-            notes: 'Marked as taken via app'
+            notes: `Marked as taken via app by ${userProfile?.role || 'user'}`
           });
 
         if (error) {
@@ -132,9 +165,10 @@ export const useMedications = () => {
           return;
         }
 
+        const loggedByText = userProfile?.role === 'caregiver' ? 'caregiver' : 'patient';
         toast({
           title: "Great job! 🎉",
-          description: `${medication.name} marked as taken.`,
+          description: `${medication.name} marked as taken by ${loggedByText}.`,
           duration: 3000,
         });
       } else {
@@ -149,7 +183,6 @@ export const useMedications = () => {
           .from('medication_logs')
           .delete()
           .eq('medication_id', medicationId)
-          .eq('user_id', user.id)
           .eq('status', 'taken')
           .gte('created_at', today.toISOString())
           .lt('created_at', tomorrow.toISOString());
@@ -169,7 +202,12 @@ export const useMedications = () => {
       setMedications(prev => 
         prev.map(med => 
           med.id === id 
-            ? { ...med, taken: !med.taken }
+            ? { 
+                ...med, 
+                taken: !med.taken,
+                logged_by: !med.taken ? user.id : undefined,
+                logged_by_role: !med.taken ? (userProfile?.role as 'patient' | 'caregiver') : undefined
+              }
             : med
         )
       );
@@ -181,6 +219,48 @@ export const useMedications = () => {
         description: "Failed to update medication",
         variant: "destructive"
       });
+    }
+  };
+
+  const toggleCaregiverVisibility = async (medicationId: string) => {
+    try {
+      const realMedId = medicationId.includes('-') ? medicationId.split('-')[0] : medicationId;
+      
+      const currentMed = medications.find(m => m.medication_id === realMedId);
+      const newVisibility = !currentMed?.caregiver_visible;
+
+      const { error } = await supabase
+        .from('medications')
+        .update({ caregiver_visible: newVisibility })
+        .eq('id', realMedId);
+
+      if (error) {
+        console.error('Error updating caregiver visibility:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update privacy settings",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Update local state
+      setMedications(prev =>
+        prev.map(med =>
+          med.medication_id === realMedId
+            ? { ...med, caregiver_visible: newVisibility }
+            : med
+        )
+      );
+
+      toast({
+        title: "Privacy updated",
+        description: `Medication is now ${newVisibility ? 'visible' : 'hidden'} to caregivers`,
+        duration: 3000,
+      });
+
+    } catch (error) {
+      console.error('Error in toggleCaregiverVisibility:', error);
     }
   };
 
@@ -203,6 +283,7 @@ export const useMedications = () => {
         .insert({
           medication_id: medication.medication_id || medication.id.split('-')[0],
           user_id: user.id,
+          logged_by: user.id,
           scheduled_time: scheduledTime.toISOString(),
           actual_time: null,
           status: 'postponed',
@@ -240,6 +321,7 @@ export const useMedications = () => {
     loading,
     toggleMedication,
     postponeMedication,
+    toggleCaregiverVisibility,
     refetch: loadMedications
   };
 };

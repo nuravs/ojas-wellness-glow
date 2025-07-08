@@ -6,6 +6,7 @@ import MedicationActionsHeader from '../components/medication/MedicationActionsH
 import RefillAlertsSection from '../components/medication/RefillAlertsSection';
 import MedicationsList from '../components/medication/MedicationsList';
 import MedicationEmptyState from '../components/medication/MedicationEmptyState';
+import { useMedications } from '../hooks/useMedications';
 
 interface MedicationsPageProps {
   medications: Array<{
@@ -14,6 +15,8 @@ interface MedicationsPageProps {
     dosage: string;
     time: string;
     taken: boolean;
+    caregiver_visible?: boolean;
+    logged_by_role?: 'patient' | 'caregiver';
   }>;
   onToggleMedication: (id: string) => void;
   onPostponeMedication: (id: string) => void;
@@ -30,6 +33,7 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [dismissedRefills, setDismissedRefills] = useState<string[]>([]);
+  const { toggleCaregiverVisibility } = useMedications();
   
   const pendingMeds = medications.filter(med => !med.taken);
   const completedMeds = medications.filter(med => med.taken);
@@ -117,6 +121,7 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
               completedMeds={completedMeds}
               onToggleMedication={onToggleMedication}
               onPostponeMedication={onPostponeMedication}
+              onToggleVisibility={toggleCaregiverVisibility}
               userRole={userRole}
             />
           )}

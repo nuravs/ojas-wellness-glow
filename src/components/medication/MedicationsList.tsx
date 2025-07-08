@@ -8,6 +8,8 @@ interface Medication {
   dosage: string;
   time: string;
   taken: boolean;
+  caregiver_visible?: boolean;
+  logged_by_role?: 'patient' | 'caregiver';
 }
 
 interface MedicationsListProps {
@@ -15,6 +17,7 @@ interface MedicationsListProps {
   completedMeds: Medication[];
   onToggleMedication: (id: string) => void;
   onPostponeMedication: (id: string) => void;
+  onToggleVisibility?: (id: string) => void;
   userRole: 'patient' | 'caregiver';
 }
 
@@ -23,6 +26,7 @@ const MedicationsList: React.FC<MedicationsListProps> = ({
   completedMeds,
   onToggleMedication,
   onPostponeMedication,
+  onToggleVisibility,
   userRole
 }) => {
   return (
@@ -40,6 +44,7 @@ const MedicationsList: React.FC<MedicationsListProps> = ({
                   medication={medication}
                   onToggle={onToggleMedication}
                   onPostpone={onPostponeMedication}
+                  onToggleVisibility={onToggleVisibility}
                   userRole={userRole}
                 />
               </div>
@@ -60,6 +65,7 @@ const MedicationsList: React.FC<MedicationsListProps> = ({
                 <MedicationCard
                   medication={medication}
                   onToggle={onToggleMedication}
+                  onToggleVisibility={onToggleVisibility}
                   userRole={userRole}
                 />
               </div>

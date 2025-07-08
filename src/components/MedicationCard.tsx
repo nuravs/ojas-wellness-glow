@@ -9,12 +9,15 @@ interface Medication {
   dosage: string;
   time: string;
   taken: boolean;
+  caregiver_visible?: boolean;
+  logged_by_role?: 'patient' | 'caregiver';
 }
 
 interface MedicationCardProps {
   medication: Medication;
   onToggle: (id: string) => void;
   onPostpone?: (id: string) => void;
+  onToggleVisibility?: (id: string) => void;
   isPriority?: boolean;
   userRole?: 'patient' | 'caregiver';
 }
@@ -23,12 +26,13 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   medication, 
   onToggle, 
   onPostpone,
+  onToggleVisibility,
   isPriority = false,
   userRole = 'patient'
 }) => {
   // Completed medication state
   if (medication.taken) {
-    return <CompletedMedicationCard medication={medication} />;
+    return <CompletedMedicationCard medication={medication} userRole={userRole} />;
   }
 
   // Pending medication state
@@ -37,6 +41,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
       medication={medication}
       onToggle={onToggle}
       onPostpone={onPostpone}
+      onToggleVisibility={onToggleVisibility}
       isPriority={isPriority}
       userRole={userRole}
     />
