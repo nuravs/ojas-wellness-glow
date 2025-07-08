@@ -58,8 +58,7 @@ const PendingMedicationCard: React.FC<PendingMedicationCardProps> = ({
     onPostpone?.(medication.id);
   };
 
-  const handleToggleVisibility = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleVisibility = () => {
     onToggleVisibility?.(medication.id);
   };
 
