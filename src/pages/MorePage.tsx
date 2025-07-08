@@ -8,18 +8,21 @@ import {
   Shield, 
   Phone, 
   Info,
-  ChevronRight 
+  ChevronRight,
+  Activity
 } from 'lucide-react';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 
 interface MorePageProps {
   onNavigateToDoctors?: () => void;
   onNavigateToSettings?: () => void;
+  onNavigateToComorbidities?: () => void;
 }
 
 const MorePage: React.FC<MorePageProps> = ({ 
   onNavigateToDoctors, 
-  onNavigateToSettings 
+  onNavigateToSettings,
+  onNavigateToComorbidities
 }) => {
   const menuItems = [
     {
@@ -28,6 +31,14 @@ const MorePage: React.FC<MorePageProps> = ({
       description: 'Healthcare team and appointments',
       icon: Stethoscope,
       color: 'primary-blue',
+      priority: 'high'
+    },
+    {
+      id: 'comorbidities',
+      title: 'Health Conditions',
+      description: 'Track and manage your health conditions',
+      icon: Activity,
+      color: 'calming-green',
       priority: 'high'
     },
     {
@@ -89,6 +100,9 @@ const MorePage: React.FC<MorePageProps> = ({
         break;
       case 'settings':
         onNavigateToSettings?.();
+        break;
+      case 'comorbidities':
+        onNavigateToComorbidities?.();
         break;
       case 'profile':
         console.log('Navigate to Profile');

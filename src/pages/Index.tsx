@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
@@ -9,6 +8,7 @@ import MorePage from './MorePage';
 import SymptomsPage from './SymptomsPage';
 import DoctorsHubPage from './DoctorsHubPage';
 import EnhancedSettingsPage from './EnhancedSettingsPage';
+import ComorbiditiesPage from './ComorbiditiesPage';
 import Navigation from '../components/Navigation';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,7 +16,7 @@ import { useMedications } from '../hooks/useMedications';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
-  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings'>('main');
+  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities'>('main');
   
   const { user, userProfile, loading: authLoading } = useAuth();
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
@@ -34,6 +34,10 @@ const Index = () => {
 
   const handleNavigateToSettings = () => {
     setCurrentPage('settings');
+  };
+
+  const handleNavigateToComorbidities = () => {
+    setCurrentPage('comorbidities');
   };
 
   const handleBackToMore = () => {
@@ -54,6 +58,14 @@ const Index = () => {
     return (
       <ThemeProvider>
         <EnhancedSettingsPage onBack={handleBackToMore} />
+      </ThemeProvider>
+    );
+  }
+
+  if (currentPage === 'comorbidities') {
+    return (
+      <ThemeProvider>
+        <ComorbiditiesPage onBack={handleBackToMore} />
       </ThemeProvider>
     );
   }
@@ -107,6 +119,7 @@ const Index = () => {
           <MorePage 
             onNavigateToDoctors={handleNavigateToDoctors}
             onNavigateToSettings={handleNavigateToSettings}
+            onNavigateToComorbidities={handleNavigateToComorbidities}
           />
         );
       default:

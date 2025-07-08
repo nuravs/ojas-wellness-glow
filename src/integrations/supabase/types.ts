@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      comorbidities: {
+        Row: {
+          caregiver_visible: boolean | null
+          condition_name: string
+          created_at: string | null
+          diagnosed_date: string | null
+          id: string
+          notes: string | null
+          severity: Database["public"]["Enums"]["severity_level"] | null
+          status: Database["public"]["Enums"]["comorbidity_status"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          caregiver_visible?: boolean | null
+          condition_name: string
+          created_at?: string | null
+          diagnosed_date?: string | null
+          id?: string
+          notes?: string | null
+          severity?: Database["public"]["Enums"]["severity_level"] | null
+          status?: Database["public"]["Enums"]["comorbidity_status"] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          caregiver_visible?: boolean | null
+          condition_name?: string
+          created_at?: string | null
+          diagnosed_date?: string | null
+          id?: string
+          notes?: string | null
+          severity?: Database["public"]["Enums"]["severity_level"] | null
+          status?: Database["public"]["Enums"]["comorbidity_status"] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      medication_conditions: {
+        Row: {
+          comorbidity_id: string
+          created_at: string | null
+          id: string
+          medication_id: string
+        }
+        Insert: {
+          comorbidity_id: string
+          created_at?: string | null
+          id?: string
+          medication_id: string
+        }
+        Update: {
+          comorbidity_id?: string
+          created_at?: string | null
+          id?: string
+          medication_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_medication_conditions_comorbidity"
+            columns: ["comorbidity_id"]
+            isOneToOne: false
+            referencedRelation: "comorbidities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_medication_conditions_medication"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medication_logs: {
         Row: {
           actual_time: string | null
@@ -177,7 +252,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      comorbidity_status: "active" | "controlled" | "monitoring" | "inactive"
+      severity_level: "mild" | "moderate" | "severe"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -304,6 +380,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      comorbidity_status: ["active", "controlled", "monitoring", "inactive"],
+      severity_level: ["mild", "moderate", "severe"],
+    },
   },
 } as const
