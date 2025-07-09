@@ -78,7 +78,7 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
 
   return (
     <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
-      <div className="overflow-y-auto pb-32" style={{ padding: '0 16px' }}>
+      <div className="overflow-y-auto pb-20" style={{ padding: '0 16px' }}>
         <SafeAreaContainer>
           <MedicationActionsHeader
             userRole={userRole}

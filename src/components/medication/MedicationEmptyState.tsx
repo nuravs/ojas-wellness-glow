@@ -16,28 +16,12 @@ const MedicationEmptyState: React.FC<MedicationEmptyStateProps> = ({
       <div className="w-24 h-24 bg-ojas-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
         <Plus className="w-12 h-12 text-ojas-primary" />
       </div>
-      <h3 className="text-xl font-semibold text-ojas-text-main mb-2">
+      <h3 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
         No medications yet
       </h3>
-      <p className="text-ojas-text-secondary mb-6">
-        Tap the + button to add your first medication or use the camera to upload a prescription
+      <p className="text-ojas-text-secondary dark:text-ojas-cloud-silver mb-6">
+        Use the buttons above to add your first medication or scan a prescription
       </p>
-      <div className="flex gap-4 justify-center">
-        <button
-          onClick={onAddMedication}
-          className="px-8 py-4 bg-ojas-primary text-white rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-ojas-primary-hover active:scale-95 shadow-ojas-medium"
-          style={{ minHeight: '44px' }}
-        >
-          Add Medication
-        </button>
-        <button
-          onClick={onCameraUpload}
-          className="px-8 py-4 bg-ojas-alert text-ojas-text-main rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-ojas-alert-hover active:scale-95 shadow-ojas-medium"
-          style={{ minHeight: '44px' }}
-        >
-          Upload Prescription
-        </button>
-      </div>
     </div>
   );
 };
