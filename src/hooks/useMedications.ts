@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,7 +22,13 @@ export const useMedications = () => {
   const { toast } = useToast();
 
   const loadMedications = async () => {
-    if (!user) return;
+    console.log('loadMedications called, user:', !!user);
+    
+    if (!user) {
+      console.log('No user, setting loading to false');
+      setLoading(false);
+      return;
+    }
 
     try {
       console.log('Loading medications for user:', user.id);
@@ -32,6 +37,7 @@ export const useMedications = () => {
       const { data: userMedications, error: medsError } = await supabase
         .from('medications')
         .select('*')
+        .eq('user_id', user.id)
         .eq('active', true)
         .order('created_at', { ascending: true });
 
@@ -42,8 +48,11 @@ export const useMedications = () => {
           description: "Please try refreshing the page",
           variant: "destructive"
         });
+        setLoading(false);
         return;
       }
+
+      console.log('Loaded medications:', userMedications?.length || 0);
 
       // Get today's medication logs with logged_by information
       const today = new Date();
@@ -59,6 +68,7 @@ export const useMedications = () => {
             id
           )
         `)
+        .eq('user_id', user.id)
         .gte('created_at', today.toISOString())
         .lt('created_at', tomorrow.toISOString())
         .eq('status', 'taken');
@@ -67,18 +77,7 @@ export const useMedications = () => {
         console.error('Error loading medication logs:', logsError);
       }
 
-      // Get user profiles to determine roles
-      const userIds = [...new Set([
-        user.id,
-        ...(todayLogs || []).map(log => log.logged_by)
-      ].filter(Boolean))];
-
-      const { data: profiles } = await supabase
-        .from('user_profiles')
-        .select('user_id, role')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p.role]) || []);
+      console.log('Loaded logs:', todayLogs?.length || 0);
 
       // Transform medications to match the expected format
       const transformedMedications: Medication[] = (userMedications || []).flatMap(med => {
@@ -106,12 +105,13 @@ export const useMedications = () => {
             caregiver_visible: med.caregiver_visible,
             logged_by: log?.logged_by,
             logged_by_role: log?.logged_by ? 
-              (log.logged_by === med.user_id ? 'patient' : 'caregiver') : 
+              (log.logged_by === user.id ? 'patient' : 'caregiver') : 
               undefined
           };
         });
       });
 
+      console.log('Transformed medications:', transformedMedications.length);
       setMedications(transformedMedications);
     } catch (error) {
       console.error('Error in loadMedications:', error);
@@ -121,6 +121,7 @@ export const useMedications = () => {
         variant: "destructive"
       });
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
@@ -145,9 +146,7 @@ export const useMedications = () => {
           .from('medication_logs')
           .insert({
             medication_id: medication.medication_id || medication.id.split('-')[0],
-            user_id: medication.logged_by_role === 'caregiver' ? 
-              (await supabase.from('medications').select('user_id').eq('id', medication.medication_id).single()).data?.user_id :
-              user.id,
+            user_id: user.id,
             logged_by: user.id,
             scheduled_time: scheduledTime.toISOString(),
             actual_time: new Date().toISOString(),
@@ -183,6 +182,7 @@ export const useMedications = () => {
           .from('medication_logs')
           .delete()
           .eq('medication_id', medicationId)
+          .eq('user_id', user.id)
           .eq('status', 'taken')
           .gte('created_at', today.toISOString())
           .lt('created_at', tomorrow.toISOString());
@@ -311,9 +311,8 @@ export const useMedications = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      loadMedications();
-    }
+    console.log('useMedications useEffect triggered, user:', !!user);
+    loadMedications();
   }, [user]);
 
   return {
