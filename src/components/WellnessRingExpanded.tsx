@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, Clock, Minus } from 'lucide-react';
+import { Check, Clock, Minus, Activity, AlertCircle } from 'lucide-react';
 import WellnessRingSummaryItem from './WellnessRingSummaryItem';
 
 interface MedsCount {
@@ -8,26 +8,48 @@ interface MedsCount {
   total: number;
 }
 
+interface ComorbidityStatus {
+  controlled: number;
+  needsAttention: number;
+  total: number;
+}
+
 interface WellnessRingExpandedProps {
   medsCount: MedsCount;
   symptomsLogged: boolean;
   nextAppointment?: string;
+  comorbidityStatus?: ComorbidityStatus;
 }
 
 const WellnessRingExpanded: React.FC<WellnessRingExpandedProps> = ({ 
   medsCount, 
   symptomsLogged, 
-  nextAppointment 
+  nextAppointment,
+  comorbidityStatus
 }) => {
   const getSummaryItems = () => {
-    return [
+    const items = [
       {
         label: 'Medications',
         value: `${medsCount.taken}/${medsCount.total} taken`,
         status: (medsCount.taken === medsCount.total ? 'good' : 'attention') as 'good' | 'attention' | 'neutral',
         icon: medsCount.taken === medsCount.total ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />,
         textStatus: medsCount.taken === medsCount.total ? 'Complete' : 'Pending'
-      },
+      }
+    ];
+
+    // Add comorbidity status if available
+    if (comorbidityStatus && comorbidityStatus.total > 0) {
+      items.push({
+        label: 'Health Conditions',
+        value: `${comorbidityStatus.controlled} controlled, ${comorbidityStatus.needsAttention} need attention`,
+        status: (comorbidityStatus.needsAttention === 0 ? 'good' : 'attention') as 'good' | 'attention' | 'neutral',
+        icon: comorbidityStatus.needsAttention === 0 ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />,
+        textStatus: comorbidityStatus.needsAttention === 0 ? 'Well Managed' : 'Need Review'
+      });
+    }
+
+    items.push(
       {
         label: 'Symptoms',
         value: symptomsLogged ? 'Logged today' : 'No entries yet',
@@ -42,7 +64,9 @@ const WellnessRingExpanded: React.FC<WellnessRingExpandedProps> = ({
         icon: <Clock className="w-4 h-4" />,
         textStatus: nextAppointment ? 'Upcoming' : 'None'
       }
-    ];
+    );
+
+    return items;
   };
 
   return (

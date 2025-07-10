@@ -1,7 +1,13 @@
 
 import React, { useState } from 'react';
-import { X, TrendingUp } from 'lucide-react';
+import { X, TrendingUp, Activity } from 'lucide-react';
 import { getCopyForRole } from '../utils/roleBasedCopy';
+
+interface ComorbidityStatus {
+  controlled: number;
+  needsAttention: number;
+  total: number;
+}
 
 interface EnhancedWellnessRingProps {
   status: 'good' | 'attention' | 'urgent';
@@ -11,6 +17,7 @@ interface EnhancedWellnessRingProps {
   score: number;
   userRole?: 'patient' | 'caregiver';
   onExpand?: () => void;
+  comorbidityStatus?: ComorbidityStatus;
 }
 
 const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({ 
@@ -20,7 +27,8 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   nextAppointment,
   score,
   userRole = 'patient',
-  onExpand 
+  onExpand,
+  comorbidityStatus
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -124,13 +132,13 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
           </div>
         </button>
 
-        {/* Enhanced Tooltip Overlay with Close Icon */}
+        {/* Enhanced Tooltip Overlay with Comorbidity Information */}
         {showTooltip && (
           <div 
             className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-gentle-fade-in"
             onClick={handleOutsideClick}
           >
-            <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-strong max-w-xs mx-4 relative">
+            <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-strong max-w-sm mx-4 relative">
               <button
                 onClick={handleCloseTooltip}
                 className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -147,6 +155,33 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
                 <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver mb-4">
                   {score}/100 – {scoreZone.label}
                 </p>
+
+                {/* Health Breakdown */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">Medications</span>
+                    <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
+                      {medsCount.taken}/{medsCount.total} taken
+                    </span>
+                  </div>
+                  
+                  {comorbidityStatus && comorbidityStatus.total > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">Conditions</span>
+                      <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
+                        {comorbidityStatus.controlled} controlled, {comorbidityStatus.needsAttention} need attention
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">Symptoms</span>
+                    <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
+                      {symptomsLogged ? 'Logged today' : 'None today'}
+                    </span>
+                  </div>
+                </div>
+
                 <button
                   onClick={handleDetailsClick}
                   className="w-full px-4 py-3 bg-ojas-primary text-white rounded-xl text-sm font-medium hover:bg-ojas-primary-hover transition-colors duration-200 flex items-center justify-center gap-2"
