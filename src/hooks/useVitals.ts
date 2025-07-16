@@ -46,7 +46,7 @@ export const useVitals = () => {
         console.error('Error fetching vitals:', error);
         setVitals([]);
       } else {
-        setVitals((data || []) as Vital[]);
+        setVitals((data || []) as unknown as Vital[]);
       }
     } catch (error) {
       console.error('Error fetching vitals:', error);
@@ -84,7 +84,7 @@ export const useVitals = () => {
 
       if (error) throw error;
       
-      setVitals(prev => [data as Vital, ...prev]);
+      setVitals(prev => [data as unknown as Vital, ...prev]);
       return data;
     } catch (error) {
       console.error('Error adding vital:', error);
