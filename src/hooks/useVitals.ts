@@ -35,25 +35,21 @@ export const useVitals = () => {
     }
 
     try {
-      // Use raw SQL query since types aren't updated yet
+      // Query the vitals table directly with type assertion for now
       const { data, error } = await supabase
-        .rpc('get_user_vitals', { user_id_param: user.id });
-
-      if (error) {
-        // Fallback to direct query if RPC doesn't exist
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('vitals' as any)
-          .select('*')
-          .order('measured_at', { ascending: false });
+        .from('vitals' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('measured_at', { ascending: false });
         
-        if (fallbackError) throw fallbackError;
-        setVitals(fallbackData || []);
+      if (error) {
+        console.error('Error fetching vitals:', error);
+        setVitals([]);
       } else {
-        setVitals(data || []);
+        setVitals((data || []) as Vital[]);
       }
     } catch (error) {
       console.error('Error fetching vitals:', error);
-      // Set empty array on error to prevent crashes
       setVitals([]);
     } finally {
       setLoading(false);
@@ -88,7 +84,7 @@ export const useVitals = () => {
 
       if (error) throw error;
       
-      setVitals(prev => [data, ...prev]);
+      setVitals(prev => [data as Vital, ...prev]);
       return data;
     } catch (error) {
       console.error('Error adding vital:', error);
