@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
+import VitalsPage from './VitalsPage';
 import WellnessCenterPage from './WellnessCenterPage';
 import RecordsPage from './RecordsPage';
 import MorePage from './MorePage';
@@ -111,7 +113,7 @@ const Index = () => {
       case 'symptoms':
         return <SymptomsPage userRole={userRole} />;
       case 'wellness':
-        return <WellnessCenterPage />;
+        return <VitalsPage userRole={userRole} />;
       case 'records':
         return <RecordsPage />;
       case 'more':

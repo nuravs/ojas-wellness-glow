@@ -7,6 +7,7 @@ import AIAssistantFAB from '../components/AIAssistantFAB';
 import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import ComorbidityStatusSummary from '../components/ComorbidityStatusSummary';
+import VitalsWidget from '../components/vitals/VitalsWidget';
 import { useComorbidities } from '../hooks/useComorbidities';
 
 interface HomePageProps {
@@ -76,6 +77,10 @@ const HomePage: React.FC<HomePageProps> = ({
     console.log('Navigate to trends and detailed wellness view');
   };
 
+  const handleNavigateToVitals = () => {
+    console.log('Navigate to vitals page');
+  };
+
   // Calculate comorbidity summary for dashboard
   const getComorbidityStatus = () => {
     const controlled = comorbidities.filter(c => c.status === 'controlled').length;
@@ -115,6 +120,14 @@ const HomePage: React.FC<HomePageProps> = ({
               />
             </div>
           )}
+
+          {/* Vitals Widget */}
+          <div className="mb-8">
+            <VitalsWidget 
+              userRole={userRole}
+              onNavigateToVitals={handleNavigateToVitals}
+            />
+          </div>
 
           {/* Today's Action Summary - Compact */}
           <div className="mb-8">
