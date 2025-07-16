@@ -35,15 +35,26 @@ export const useVitals = () => {
     }
 
     try {
+      // Use raw SQL query since types aren't updated yet
       const { data, error } = await supabase
-        .from('vitals')
-        .select('*')
-        .order('measured_at', { ascending: false });
+        .rpc('get_user_vitals', { user_id_param: user.id });
 
-      if (error) throw error;
-      setVitals(data || []);
+      if (error) {
+        // Fallback to direct query if RPC doesn't exist
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('vitals' as any)
+          .select('*')
+          .order('measured_at', { ascending: false });
+        
+        if (fallbackError) throw fallbackError;
+        setVitals(fallbackData || []);
+      } else {
+        setVitals(data || []);
+      }
     } catch (error) {
       console.error('Error fetching vitals:', error);
+      // Set empty array on error to prevent crashes
+      setVitals([]);
     } finally {
       setLoading(false);
     }
@@ -58,17 +69,20 @@ export const useVitals = () => {
     if (!user) return;
 
     try {
+      const vitalPayload = {
+        user_id: user.id,
+        logged_by: user.id,
+        vital_type: vitalData.vital_type,
+        values: vitalData.values,
+        notes: vitalData.notes,
+        measured_at: vitalData.measured_at || new Date().toISOString(),
+        out_of_range: checkIfOutOfRange(vitalData.vital_type, vitalData.values),
+        caregiver_visible: true,
+      };
+
       const { data, error } = await supabase
-        .from('vitals')
-        .insert({
-          user_id: user.id,
-          logged_by: user.id,
-          vital_type: vitalData.vital_type,
-          values: vitalData.values,
-          notes: vitalData.notes,
-          measured_at: vitalData.measured_at || new Date().toISOString(),
-          out_of_range: checkIfOutOfRange(vitalData.vital_type, vitalData.values),
-        })
+        .from('vitals' as any)
+        .insert(vitalPayload)
         .select()
         .single();
 
