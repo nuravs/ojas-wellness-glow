@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from '../hooks/use-toast';
+import { isOutOfRange, getVitalRangeStatus as getVitalStatus } from '../utils/vitalsUtils';
 
 export interface Vital {
   id: string;
@@ -42,12 +44,22 @@ export const useVitals = () => {
         
       if (error) {
         console.error('Error fetching vitals:', error);
+        toast({
+          title: "Connection Error",
+          description: "Unable to load vitals data. Please check your connection.",
+          variant: "destructive",
+        });
         setVitals([]);
       } else {
         setVitals((data || []) as unknown as Vital[]);
       }
     } catch (error) {
       console.error('Error fetching vitals:', error);
+      toast({
+        title: "Database Error", 
+        description: "Failed to load vitals. Please try again.",
+        variant: "destructive",
+      });
       setVitals([]);
     } finally {
       setLoading(false);
@@ -60,16 +72,25 @@ export const useVitals = () => {
     notes?: string;
     measured_at?: string;
   }) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "Please log in to add vitals",
+        variant: "destructive",
+      });
+      throw new Error('User not authenticated');
+    }
 
     try {
+      const outOfRange = isOutOfRange(vitalData.vital_type, vitalData.values);
+      
       const vitalPayload = {
         user_id: user.id,
         vital_type: vitalData.vital_type,
         values: vitalData.values as any, // JSONB field needs type casting
         notes: vitalData.notes,
         measured_at: vitalData.measured_at || new Date().toISOString(),
-        out_of_range: checkIfOutOfRange(vitalData.vital_type, vitalData.values),
+        out_of_range: outOfRange,
       };
 
       const { data, error } = await supabase
@@ -78,7 +99,24 @@ export const useVitals = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding vital:', error);
+        toast({
+          title: "Database Error",
+          description: "Failed to save vital sign. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      // Show success message
+      toast({
+        title: "Vital Added",
+        description: outOfRange ? 
+          "Vital sign recorded. Please review the out-of-range alert." :
+          "Vital sign recorded successfully",
+        variant: outOfRange ? "destructive" : "default",
+      });
       
       setVitals(prev => [data as unknown as Vital, ...prev]);
       return data;
@@ -89,57 +127,11 @@ export const useVitals = () => {
   };
 
   const checkIfOutOfRange = (type: Vital['vital_type'], values: VitalReading): boolean => {
-    switch (type) {
-      case 'blood_pressure':
-        if (values.systolic && values.diastolic) {
-          return values.systolic > 140 || values.diastolic > 90 || values.systolic < 90 || values.diastolic < 60;
-        }
-        return false;
-      case 'blood_sugar':
-        if (values.value) {
-          return values.value > 180 || values.value < 70;
-        }
-        return false;
-      case 'pulse':
-        if (values.value) {
-          return values.value > 100 || values.value < 60;
-        }
-        return false;
-      case 'temperature':
-        if (values.value) {
-          return values.value > 99.5 || values.value < 97.0;
-        }
-        return false;
-      default:
-        return false;
-    }
+    return isOutOfRange(type, values);
   };
 
   const getVitalRangeStatus = (type: Vital['vital_type'], values: VitalReading) => {
-    const isOutOfRange = checkIfOutOfRange(type, values);
-    if (isOutOfRange) return 'high';
-    
-    switch (type) {
-      case 'blood_pressure':
-        if (values.systolic && values.diastolic) {
-          if (values.systolic <= 120 && values.diastolic <= 80) return 'good';
-          return 'attention';
-        }
-        break;
-      case 'blood_sugar':
-        if (values.value) {
-          if (values.value >= 80 && values.value <= 140) return 'good';
-          return 'attention';
-        }
-        break;
-      case 'pulse':
-        if (values.value) {
-          if (values.value >= 60 && values.value <= 100) return 'good';
-          return 'attention';
-        }
-        break;
-    }
-    return 'good';
+    return getVitalStatus(type, values);
   };
 
   useEffect(() => {

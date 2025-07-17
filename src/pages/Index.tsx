@@ -17,7 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMedications } from '../hooks/useMedications';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'wellness' | 'records' | 'more'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities'>('main');
   
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -112,7 +112,7 @@ const Index = () => {
         );
       case 'symptoms':
         return <SymptomsPage userRole={userRole} />;
-      case 'wellness':
+      case 'vitals':
         return <VitalsPage userRole={userRole} onBack={() => setActiveTab('home')} />;
       case 'records':
         return <RecordsPage />;

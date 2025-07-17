@@ -106,7 +106,7 @@ const VitalsWidget: React.FC<VitalsWidgetProps> = ({
         {latestVitals.slice(0, 3).map(({ type, vital }) => {
           const Icon = getVitalIcon(type);
           const status = getVitalRangeStatus(vital.vital_type, vital.values);
-          const statusColor = status === 'good' ? 'text-ojas-success' : 
+          const statusColor = status === 'optimal' || status === 'normal' ? 'text-ojas-success' : 
                              status === 'attention' ? 'text-ojas-alert' : 'text-ojas-error';
           
           return (
