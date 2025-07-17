@@ -102,7 +102,7 @@ export const useSupportGroups = () => {
       if (error) throw error;
 
       // Update member count
-      await supabase.rpc('increment_group_member_count', { group_id: groupId });
+      await (supabase as any).rpc('increment_group_member_count', { group_id: groupId });
 
       toast({
         title: "Successfully joined group",
@@ -136,7 +136,7 @@ export const useSupportGroups = () => {
       if (error) throw error;
 
       // Update member count
-      await supabase.rpc('decrement_group_member_count', { group_id: groupId });
+      await (supabase as any).rpc('decrement_group_member_count', { group_id: groupId });
 
       toast({
         title: "Left group successfully",

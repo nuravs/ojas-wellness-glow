@@ -628,6 +628,14 @@ export type Database = {
         Args: { patient_user_id: string }
         Returns: boolean
       }
+      decrement_group_member_count: {
+        Args: { group_id: string }
+        Returns: undefined
+      }
+      increment_group_member_count: {
+        Args: { group_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       comorbidity_status: "active" | "controlled" | "monitoring" | "inactive"

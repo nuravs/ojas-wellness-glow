@@ -1,0 +1,8 @@
+-- Insert brain gym exercises data
+INSERT INTO public.brain_gym_exercises (name, category, difficulty_level, description, instructions, target_skills, estimated_duration) VALUES
+('Memory Sequence', 'memory', 1, 'Remember and repeat sequences of numbers or colors', '{"steps": ["Display a sequence", "User repeats sequence", "Increase sequence length"], "rules": "Start with 3 items, increase by 1 each round"}', ARRAY['short_term_memory', 'attention'], 10),
+('Pattern Recognition', 'attention', 2, 'Identify patterns in visual sequences', '{"steps": ["Show pattern sequence", "Present options", "User selects correct pattern"], "rules": "Time limit of 30 seconds per pattern"}', ARRAY['pattern_recognition', 'visual_processing'], 15),
+('Hand-Eye Coordination', 'coordination', 1, 'Track moving objects with cursor or touch', '{"steps": ["Display moving targets", "User tracks with cursor", "Score based on accuracy"], "rules": "Targets move faster as level increases"}', ARRAY['motor_coordination', 'reaction_time'], 8),
+('Mental Math', 'problem_solving', 3, 'Solve arithmetic problems quickly', '{"steps": ["Present math problem", "User enters answer", "Immediate feedback"], "rules": "Progressive difficulty, time pressure"}', ARRAY['calculation', 'working_memory'], 12),
+('Word Memory', 'memory', 2, 'Remember lists of words', '{"steps": ["Show word list", "Recall phase", "Check accuracy"], "rules": "Start with 5 words, increase by 2 each level"}', ARRAY['verbal_memory', 'recall'], 10),
+('Dual N-Back', 'attention', 4, 'Track position and audio simultaneously', '{"steps": ["Present visual and audio stimuli", "User identifies matches", "Increase difficulty"], "rules": "Advanced working memory exercise"}', ARRAY['working_memory', 'dual_task'], 20);
