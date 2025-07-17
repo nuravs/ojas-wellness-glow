@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Heart, Droplets, Activity, Weight, Thermometer } from 'lucide-react';
+import { Heart, Droplets, Activity, Weight, Thermometer, Plus } from 'lucide-react';
 import { Vital } from '../../hooks/useVitals';
 
 interface VitalsDashboardProps {
@@ -107,9 +107,14 @@ const VitalsDashboard: React.FC<VitalsDashboardProps> = ({
                   </p>
                 </div>
               ) : (
-                <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                  Tap to add first reading
-                </p>
+                <div className="text-center py-2">
+                  <div className="w-8 h-8 bg-ojas-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Plus className="w-4 h-4 text-ojas-primary" />
+                  </div>
+                  <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                    Tap to add reading
+                  </p>
+                </div>
               )}
             </button>
           );

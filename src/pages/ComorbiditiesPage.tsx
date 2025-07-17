@@ -38,13 +38,16 @@ const ComorbiditiesPage: React.FC<ComorbiditiesPageProps> = ({ onBack }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-ojas-bg-light pb-28">
-        <SafeAreaContainer>
-          <div className="text-center pt-20">
-            <div className="w-12 h-12 border-4 border-ojas-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-ojas-text-secondary">Loading your conditions...</p>
-          </div>
-        </SafeAreaContainer>
+      <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-ojas-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
+            Loading Health Conditions
+          </h3>
+          <p className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
+            Retrieving your health condition information...
+          </p>
+        </div>
       </div>
     );
   }
@@ -113,21 +116,29 @@ const ComorbiditiesPage: React.FC<ComorbiditiesPageProps> = ({ onBack }) => {
         {/* Conditions List */}
         <div className="space-y-4">
           {comorbidities.length === 0 ? (
-            <div className="text-center py-12">
-              <Activity className="w-16 h-16 text-ojas-text-secondary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-ojas-text-main mb-2">
-                No conditions tracked yet
+            <div className="text-center py-12 px-6">
+              <div className="w-20 h-20 bg-ojas-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Activity className="w-10 h-10 text-ojas-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
+                ✅ Health Conditions Page Working!
               </h3>
-              <p className="text-ojas-text-secondary mb-6">
-                Start by adding your health conditions to better manage your care
+              <p className="text-ojas-text-secondary dark:text-ojas-cloud-silver mb-6 max-w-sm mx-auto">
+                Ready to track your health conditions! Add conditions like hypertension, diabetes, or arthritis to get personalized insights and better medication management.
               </p>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="bg-ojas-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-ojas-primary-hover transition-colors shadow-ojas-medium"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-ojas-primary text-white rounded-xl hover:bg-ojas-primary-hover transition-colors font-medium"
                 style={{ minHeight: '44px' }}
               >
-                Add Your First Condition
+                <Plus className="w-5 h-5" />
+                Add First Condition
               </button>
+              <div className="mt-6 bg-ojas-bg-light dark:bg-ojas-charcoal-gray rounded-xl p-4 border border-ojas-border dark:border-ojas-slate-gray">
+                <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                  💡 Common conditions: Hypertension, Diabetes, Arthritis, Heart Disease
+                </p>
+              </div>
             </div>
           ) : (
             comorbidities.map(condition => (

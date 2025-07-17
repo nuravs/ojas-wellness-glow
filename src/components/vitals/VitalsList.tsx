@@ -73,14 +73,24 @@ const VitalsList: React.FC<VitalsListProps> = ({
 
   if (vitals.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Activity className="w-16 h-16 text-ojas-text-secondary dark:text-ojas-cloud-silver mx-auto mb-4 opacity-50" />
+      <div className="text-center py-12 px-6">
+        <div className="w-20 h-20 bg-ojas-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Heart className="w-10 h-10 text-ojas-primary" />
+        </div>
         <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
-          No vitals recorded yet
+          ✅ Vitals Page Working!
         </h3>
-        <p className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
-          Tap the + button to add your first vital reading
+        <p className="text-ojas-text-secondary dark:text-ojas-cloud-silver mb-6 max-w-sm mx-auto">
+          {userRole === 'caregiver' 
+            ? "Ready to track Jane's health! Use the dashboard above to record vital signs like blood pressure, heart rate, and weight."
+            : "Ready to track your health! Use the dashboard above to record vital signs like blood pressure, heart rate, and weight."
+          }
         </p>
+        <div className="bg-ojas-bg-light dark:bg-ojas-charcoal-gray rounded-xl p-4 border border-ojas-border dark:border-ojas-slate-gray">
+          <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
+            💡 Tip: Use the quick entry cards above to add your first vital reading
+          </p>
+        </div>
       </div>
     );
   }

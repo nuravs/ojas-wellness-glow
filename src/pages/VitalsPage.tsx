@@ -39,8 +39,13 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
     return (
       <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-ojas-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-ojas-text-secondary dark:text-ojas-cloud-silver">Loading vitals...</p>
+          <div className="w-16 h-16 border-4 border-ojas-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
+            Loading Your Health Data
+          </h3>
+          <p className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
+            Retrieving your vitals and health information...
+          </p>
         </div>
       </div>
     );
