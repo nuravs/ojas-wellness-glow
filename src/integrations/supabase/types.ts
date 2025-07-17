@@ -180,11 +180,14 @@ export type Database = {
           active: boolean | null
           caregiver_visible: boolean | null
           created_at: string | null
+          daily_consumption: number | null
           dosage: string
           frequency: Json | null
           id: string
           instructions: string | null
           name: string
+          next_refill_date: string | null
+          pills_remaining: number | null
           updated_at: string | null
           user_id: string
         }
@@ -192,11 +195,14 @@ export type Database = {
           active?: boolean | null
           caregiver_visible?: boolean | null
           created_at?: string | null
+          daily_consumption?: number | null
           dosage: string
           frequency?: Json | null
           id?: string
           instructions?: string | null
           name: string
+          next_refill_date?: string | null
+          pills_remaining?: number | null
           updated_at?: string | null
           user_id: string
         }
@@ -204,11 +210,14 @@ export type Database = {
           active?: boolean | null
           caregiver_visible?: boolean | null
           created_at?: string | null
+          daily_consumption?: number | null
           dosage?: string
           frequency?: Json | null
           id?: string
           instructions?: string | null
           name?: string
+          next_refill_date?: string | null
+          pills_remaining?: number | null
           updated_at?: string | null
           user_id?: string
         }

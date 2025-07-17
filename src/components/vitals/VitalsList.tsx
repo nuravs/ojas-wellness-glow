@@ -55,6 +55,46 @@ const VitalsList: React.FC<VitalsListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'normal': return 'text-ojas-calming-green bg-ojas-calming-green/10';
+      case 'borderline': return 'text-ojas-soft-gold bg-ojas-soft-gold/10';
+      case 'high': return 'text-ojas-error bg-ojas-error/10';
+      case 'low': return 'text-ojas-primary-blue bg-ojas-primary-blue/10';
+      default: return 'text-ojas-charcoal-gray bg-ojas-charcoal-gray/10';
+    }
+  };
+
+  const getTrendIcon = (vital: Vital, previousVital?: Vital) => {
+    if (!previousVital) return null;
+    
+    let currentValue, previousValue;
+    
+    switch (vital.vital_type) {
+      case 'blood_pressure':
+        currentValue = vital.values.systolic;
+        previousValue = previousVital.values.systolic;
+        break;
+      case 'blood_sugar':
+      case 'pulse':
+      case 'weight':
+      case 'temperature':
+        currentValue = vital.values.value;
+        previousValue = previousVital.values.value;
+        break;
+      default:
+        return null;
+    }
+    
+    if (currentValue > previousValue) {
+      return <span className="text-ojas-error">↑</span>;
+    } else if (currentValue < previousValue) {
+      return <span className="text-ojas-calming-green">↓</span>;
+    } else {
+      return <span className="text-ojas-slate-gray">→</span>;
+    }
+  };
+
+  const getVitalStatusColor = (status: string) => {
+    switch (status) {
       case 'good': return 'text-ojas-success';
       case 'attention': return 'text-ojas-alert';
       case 'high': return 'text-ojas-error';
@@ -107,9 +147,11 @@ const VitalsList: React.FC<VitalsListProps> = ({
       </div>
 
       <div className="space-y-3">
-        {vitals.map((vital) => {
+        {vitals.map((vital, index) => {
           const Icon = getVitalIcon(vital.vital_type);
           const status = getVitalRangeStatus(vital.vital_type, vital.values);
+          const previousVital = vitals[index + 1]; // Next item is older
+          const trendIcon = getTrendIcon(vital, previousVital);
           
           return (
             <div
@@ -118,8 +160,8 @@ const VitalsList: React.FC<VitalsListProps> = ({
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-ojas-primary/10 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-ojas-primary" />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getStatusColor(status)}`}>
+                    <Icon className="w-5 h-5" />
                   </div>
                   
                   <div className="flex-1">
@@ -128,14 +170,27 @@ const VitalsList: React.FC<VitalsListProps> = ({
                         {getVitalLabel(vital.vital_type)}
                       </h3>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(status)}`}>
-                        {status === 'good' ? 'Normal' : status === 'attention' ? 'Attention' : 'High'}
+                        {status === 'normal' ? 'Normal' : 
+                         status === 'borderline' ? 'Borderline' : 
+                         status === 'high' ? 'High' : 
+                         status === 'low' ? 'Low' : status}
                       </span>
+                      {vital.out_of_range && (
+                        <span className="w-2 h-2 bg-ojas-error rounded-full" title="Out of range"></span>
+                      )}
                     </div>
                     
                     <div className="flex items-center gap-4">
-                      <p className={`text-lg font-semibold ${getStatusColor(status)}`}>
-                        {formatVitalValue(vital)}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className={`text-lg font-semibold ${getVitalStatusColor(status)}`}>
+                          {formatVitalValue(vital)}
+                        </p>
+                        {trendIcon && (
+                          <span className="text-lg font-bold" title="Trend vs last reading">
+                            {trendIcon}
+                          </span>
+                        )}
+                      </div>
                       
                       <div className="flex items-center gap-1 text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
                         <Clock className="w-3 h-3" />

@@ -8,11 +8,13 @@ import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import ComorbidityStatusSummary from '../components/ComorbidityStatusSummary';
 import VitalsWidget from '../components/vitals/VitalsWidget';
+import RefillAlertsSection from '../components/medication/RefillAlertsSection';
 import { useComorbidities } from '../hooks/useComorbidities';
 import { useSymptoms } from '../hooks/useSymptoms';
 import { useAppointments } from '../hooks/useAppointments';
 import { useVitals } from '../hooks/useVitals';
 import { calculateWellnessScore } from '../utils/wellnessScore';
+import { generateRefillAlerts } from '../utils/refillUtils';
 
 interface HomePageProps {
   medications: Array<{
@@ -138,6 +140,22 @@ const HomePage: React.FC<HomePageProps> = ({
   const wellnessScore = getWellnessScore();
   const wellnessStatus = getWellnessStatus();
 
+  // Calculate refill alerts
+  const refillAlerts = generateRefillAlerts(
+    medications.map(med => ({
+      id: med.id,
+      name: med.name,
+      pills_remaining: 30, // Placeholder - would come from database
+      daily_consumption: 1, // Placeholder - would come from database
+      next_refill_date: undefined
+    }))
+  );
+
+  const handleRefillRequested = (medicationId: string) => {
+    console.log('Refill requested for medication:', medicationId);
+    // TODO: Implement refill request functionality
+  };
+
   const handleViewAllActions = () => {
     console.log('Navigate to detailed actions view');
   };
@@ -199,6 +217,17 @@ const HomePage: React.FC<HomePageProps> = ({
               onNavigateToVitals={handleNavigateToVitals}
             />
           </div>
+
+          {/* Refill Alerts */}
+          {refillAlerts.length > 0 && (
+            <div className="mb-8">
+              <RefillAlertsSection 
+                refillAlerts={refillAlerts}
+                onRefillAction={handleRefillRequested}
+                onDismissRefill={(id) => console.log('Dismiss refill alert:', id)}
+              />
+            </div>
+          )}
 
           {/* Today's Action Summary - Compact */}
           <div className="mb-8">
