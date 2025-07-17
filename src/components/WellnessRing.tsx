@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Check, Clock, AlertTriangle, CheckCircle, AlertCircle, Clock3 } from 'lucide-react';
 import WellnessRingCenter from './WellnessRingCenter';
 import WellnessRingExpanded from './WellnessRingExpanded';
+import WellnessRingLegend from './WellnessRingLegend';
 
 interface WellnessRingProps {
   status: 'good' | 'attention' | 'urgent';
@@ -117,6 +118,9 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
       <p className="text-center mt-6 text-ojas-text-secondary dark:text-ojas-cloud-silver text-lg font-medium">
         {statusConfig.description}
       </p>
+
+      {/* Health Score Zones Legend */}
+      <WellnessRingLegend />
 
       {/* Enhanced Expanded Interactive Summary */}
       {isExpanded && (

@@ -11,9 +11,8 @@ export interface Vital {
   measured_at: string;
   notes?: string;
   out_of_range: boolean;
-  logged_by: string;
-  caregiver_visible: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface VitalReading {
@@ -35,9 +34,8 @@ export const useVitals = () => {
     }
 
     try {
-      // Query the vitals table directly with type assertion for now
       const { data, error } = await supabase
-        .from('vitals' as any)
+        .from('vitals')
         .select('*')
         .eq('user_id', user.id)
         .order('measured_at', { ascending: false });
@@ -67,17 +65,15 @@ export const useVitals = () => {
     try {
       const vitalPayload = {
         user_id: user.id,
-        logged_by: user.id,
         vital_type: vitalData.vital_type,
-        values: vitalData.values,
+        values: vitalData.values as any, // JSONB field needs type casting
         notes: vitalData.notes,
         measured_at: vitalData.measured_at || new Date().toISOString(),
         out_of_range: checkIfOutOfRange(vitalData.vital_type, vitalData.values),
-        caregiver_visible: true,
       };
 
       const { data, error } = await supabase
-        .from('vitals' as any)
+        .from('vitals')
         .insert(vitalPayload)
         .select()
         .single();
