@@ -47,11 +47,14 @@ export const useVitals = () => {
         
       if (error) {
         console.error('Error fetching vitals:', error);
-        toast({
-          title: "Connection Error",
-          description: "Unable to load vitals data. Please check your connection.",
-          variant: "destructive",
-        });
+        // Don't show toast for missing table - it's expected until migration runs
+        if (!error.message?.includes('relation "public.vitals" does not exist')) {
+          toast({
+            title: "Connection Error",
+            description: "Unable to load vitals data. Please check your connection.",
+            variant: "destructive",
+          });
+        }
         setVitals([]);
       } else {
         console.log('useVitals: Successfully fetched vitals:', data?.length || 0, 'records');

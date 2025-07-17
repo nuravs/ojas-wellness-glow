@@ -201,18 +201,18 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
         <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-3 text-center">
           Health Score Zones
         </h4>
-        <div className="flex justify-between text-xs space-x-2">
-          <div className="flex items-center gap-2 flex-1">
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-ojas-success flex-shrink-0"></div>
-            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">80-100 Good</span>
+            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver whitespace-nowrap">80-100<br/>Good</span>
           </div>
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-ojas-alert flex-shrink-0"></div>
-            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">60-79 Fair</span>
+            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver whitespace-nowrap">60-79<br/>Fair</span>
           </div>
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-ojas-error flex-shrink-0"></div>
-            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">&lt;60 Attention</span>
+            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver whitespace-nowrap">&lt;60<br/>Attention</span>
           </div>
         </div>
       </div>
