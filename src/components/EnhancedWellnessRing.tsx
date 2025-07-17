@@ -33,6 +33,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   comorbidityStatus
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
   const [isPressed, setIsPressed] = useState(false);
   const [showGoodDayPrompt, setShowGoodDayPrompt] = useState(false);
   const { hasLoggedToday } = usePositiveFactors();
@@ -47,6 +48,39 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   const radius = 110;
   const circumference = 2 * Math.PI * radius;
   const progressOffset = circumference - (score / 100) * circumference;
+
+  // Calculate segment data for interactive tooltips
+  const getSegmentData = () => {
+    const medicationAdherence = medsCount.total > 0 ? (medsCount.taken / medsCount.total) * 100 : 100;
+    const comorbidityScore = comorbidityStatus ? 
+      (comorbidityStatus.controlled / Math.max(comorbidityStatus.total, 1)) * 100 : 100;
+    
+    return {
+      medication: {
+        percentage: Math.round(medicationAdherence),
+        label: 'Medication Adherence',
+        description: `${medsCount.taken} of ${medsCount.total} medications taken today`
+      },
+      symptoms: {
+        percentage: symptomsLogged ? 85 : 100,
+        label: 'Symptom Tracking',
+        description: symptomsLogged ? 'Symptoms logged today' : 'No symptoms logged today'
+      },
+      conditions: {
+        percentage: Math.round(comorbidityScore),
+        label: 'Health Conditions',
+        description: comorbidityStatus ? 
+          `${comorbidityStatus.controlled} of ${comorbidityStatus.total} conditions controlled` :
+          'No conditions tracked'
+      }
+    };
+  };
+
+  const segmentData = getSegmentData();
+
+  const handleSegmentClick = (segmentKey: string) => {
+    setSelectedSegment(segmentKey === selectedSegment ? null : segmentKey);
+  };
 
   const handleRingTap = () => {
     // Good Day Protocol: Show prompt if score >= 80 and hasn't logged today

@@ -3,18 +3,15 @@ import React from 'react';
 import { Home, Pill, Activity, Heart, MoreHorizontal, Brain, Users } from 'lucide-react';
 
 interface NavigationProps {
-  activeTab: 'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'brain-gym' | 'support' | 'more';
-  onTabChange: (tab: 'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'brain-gym' | 'support' | 'more') => void;
+  activeTab: 'home' | 'medications' | 'health-log' | 'more';
+  onTabChange: (tab: 'home' | 'medications' | 'health-log' | 'more') => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
     { id: 'home' as const, label: 'Home', icon: Home },
     { id: 'medications' as const, label: 'Meds', icon: Pill },
-    { id: 'symptoms' as const, label: 'Symptoms', icon: Activity },
-    { id: 'vitals' as const, label: 'Vitals', icon: Heart },
-    { id: 'brain-gym' as const, label: 'Brain', icon: Brain },
-    { id: 'support' as const, label: 'Support', icon: Users },
+    { id: 'health-log' as const, label: 'Health Log', icon: Activity },
     { id: 'more' as const, label: 'More', icon: MoreHorizontal },
   ];
 

@@ -14,7 +14,9 @@ import {
   Lightbulb,
   Shield,
   Activity,
-  Leaf
+  Leaf,
+  Users,
+  ExternalLink
 } from 'lucide-react';
 import { AIInsightsEngine, AIInsight } from '@/utils/aiInsights';
 import { useVitals } from '@/hooks/useVitals';
@@ -223,11 +225,35 @@ export const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({
                     </Button>
 
                     {expandedInsights.has(insight.id) && (
-                      <ul className="list-disc list-inside space-y-1 text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver ml-4">
-                        {insight.recommendations.map((rec, index) => (
-                          <li key={index}>{rec}</li>
-                        ))}
-                      </ul>
+                      <div className="space-y-3">
+                        <ul className="list-disc list-inside space-y-1 text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver ml-4">
+                          {insight.recommendations.map((rec, index) => (
+                            <li key={index}>{rec}</li>
+                          ))}
+                        </ul>
+                        
+                        {/* Contextual support prompt for dizziness and other high-severity symptoms */}
+                        {insight.type === 'infection_warning' && (
+                          <div className="mt-3 p-3 bg-ojas-calming-green/5 border border-ojas-calming-green/20 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <Users className="h-4 w-4 text-ojas-calming-green mt-0.5" />
+                              <div className="flex-1">
+                                <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                                  We noticed you logged dizziness. Make sure to stay hydrated and move slowly. Would you like to connect with a support group for balance issues?
+                                </p>
+                                <Button 
+                                  size="sm" 
+                                  className="mt-2 bg-ojas-calming-green hover:bg-ojas-calming-green/90 text-white"
+                                  onClick={() => navigate('/support-groups')}
+                                >
+                                  <Users className="h-3 w-3 mr-1" />
+                                  Find Support Groups
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}

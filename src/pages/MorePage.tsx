@@ -9,7 +9,8 @@ import {
   Phone, 
   Info,
   ChevronRight,
-  Activity
+  Activity,
+  Users
 } from 'lucide-react';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 
@@ -17,12 +18,14 @@ interface MorePageProps {
   onNavigateToDoctors?: () => void;
   onNavigateToSettings?: () => void;
   onNavigateToComorbidities?: () => void;
+  onNavigateToSupportGroups?: () => void;
 }
 
 const MorePage: React.FC<MorePageProps> = ({ 
   onNavigateToDoctors, 
   onNavigateToSettings,
-  onNavigateToComorbidities
+  onNavigateToComorbidities,
+  onNavigateToSupportGroups
 }) => {
   const menuItems = [
     {
@@ -40,6 +43,14 @@ const MorePage: React.FC<MorePageProps> = ({
       icon: Activity,
       color: 'calming-green',
       priority: 'high'
+    },
+    {
+      id: 'support-groups',
+      title: 'Support Groups',
+      description: 'Connect with others and share experiences',
+      icon: Users,
+      color: 'primary-blue',
+      priority: 'medium'
     },
     {
       id: 'profile',
@@ -103,6 +114,9 @@ const MorePage: React.FC<MorePageProps> = ({
         break;
       case 'comorbidities':
         onNavigateToComorbidities?.();
+        break;
+      case 'support-groups':
+        onNavigateToSupportGroups?.();
         break;
       case 'profile':
         console.log('Navigate to Profile');

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import EnhancedWellnessRing from '../components/EnhancedWellnessRing';
 import TodaysActionSummary from '../components/TodaysActionSummary';
+import TodaysFocusCard from '../components/TodaysFocusCard';
+import ContextualSupportBanner from '../components/ContextualSupportBanner';
 import HomeHeader from '../components/HomeHeader';
 import AIAssistantFAB from '../components/AIAssistantFAB';
 import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton';
@@ -32,7 +34,8 @@ interface HomePageProps {
   onToggleMedication: (id: string) => void;
   onPostponeMedication: (id: string) => void;
   userRole: 'patient' | 'caregiver';
-  onNavigateToVitals?: () => void;
+  onNavigateToHealthLog?: () => void;
+  onNavigateToSupportGroups?: () => void;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ 
@@ -40,11 +43,12 @@ const HomePage: React.FC<HomePageProps> = ({
   onToggleMedication, 
   onPostponeMedication,
   userRole,
-  onNavigateToVitals
+  onNavigateToHealthLog,
+  onNavigateToSupportGroups
 }) => {
   const { comorbidities } = useComorbidities();
   const { symptoms, getNeurologicalSymptoms, calculateAverageSeverity } = useSymptoms();
-  const { getFormattedNextAppointment } = useAppointments();
+  const { appointments, getFormattedNextAppointment } = useAppointments();
   const { vitals } = useVitals();
   
   // Calculate wellness status and score with real data integration
@@ -166,10 +170,39 @@ const HomePage: React.FC<HomePageProps> = ({
     console.log('Navigate to trends and detailed wellness view');
   };
 
-  const handleNavigateToVitals = () => {
-    if (onNavigateToVitals) {
-      onNavigateToVitals();
+  const handleNavigateToHealthLog = () => {
+    if (onNavigateToHealthLog) {
+      onNavigateToHealthLog();
     }
+  };
+
+  // Get today's appointment if any
+  const getTodaysAppointment = () => {
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+    
+    return appointments.find(apt => 
+      apt.appointment_date === todayString && 
+      apt.status === 'scheduled'
+    );
+  };
+
+  // Get overdue medications
+  const getOverdueMedications = () => {
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    return medications.filter(med => {
+      if (med.taken) return false;
+      
+      const [hours, minutes] = med.time.split(':').map(Number);
+      const medTime = hours * 60 + minutes;
+      
+      return medTime < currentTime;
+    }).map(med => ({
+      name: med.name,
+      time: med.time
+    }));
   };
 
   // Calculate comorbidity summary for dashboard
@@ -187,6 +220,16 @@ const HomePage: React.FC<HomePageProps> = ({
         <SafeAreaContainer>
           {/* Enhanced Personalized Header with Role-Based Copy */}
           <HomeHeader userRole={userRole} />
+
+          {/* Today's Focus Card */}
+          <div className="mb-8">
+            <TodaysFocusCard
+              userRole={userRole}
+              upcomingAppointment={getTodaysAppointment()}
+              overdueMedications={getOverdueMedications()}
+              criticalAlerts={[]}
+            />
+          </div>
 
           {/* Enhanced Interactive Wellness Ring with Comorbidity Integration */}
           <div className="mb-8 relative">
@@ -212,6 +255,18 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
           )}
 
+          {/* Contextual Support Banner */}
+          {onNavigateToSupportGroups && (
+            <div className="mb-8">
+              <ContextualSupportBanner
+                userRole={userRole}
+                wellnessScore={wellnessScore}
+                recentSymptoms={symptoms.slice(0, 5)}
+                onNavigateToSupport={onNavigateToSupportGroups}
+              />
+            </div>
+          )}
+
           {/* AI Health Insights Panel */}
           <div className="mb-8">
             <AIInsightsPanel userRole={userRole} />
@@ -221,7 +276,7 @@ const HomePage: React.FC<HomePageProps> = ({
           <div className="mb-8">
             <VitalsWidget 
               userRole={userRole}
-              onNavigateToVitals={handleNavigateToVitals}
+              onNavigateToVitals={handleNavigateToHealthLog}
             />
           </div>
 

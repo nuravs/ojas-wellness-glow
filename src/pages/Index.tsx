@@ -3,11 +3,10 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
-import VitalsPage from './VitalsPage';
+import HealthLogPage from './HealthLogPage';
 import WellnessCenterPage from './WellnessCenterPage';
 import RecordsPage from './RecordsPage';
 import MorePage from './MorePage';
-import SymptomsPage from './SymptomsPage';
 import DoctorsHubPage from './DoctorsHubPage';
 import EnhancedSettingsPage from './EnhancedSettingsPage';
 import ComorbiditiesPage from './ComorbiditiesPage';
@@ -19,8 +18,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMedications } from '../hooks/useMedications';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'brain-gym' | 'support' | 'more'>('home');
-  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities'>('main');
+  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');
+  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups'>('main');
   
   const { user, userProfile, loading: authLoading } = useAuth();
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
@@ -44,8 +43,12 @@ const Index = () => {
     setCurrentPage('comorbidities');
   };
 
-  const handleNavigateToVitals = () => {
-    setActiveTab('vitals');
+  const handleNavigateToHealthLog = () => {
+    setActiveTab('health-log');
+  };
+
+  const handleNavigateToSupportGroups = () => {
+    setCurrentPage('support-groups');
   };
 
   const handleBackToMore = () => {
@@ -78,6 +81,14 @@ const Index = () => {
     );
   }
 
+  if (currentPage === 'support-groups') {
+    return (
+      <ThemeProvider>
+        <SupportGroupsPage />
+      </ThemeProvider>
+    );
+  }
+
   // Show loading only while app data is loading
   if (medicationsLoading) {
     return (
@@ -104,7 +115,8 @@ const Index = () => {
             onToggleMedication={toggleMedication}
             onPostponeMedication={postponeMedication}
             userRole={userRole}
-            onNavigateToVitals={handleNavigateToVitals}
+            onNavigateToHealthLog={handleNavigateToHealthLog}
+            onNavigateToSupportGroups={handleNavigateToSupportGroups}
           />
         );
       case 'medications':
@@ -117,22 +129,15 @@ const Index = () => {
             userRole={userRole}
           />
         );
-      case 'symptoms':
-        return <SymptomsPage userRole={userRole} />;
-      case 'vitals':
-        return <VitalsPage userRole={userRole} onBack={() => setActiveTab('home')} />;
-      case 'records':
-        return <RecordsPage />;
-      case 'brain-gym':
-        return <BrainGymPage />;
-      case 'support':
-        return <SupportGroupsPage />;
+      case 'health-log':
+        return <HealthLogPage userRole={userRole} />;
       case 'more':
         return (
           <MorePage 
             onNavigateToDoctors={handleNavigateToDoctors}
             onNavigateToSettings={handleNavigateToSettings}
             onNavigateToComorbidities={handleNavigateToComorbidities}
+            onNavigateToSupportGroups={handleNavigateToSupportGroups}
           />
         );
       default:
@@ -141,7 +146,9 @@ const Index = () => {
             medications={medications} 
             onToggleMedication={toggleMedication} 
             onPostponeMedication={postponeMedication} 
-            userRole={userRole}  
+            userRole={userRole}
+            onNavigateToHealthLog={handleNavigateToHealthLog}
+            onNavigateToSupportGroups={handleNavigateToSupportGroups}
           />
         );
     }
