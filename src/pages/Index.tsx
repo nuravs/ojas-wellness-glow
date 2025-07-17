@@ -42,6 +42,10 @@ const Index = () => {
     setCurrentPage('comorbidities');
   };
 
+  const handleNavigateToVitals = () => {
+    setActiveTab('vitals');
+  };
+
   const handleBackToMore = () => {
     setCurrentPage('main');
     setActiveTab('more');
@@ -98,6 +102,7 @@ const Index = () => {
             onToggleMedication={toggleMedication}
             onPostponeMedication={postponeMedication}
             userRole={userRole}
+            onNavigateToVitals={handleNavigateToVitals}
           />
         );
       case 'medications':

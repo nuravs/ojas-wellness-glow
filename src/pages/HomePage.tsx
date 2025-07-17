@@ -9,6 +9,10 @@ import SafeAreaContainer from '../components/SafeAreaContainer';
 import ComorbidityStatusSummary from '../components/ComorbidityStatusSummary';
 import VitalsWidget from '../components/vitals/VitalsWidget';
 import { useComorbidities } from '../hooks/useComorbidities';
+import { useSymptoms } from '../hooks/useSymptoms';
+import { useAppointments } from '../hooks/useAppointments';
+import { useVitals } from '../hooks/useVitals';
+import { calculateWellnessScore } from '../utils/wellnessScore';
 
 interface HomePageProps {
   medications: Array<{
@@ -17,56 +21,121 @@ interface HomePageProps {
     dosage: string;
     time: string;
     taken: boolean;
+    medication_id?: string;
+    caregiver_visible?: boolean;
+    logged_by?: string;
+    logged_by_role?: 'patient' | 'caregiver';
   }>;
   onToggleMedication: (id: string) => void;
   onPostponeMedication: (id: string) => void;
   userRole: 'patient' | 'caregiver';
+  onNavigateToVitals?: () => void;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ 
   medications, 
   onToggleMedication, 
   onPostponeMedication,
-  userRole
+  userRole,
+  onNavigateToVitals
 }) => {
   const { comorbidities } = useComorbidities();
+  const { symptoms, getNeurologicalSymptoms, calculateAverageSeverity } = useSymptoms();
+  const { getFormattedNextAppointment } = useAppointments();
+  const { vitals } = useVitals();
   
-  // Calculate wellness status and score with enhanced algorithm
+  // Calculate wellness status and score with real data integration
   const takenMeds = medications.filter(med => med.taken).length;
   const totalMeds = medications.length;
   
-  const calculateWellnessScore = () => {
-    if (totalMeds === 0 && comorbidities.length === 0) return 85; // Default good score
+  // Real wellness score calculation using integrated data
+  const getWellnessScore = () => {
+    // Transform data for wellness score calculation
+    const medicationLogs = medications.map(med => ({
+      status: med.taken ? 'taken' : 'pending',
+      created_at: new Date().toISOString()
+    }));
+
+    const wellnessData = {
+      medications: medications.map(med => ({
+        id: med.medication_id || med.id,
+        name: med.name,
+        dosage: med.dosage,
+        frequency: { times_per_day: 1 },
+        active: true,
+        user_id: '',
+        instructions: '',
+        created_at: '',
+        updated_at: ''
+      })),
+      medicationLogs,
+      comorbidities: comorbidities.map(c => ({
+        ...c,
+        updated_at: c.updated_at
+      })),
+      vitals: vitals.map(v => ({
+        ...v,
+        measured_at: v.measured_at
+      })),
+      symptoms: symptoms.map(s => ({
+        ...s,
+        logged_at: s.logged_at
+      }))
+    };
+
+    try {
+      const score = calculateWellnessScore(wellnessData);
+      return score.overall;
+    } catch (error) {
+      console.error('Error calculating wellness score:', error);
+      // Fallback to simple calculation
+      return getSimpleWellnessScore();
+    }
+  };
+
+  const getSimpleWellnessScore = () => {
+    if (totalMeds === 0 && comorbidities.length === 0) return 85;
     
-    // New scoring weights: Medication adherence (30%), Neurological symptoms (25%), Comorbidity management (25%), General wellness (20%)
-    const medScore = totalMeds > 0 ? (takenMeds / totalMeds) * 30 : 30; // 30% weight for medications
+    const medScore = totalMeds > 0 ? (takenMeds / totalMeds) * 30 : 30;
     
-    // Comorbidity management score (25% weight)
-    let comorbidityScore = 25; // Default if no conditions
+    let comorbidityScore = 25;
     if (comorbidities.length > 0) {
       const controlledConditions = comorbidities.filter(c => c.status === 'controlled').length;
       const monitoringConditions = comorbidities.filter(c => c.status === 'monitoring').length;
       const activeConditions = comorbidities.filter(c => c.status === 'active').length;
       
-      // Score based on condition status: controlled = full points, monitoring = 70%, active = 40%
       const totalConditionScore = (controlledConditions * 1.0) + (monitoringConditions * 0.7) + (activeConditions * 0.4);
       comorbidityScore = (totalConditionScore / comorbidities.length) * 25;
     }
     
-    const symptomScore = 20; // Placeholder for neurological symptoms (25% weight, reduced to 20% for now)
-    const generalWellnessScore = 20; // Placeholder for general wellness (20% weight)
+    // Real symptom scoring
+    const recentNeurologicalSymptoms = getNeurologicalSymptoms();
+    const avgSeverity = calculateAverageSeverity(recentNeurologicalSymptoms);
+    const symptomScore = Math.max(0, 25 - (avgSeverity * 2.5));
     
-    return Math.round(medScore + comorbidityScore + symptomScore + generalWellnessScore);
+    // Vitals scoring (20% weight)
+    const recentVitals = vitals.filter(v => {
+      const vitalDate = new Date(v.measured_at);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return vitalDate >= sevenDaysAgo;
+    });
+    
+    const outOfRangeVitals = recentVitals.filter(v => v.out_of_range).length;
+    const vitalsScore = recentVitals.length > 0 ? 
+      Math.max(0, 20 - ((outOfRangeVitals / recentVitals.length) * 20)) : 15;
+    
+    return Math.round(medScore + comorbidityScore + symptomScore + vitalsScore);
   };
 
   const getWellnessStatus = () => {
-    const score = calculateWellnessScore();
+    const score = getWellnessScore();
     if (score >= 80) return 'good';
     if (score >= 60) return 'attention';
     return 'urgent';
   };
 
-  const wellnessScore = calculateWellnessScore();
+  const wellnessScore = getWellnessScore();
   const wellnessStatus = getWellnessStatus();
 
   const handleViewAllActions = () => {
@@ -78,7 +147,9 @@ const HomePage: React.FC<HomePageProps> = ({
   };
 
   const handleNavigateToVitals = () => {
-    console.log('Navigate to vitals page');
+    if (onNavigateToVitals) {
+      onNavigateToVitals();
+    }
   };
 
   // Calculate comorbidity summary for dashboard
@@ -102,8 +173,8 @@ const HomePage: React.FC<HomePageProps> = ({
             <EnhancedWellnessRing
               status={wellnessStatus}
               medsCount={{ taken: takenMeds, total: totalMeds }}
-              symptomsLogged={false}
-              nextAppointment="June 15"
+              symptomsLogged={symptoms.length > 0}
+              nextAppointment={getFormattedNextAppointment()}
               score={wellnessScore}
               userRole={userRole}
               onExpand={handleWellnessExpand}
@@ -133,8 +204,8 @@ const HomePage: React.FC<HomePageProps> = ({
           <div className="mb-8">
             <TodaysActionSummary 
               medsCount={{ taken: takenMeds, total: totalMeds }}
-              symptomsLogged={false}
-              nextAppointment="June 15"
+              symptomsLogged={symptoms.length > 0}
+              nextAppointment={getFormattedNextAppointment()}
               userRole={userRole}
               onViewAll={handleViewAllActions}
               comorbidityStatus={comorbidityStatus}
