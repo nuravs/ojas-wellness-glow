@@ -9,6 +9,7 @@ import SafeAreaContainer from '../components/SafeAreaContainer';
 import ComorbidityStatusSummary from '../components/ComorbidityStatusSummary';
 import VitalsWidget from '../components/vitals/VitalsWidget';
 import RefillAlertsSection from '../components/medication/RefillAlertsSection';
+import { AIInsightsPanel } from '../components/AIInsightsPanel';
 import { useComorbidities } from '../hooks/useComorbidities';
 import { useSymptoms } from '../hooks/useSymptoms';
 import { useAppointments } from '../hooks/useAppointments';
@@ -210,6 +211,11 @@ const HomePage: React.FC<HomePageProps> = ({
               />
             </div>
           )}
+
+          {/* AI Health Insights Panel */}
+          <div className="mb-8">
+            <AIInsightsPanel userRole={userRole} />
+          </div>
 
           {/* Vitals Widget */}
           <div className="mb-8">
