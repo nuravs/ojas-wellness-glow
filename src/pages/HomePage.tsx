@@ -14,7 +14,7 @@ import { useSymptoms } from '../hooks/useSymptoms';
 import { useAppointments } from '../hooks/useAppointments';
 import { useVitals } from '../hooks/useVitals';
 import { calculateWellnessScore } from '../utils/wellnessScore';
-import { generateRefillAlerts } from '../utils/refillUtils';
+
 
 interface HomePageProps {
   medications: Array<{
@@ -140,16 +140,17 @@ const HomePage: React.FC<HomePageProps> = ({
   const wellnessScore = getWellnessScore();
   const wellnessStatus = getWellnessStatus();
 
-  // Calculate refill alerts
-  const refillAlerts = generateRefillAlerts(
-    medications.map(med => ({
-      id: med.id,
-      name: med.name,
-      pills_remaining: 30, // Placeholder - would come from database
-      daily_consumption: 1, // Placeholder - would come from database
-      next_refill_date: undefined
-    }))
-  );
+  // Mock refill alerts for now - will be replaced with real data when medication table is updated
+  const refillAlerts = [
+    {
+      id: 'alert-1',
+      medicationName: 'Levodopa',
+      daysLeft: 3,
+      pillsRemaining: 9,
+      nextRefillDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      urgency: 'high' as const
+    }
+  ];
 
   const handleRefillRequested = (medicationId: string) => {
     console.log('Refill requested for medication:', medicationId);

@@ -31,10 +31,13 @@ export const useVitals = () => {
 
   const fetchVitals = async () => {
     if (!user) {
+      console.log('useVitals: No user found, setting loading to false');
       setLoading(false);
       return;
     }
 
+    console.log('useVitals: Fetching vitals for user:', user.id);
+    
     try {
       const { data, error } = await supabase
         .from('vitals')
@@ -51,6 +54,7 @@ export const useVitals = () => {
         });
         setVitals([]);
       } else {
+        console.log('useVitals: Successfully fetched vitals:', data?.length || 0, 'records');
         setVitals((data || []) as unknown as Vital[]);
       }
     } catch (error) {
@@ -62,6 +66,7 @@ export const useVitals = () => {
       });
       setVitals([]);
     } finally {
+      console.log('useVitals: Setting loading to false');
       setLoading(false);
     }
   };

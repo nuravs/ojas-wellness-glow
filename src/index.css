@@ -479,20 +479,39 @@
   background: rgb(108 118 131);
 }
 
-/* Reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  /* Reduced motion preferences - both system and manual */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .coach-mark {
+      animation: none;
+    }
+  }
+
+  /* Manual reduced motion class when user toggles setting */
+  .reduce-motion *,
+  .reduce-motion *::before,
+  .reduce-motion *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transform: none !important;
   }
   
-  .coach-mark {
+  .reduce-motion .coach-mark {
     animation: none;
   }
-}
+
+  .reduce-motion button:hover,
+  .reduce-motion button:active {
+    transform: none !important;
+  }
 
 /* Range input styling for accessibility */
 input[type="range"] {
