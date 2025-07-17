@@ -1,11 +1,6 @@
 
 import React from 'react';
-
-interface RefillAlert {
-  id: string;
-  medicationName: string;
-  daysLeft: number;
-}
+import { RefillAlert } from '../../utils/refillUtils';
 
 interface RefillAlertsSectionProps {
   refillAlerts: RefillAlert[];
@@ -27,9 +22,11 @@ const RefillAlertsSection: React.FC<RefillAlertsSectionProps> = ({
           <div className="bg-ojas-alert/10 border-l-4 border-ojas-alert rounded-xl p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-semibold text-ojas-text-main">Refill Reminder</h4>
+                <h4 className="font-semibold text-ojas-text-main">
+                  Refill Reminder {alert.urgency === 'high' && '🔴'} {alert.urgency === 'medium' && '🟡'}
+                </h4>
                 <p className="text-sm text-ojas-text-secondary">
-                  {alert.medicationName} - {alert.daysLeft} days left
+                  {alert.medicationName} - {alert.daysLeft} days left ({alert.pillsRemaining} pills remaining)
                 </p>
               </div>
               <div className="flex gap-2">

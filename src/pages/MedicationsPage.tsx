@@ -40,8 +40,22 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
 
   // Mock refill data - in real app this would come from backend
   const refillAlerts = [
-    { id: '1', medicationName: 'Levodopa', daysLeft: 2 },
-    { id: '2', medicationName: 'Evening Supplement', daysLeft: 5 }
+    { 
+      id: '1', 
+      medicationName: 'Levodopa', 
+      daysLeft: 2, 
+      pillsRemaining: 6, 
+      nextRefillDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), 
+      urgency: 'high' as const 
+    },
+    { 
+      id: '2', 
+      medicationName: 'Evening Supplement', 
+      daysLeft: 5, 
+      pillsRemaining: 15, 
+      nextRefillDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), 
+      urgency: 'medium' as const 
+    }
   ].filter(alert => !dismissedRefills.includes(alert.id));
 
   // Sort pending meds by overdue status and time
