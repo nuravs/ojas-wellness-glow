@@ -69,9 +69,7 @@ const PendingMedicationCard: React.FC<PendingMedicationCardProps> = ({
 
           {/* Condition Tags */}
           <MedicationConditionTags 
-            conditions={linkedConditions}
-            showAddButton={userRole === 'patient'}
-            onLinkCondition={() => console.log('Link condition to medication')}
+            linkedConditions={linkedConditions}
           />
         </div>
 

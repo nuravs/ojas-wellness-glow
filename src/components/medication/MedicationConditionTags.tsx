@@ -1,60 +1,55 @@
-
 import React from 'react';
-import { Link, Plus } from 'lucide-react';
-import { Comorbidity } from '../../hooks/useComorbidities';
+import { Activity } from 'lucide-react';
 
-interface MedicationConditionTagsProps {
-  conditions: Comorbidity[];
-  onLinkCondition?: () => void;
-  showAddButton?: boolean;
+interface LinkedCondition {
+  id: string;
+  condition_name: string;
+  status: 'active' | 'controlled' | 'monitoring' | 'inactive';
+  severity?: 'mild' | 'moderate' | 'severe';
 }
 
-const MedicationConditionTags: React.FC<MedicationConditionTagsProps> = ({
-  conditions,
-  onLinkCondition,
-  showAddButton = false
-}) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'controlled':
-        return 'bg-ojas-success/20 text-ojas-success border-ojas-success/30';
-      case 'monitoring':
-        return 'bg-ojas-alert/20 text-ojas-alert border-ojas-alert/30';
-      case 'active':
-        return 'bg-ojas-error/20 text-ojas-error border-ojas-error/30';
-      case 'inactive':
-        return 'bg-gray-100 text-gray-600 border-gray-300';
-      default:
-        return 'bg-gray-100 text-gray-600 border-gray-300';
-    }
-  };
+interface MedicationConditionTagsProps {
+  linkedConditions: LinkedCondition[];
+  className?: string;
+}
 
-  if (conditions.length === 0 && !showAddButton) {
+const MedicationConditionTags: React.FC<MedicationConditionTagsProps> = ({ 
+  linkedConditions, 
+  className = "" 
+}) => {
+  if (!linkedConditions.length) {
     return null;
   }
 
+  const getConditionColor = (condition: LinkedCondition) => {
+    switch (condition.status) {
+      case 'controlled':
+        return 'bg-ojas-calming-green/10 text-ojas-calming-green border-ojas-calming-green/20';
+      case 'monitoring':
+        return 'bg-ojas-soft-gold/10 text-ojas-soft-gold border-ojas-soft-gold/20';
+      case 'active':
+        if (condition.severity === 'severe') {
+          return 'bg-ojas-error/10 text-ojas-error border-ojas-error/20';
+        }
+        return 'bg-ojas-primary-blue/10 text-ojas-primary-blue border-ojas-primary-blue/20';
+      case 'inactive':
+        return 'bg-ojas-slate-gray/10 text-ojas-slate-gray border-ojas-slate-gray/20';
+      default:
+        return 'bg-ojas-charcoal-gray/10 text-ojas-charcoal-gray border-ojas-charcoal-gray/20';
+    }
+  };
+
   return (
-    <div className="flex flex-wrap gap-2 mt-2">
-      {conditions.map((condition) => (
+    <div className={`flex flex-wrap gap-2 mt-2 ${className}`}>
+      {linkedConditions.map(condition => (
         <div
           key={condition.id}
-          className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(condition.status)}`}
+          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getConditionColor(condition)}`}
         >
-          <Link className="w-3 h-3" />
+          <Activity className="w-3 h-3" />
           <span>{condition.condition_name}</span>
         </div>
       ))}
-      
-      {showAddButton && onLinkCondition && (
-        <button
-          onClick={onLinkCondition}
-          className="px-2 py-1 rounded-full text-xs font-medium border border-dashed border-ojas-border dark:border-ojas-slate-gray text-ojas-text-secondary dark:text-ojas-cloud-silver hover:border-ojas-primary hover:text-ojas-primary transition-colors flex items-center gap-1"
-          style={{ minHeight: '24px', minWidth: '24px' }}
-        >
-          <Plus className="w-3 h-3" />
-          <span>Link condition</span>
-        </button>
-      )}
     </div>
   );
 };

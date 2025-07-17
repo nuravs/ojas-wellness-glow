@@ -2,6 +2,14 @@
 import React, { useState } from 'react';
 import { Clock, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { isOverdue } from '../../utils/medicationUtils';
+import MedicationConditionTags from './MedicationConditionTags';
+
+interface LinkedCondition {
+  id: string;
+  condition_name: string;
+  status: 'active' | 'controlled' | 'monitoring' | 'inactive';
+  severity?: 'mild' | 'moderate' | 'severe';
+}
 
 interface Prescription {
   id: string;
@@ -12,6 +20,7 @@ interface Prescription {
   taken: boolean;
   doctor?: string;
   note?: string;
+  linkedConditions?: LinkedCondition[];
 }
 
 interface EnhancedMedicationCardProps {
@@ -51,6 +60,7 @@ const EnhancedMedicationCard: React.FC<EnhancedMedicationCardProps> = ({
             <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
               {prescription.dosage} • Taken at {prescription.time}
             </p>
+            <MedicationConditionTags linkedConditions={prescription.linkedConditions || []} />
           </div>
           <div className="text-ojas-success">
             <div className="w-8 h-8 rounded-full bg-ojas-success/20 flex items-center justify-center">
@@ -97,6 +107,9 @@ const EnhancedMedicationCard: React.FC<EnhancedMedicationCardProps> = ({
             </div>
           )}
         </div>
+
+        {/* Linked conditions */}
+        <MedicationConditionTags linkedConditions={prescription.linkedConditions || []} />
 
         {/* Doctor's note section */}
         {prescription.note && (
