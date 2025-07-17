@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,15 +62,15 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Updated Ojas Color System for "Calm Clarity" Design
+				// Enhanced Ojas Color System with Proper Definitions
 				ojas: {
-					// Primary Blue - #0077B6
+					// Primary colors with variants
 					'primary': '#0077B6',
 					'primary-hover': '#005E8A',
 					'primary-blue': '#0077B6',      
 					'primary-blue-hover': '#005E8A', 
 					
-					// Calming Green - #00B488
+					// Success/wellness colors
 					'success': '#00B488',
 					'success-hover': '#009670',
 					'calming-green': '#00B488',     
@@ -89,20 +88,18 @@ export default {
 					'vibrant-coral': '#FF4E4E',     
 					'vibrant-coral-hover': '#E63946', 
 					
-					// Background - #F5F8FA
+					// Background and neutral colors
 					'bg-light': '#F5F8FA',
 					'mist-white': '#F5F8FA',        
 					'soft-midnight': '#18233A',     
 					
-					// Text Main - #22292F
+					// Text colors
 					'text-main': '#22292F',
-					'charcoal-gray': '#22292F',     
-					
-					// Text Secondary - #6C7683
 					'text-secondary': '#6C7683',
+					'charcoal-gray': '#22292F',     
 					'slate-gray': '#6C7683',        
 					
-					// Borders/Dividers - #E1E4EA
+					// Border and divider colors
 					'border': '#E1E4EA',
 					'cloud-silver': '#E1E4EA'       
 				}
