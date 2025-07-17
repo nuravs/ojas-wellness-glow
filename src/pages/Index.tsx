@@ -113,7 +113,7 @@ const Index = () => {
       case 'symptoms':
         return <SymptomsPage userRole={userRole} />;
       case 'wellness':
-        return <VitalsPage userRole={userRole} />;
+        return <VitalsPage userRole={userRole} onBack={() => setActiveTab('home')} />;
       case 'records':
         return <RecordsPage />;
       case 'more':

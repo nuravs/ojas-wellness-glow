@@ -552,3 +552,23 @@ input[type="range"]:focus::-moz-range-thumb {
   color: #767676; /* 4.5:1 contrast ratio */
   background-color: #FFFFFF;
 }
+
+/* Reduced Motion Implementation */
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+.reduce-motion .animate-wellness-ring {
+  animation: none;
+}
+
+.reduce-motion .coach-mark {
+  animation: none;
+}
+
+.reduce-motion .animate-pulse {
+  animation: none;
+}

@@ -9,7 +9,7 @@ interface EnhancedSettingsPageProps {
 }
 
 const EnhancedSettingsPage: React.FC<EnhancedSettingsPageProps> = ({ onBack }) => {
-  const { isDarkMode, toggleDarkMode, fontSize, setFontSize } = useTheme();
+  const { isDarkMode, toggleDarkMode, fontSize, setFontSize, highContrast, toggleHighContrast, reducedMotion, toggleReducedMotion } = useTheme();
 
   const fontSizeOptions = [14, 16, 18, 20];
   const fontSizeLabels = ['Small', 'Medium', 'Large', 'Extra Large'];
@@ -134,10 +134,18 @@ const EnhancedSettingsPage: React.FC<EnhancedSettingsPageProps> = ({ onBack }) =
                   </p>
                 </div>
                 <button
-                  className="w-12 h-6 bg-gray-300 rounded-full relative transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-ojas-primary/50"
+                  onClick={toggleHighContrast}
+                  className={`w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 ${
+                    highContrast ? 'bg-ojas-primary' : 'bg-gray-300'
+                  }`}
+                  aria-label={`Turn ${highContrast ? 'off' : 'on'} high contrast mode`}
                   style={{ minWidth: '44px', minHeight: '44px' }}
                 >
-                  <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200" />
+                  <div
+                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      highContrast ? 'translate-x-7' : 'translate-x-1'
+                    }`}
+                  />
                 </button>
               </div>
 
@@ -151,10 +159,18 @@ const EnhancedSettingsPage: React.FC<EnhancedSettingsPageProps> = ({ onBack }) =
                   </p>
                 </div>
                 <button
-                  className="w-12 h-6 bg-gray-300 rounded-full relative transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-ojas-primary/50"
+                  onClick={toggleReducedMotion}
+                  className={`w-12 h-6 rounded-full relative transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 ${
+                    reducedMotion ? 'bg-ojas-primary' : 'bg-gray-300'
+                  }`}
+                  aria-label={`Turn ${reducedMotion ? 'off' : 'on'} reduced motion mode`}
                   style={{ minWidth: '44px', minHeight: '44px' }}
                 >
-                  <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200" />
+                  <div
+                    className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      reducedMotion ? 'translate-x-7' : 'translate-x-1'
+                    }`}
+                  />
                 </button>
               </div>
             </div>

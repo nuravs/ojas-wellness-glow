@@ -241,6 +241,42 @@ export type Database = {
         }
         Relationships: []
       }
+      vitals: {
+        Row: {
+          created_at: string
+          id: string
+          measured_at: string
+          notes: string | null
+          out_of_range: boolean | null
+          updated_at: string
+          user_id: string
+          values: Json
+          vital_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          measured_at?: string
+          notes?: string | null
+          out_of_range?: boolean | null
+          updated_at?: string
+          user_id: string
+          values: Json
+          vital_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          measured_at?: string
+          notes?: string | null
+          out_of_range?: boolean | null
+          updated_at?: string
+          user_id?: string
+          values?: Json
+          vital_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
