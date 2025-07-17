@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { X, TrendingUp, Activity } from 'lucide-react';
 import { getCopyForRole } from '../utils/roleBasedCopy';
+import GoodDayPrompt from './GoodDayPrompt';
+import { usePositiveFactors } from '../hooks/usePositiveFactors';
 
 interface ComorbidityStatus {
   controlled: number;
@@ -32,6 +34,8 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+  const [showGoodDayPrompt, setShowGoodDayPrompt] = useState(false);
+  const { hasLoggedToday } = usePositiveFactors();
 
   const getScoreZone = (score: number) => {
     if (score >= 80) return { zone: 'good', color: '#00B488', label: 'Good' };
@@ -45,7 +49,12 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   const progressOffset = circumference - (score / 100) * circumference;
 
   const handleRingTap = () => {
-    setShowTooltip(!showTooltip);
+    // Good Day Protocol: Show prompt if score >= 80 and hasn't logged today
+    if (score >= 80 && !hasLoggedToday()) {
+      setShowGoodDayPrompt(true);
+    } else {
+      setShowTooltip(!showTooltip);
+    }
   };
 
   const handleDetailsClick = () => {
@@ -193,6 +202,14 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
               </div>
             </div>
           </div>
+        )}
+
+        {/* Good Day Prompt */}
+        {showGoodDayPrompt && (
+          <GoodDayPrompt 
+            wellnessScore={score}
+            onClose={() => setShowGoodDayPrompt(false)}
+          />
         )}
       </div>
 

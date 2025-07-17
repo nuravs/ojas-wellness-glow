@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Plus, Minus } from 'lucide-react';
+import VoiceInput from './VoiceInput';
+import PhotoInput from './PhotoInput';
 
 interface SymptomLoggerProps {
   symptomName: string;
@@ -156,11 +158,21 @@ const SymptomLogger: React.FC<SymptomLoggerProps> = ({
           </div>
         )}
 
-        {/* Notes */}
-        <div className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6 mb-8">
+        {/* Notes with Voice Input */}
+        <div className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6 mb-6">
           <h3 className="text-lg font-semibold text-ojas-charcoal-gray mb-4">
             Additional Notes
           </h3>
+          
+          {/* Voice Input Component */}
+          <div className="mb-4">
+            <VoiceInput
+              onTranscript={(text) => setNotes(prev => prev + (prev ? ' ' : '') + text)}
+              disabled={loading}
+              placeholder="Tap to speak your notes or type below..."
+            />
+          </div>
+          
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -168,6 +180,18 @@ const SymptomLogger: React.FC<SymptomLoggerProps> = ({
             disabled={loading}
             rows={4}
             className="w-full p-4 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent resize-none disabled:opacity-50 disabled:bg-gray-50"
+          />
+        </div>
+
+        {/* Photo Input */}
+        <div className="bg-white rounded-2xl shadow-ojas-soft border border-ojas-cloud-silver p-6 mb-8">
+          <PhotoInput
+            onPhotoCapture={(file) => {
+              // Handle photo capture - could store in state or upload
+              console.log('Photo captured:', file);
+            }}
+            disabled={loading}
+            label="Add photo to help track symptoms"
           />
         </div>
 

@@ -223,6 +223,36 @@ export type Database = {
         }
         Relationships: []
       }
+      positive_factors: {
+        Row: {
+          created_at: string
+          factor_text: string
+          id: string
+          logged_date: string
+          updated_at: string
+          user_id: string
+          wellness_score: number
+        }
+        Insert: {
+          created_at?: string
+          factor_text: string
+          id?: string
+          logged_date?: string
+          updated_at?: string
+          user_id: string
+          wellness_score: number
+        }
+        Update: {
+          created_at?: string
+          factor_text?: string
+          id?: string
+          logged_date?: string
+          updated_at?: string
+          user_id?: string
+          wellness_score?: number
+        }
+        Relationships: []
+      }
       symptoms: {
         Row: {
           details: Json | null

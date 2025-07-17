@@ -13,12 +13,14 @@ import {
   ChevronUp,
   Lightbulb,
   Shield,
-  Activity
+  Activity,
+  Leaf
 } from 'lucide-react';
 import { AIInsightsEngine, AIInsight } from '@/utils/aiInsights';
 import { useVitals } from '@/hooks/useVitals';
 import { useSymptoms } from '@/hooks/useSymptoms';
 import { useMedications } from '@/hooks/useMedications';
+import { useNavigate } from 'react-router-dom';
 
 interface AIInsightsPanelProps {
   userRole?: 'patient' | 'caregiver';
@@ -36,6 +38,7 @@ export const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({
   const { vitals } = useVitals();
   const { symptoms } = useSymptoms();
   const { medications } = useMedications();
+  const navigate = useNavigate();
 
   const aiEngine = AIInsightsEngine.getInstance();
 
@@ -151,14 +154,25 @@ export const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({
 
   return (
     <Card className={`p-4 ${className}`}>
-      <div className="flex items-center gap-2 mb-4">
-        <Activity className="h-5 w-5 text-ojas-primary" />
-        <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-          AI Health Insights
-        </h3>
-        <Badge variant="secondary" className="ml-auto">
-          {insights.length} insight{insights.length !== 1 ? 's' : ''}
-        </Badge>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Activity className="h-5 w-5 text-ojas-primary" />
+          <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
+            AI Health Insights
+          </h3>
+          <Badge variant="secondary">
+            {insights.length} insight{insights.length !== 1 ? 's' : ''}
+          </Badge>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/calm-room')}
+          className="flex items-center gap-2 text-ojas-calming-green border-ojas-calming-green hover:bg-ojas-calming-green/10"
+        >
+          <Leaf className="h-4 w-4" />
+          Calm Room
+        </Button>
       </div>
 
       <div className="space-y-4">
