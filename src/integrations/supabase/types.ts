@@ -56,6 +56,98 @@ export type Database = {
         }
         Relationships: []
       }
+      brain_gym_exercises: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          difficulty_level: number
+          estimated_duration: number
+          id: string
+          instructions: Json
+          name: string
+          target_skills: string[]
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          difficulty_level?: number
+          estimated_duration: number
+          id?: string
+          instructions: Json
+          name: string
+          target_skills: string[]
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          difficulty_level?: number
+          estimated_duration?: number
+          id?: string
+          instructions?: Json
+          name?: string
+          target_skills?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      brain_gym_sessions: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          completion_time: number | null
+          created_at: string
+          difficulty_level: number
+          exercise_id: string
+          id: string
+          mistakes_count: number | null
+          score: number | null
+          session_data: Json | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          completion_time?: number | null
+          created_at?: string
+          difficulty_level: number
+          exercise_id: string
+          id?: string
+          mistakes_count?: number | null
+          score?: number | null
+          session_data?: Json | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          completion_time?: number | null
+          created_at?: string
+          difficulty_level?: number
+          exercise_id?: string
+          id?: string
+          mistakes_count?: number | null
+          score?: number | null
+          session_data?: Json | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brain_gym_sessions_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "brain_gym_exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comorbidities: {
         Row: {
           caregiver_visible: boolean | null
@@ -92,6 +184,42 @@ export type Database = {
           status?: Database["public"]["Enums"]["comorbidity_status"] | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      daily_routines: {
+        Row: {
+          completed_tasks: string[] | null
+          created_at: string
+          id: string
+          notes: string | null
+          routine_data: Json
+          routine_date: string
+          updated_at: string
+          user_id: string
+          wellness_score: number | null
+        }
+        Insert: {
+          completed_tasks?: string[] | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          routine_data: Json
+          routine_date?: string
+          updated_at?: string
+          user_id: string
+          wellness_score?: number | null
+        }
+        Update: {
+          completed_tasks?: string[] | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          routine_data?: Json
+          routine_date?: string
+          updated_at?: string
+          user_id?: string
+          wellness_score?: number | null
         }
         Relationships: []
       }
@@ -250,6 +378,139 @@ export type Database = {
           updated_at?: string
           user_id?: string
           wellness_score?: number
+        }
+        Relationships: []
+      }
+      support_group_members: {
+        Row: {
+          anonymous: boolean
+          display_name: string | null
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          anonymous?: boolean
+          display_name?: string | null
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          anonymous?: boolean
+          display_name?: string | null
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "support_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_group_posts: {
+        Row: {
+          anonymous: boolean
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          moderated: boolean
+          pinned: boolean
+          post_type: string
+          reply_count: number
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anonymous?: boolean
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          moderated?: boolean
+          pinned?: boolean
+          post_type?: string
+          reply_count?: number
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anonymous?: boolean
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          moderated?: boolean
+          pinned?: boolean
+          post_type?: string
+          reply_count?: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_group_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "support_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_groups: {
+        Row: {
+          condition_focus: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          group_type: string
+          id: string
+          is_private: boolean
+          member_count: number
+          moderated: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          condition_focus?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          group_type: string
+          id?: string
+          is_private?: boolean
+          member_count?: number
+          moderated?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          condition_focus?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          group_type?: string
+          id?: string
+          is_private?: boolean
+          member_count?: number
+          moderated?: boolean
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
