@@ -30,7 +30,8 @@ export const useAppointments = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      // Use any type temporarily until types are regenerated
+      const { data, error } = await (supabase as any)
         .from('appointments')
         .select('*')
         .eq('user_id', user.id)
