@@ -18,7 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMedications } from '../hooks/useMedications';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'health-log' | 'medications' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups'>('main');
   
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -27,7 +27,6 @@ const Index = () => {
   console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);
 
   const handleAddMedication = () => {
-    // This would open an add medication modal or navigate to add medication page
     console.log('Add medication functionality would be implemented here');
   };
 
@@ -93,10 +92,10 @@ const Index = () => {
   if (medicationsLoading) {
     return (
       <ThemeProvider>
-        <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
+        <div className="min-h-screen bg-ojas-bg-light flex items-center justify-center">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-ojas-slate-gray">Loading your health data...</p>
+            <div className="w-12 h-12 border-4 border-ojas-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-ojas-text-secondary">Loading your health data...</p>
           </div>
         </div>
       </ThemeProvider>
@@ -104,7 +103,6 @@ const Index = () => {
   }
 
   const renderCurrentPage = () => {
-    // Use demo user role if no user profile
     const userRole = userProfile?.role as 'patient' | 'caregiver' || 'patient';
     
     switch (activeTab) {
@@ -156,7 +154,7 @@ const Index = () => {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight font-ojas transition-colors duration-300">
+      <div className="min-h-screen bg-ojas-bg-light font-ojas transition-colors duration-300">
         {renderCurrentPage()}
         <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
       </div>

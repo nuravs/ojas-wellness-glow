@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
+import { Settings, ChevronRight, Plus } from 'lucide-react';
 import EnhancedWellnessRing from '../components/EnhancedWellnessRing';
 import TodaysActionSummary from '../components/TodaysActionSummary';
 import TodaysFocusCard from '../components/TodaysFocusCard';
 import ContextualSupportBanner from '../components/ContextualSupportBanner';
-import HomeHeader from '../components/HomeHeader';
 import AIAssistantFAB from '../components/AIAssistantFAB';
 import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton';
 import SafeAreaContainer from '../components/SafeAreaContainer';
@@ -17,7 +17,6 @@ import { useSymptoms } from '../hooks/useSymptoms';
 import { useAppointments } from '../hooks/useAppointments';
 import { useVitals } from '../hooks/useVitals';
 import { calculateWellnessScore } from '../utils/wellnessScore';
-
 
 interface HomePageProps {
   medications: Array<{
@@ -51,13 +50,10 @@ const HomePage: React.FC<HomePageProps> = ({
   const { appointments, getFormattedNextAppointment } = useAppointments();
   const { vitals } = useVitals();
   
-  // Calculate wellness status and score with real data integration
   const takenMeds = medications.filter(med => med.taken).length;
   const totalMeds = medications.length;
   
-  // Real wellness score calculation using integrated data
   const getWellnessScore = () => {
-    // Transform data for wellness score calculation
     const medicationLogs = medications.map(med => ({
       status: med.taken ? 'taken' : 'pending',
       created_at: new Date().toISOString()
@@ -95,13 +91,12 @@ const HomePage: React.FC<HomePageProps> = ({
       return score.overall;
     } catch (error) {
       console.error('Error calculating wellness score:', error);
-      // Fallback to simple calculation
       return getSimpleWellnessScore();
     }
   };
 
   const getSimpleWellnessScore = () => {
-    if (totalMeds === 0 && comorbidities.length === 0) return 85;
+    if (totalMeds === 0 && comorbidities.length === 0) return 75;
     
     const medScore = totalMeds > 0 ? (takenMeds / totalMeds) * 30 : 30;
     
@@ -115,12 +110,10 @@ const HomePage: React.FC<HomePageProps> = ({
       comorbidityScore = (totalConditionScore / comorbidities.length) * 25;
     }
     
-    // Real symptom scoring
     const recentNeurologicalSymptoms = getNeurologicalSymptoms();
     const avgSeverity = calculateAverageSeverity(recentNeurologicalSymptoms);
     const symptomScore = Math.max(0, 25 - (avgSeverity * 2.5));
     
-    // Vitals scoring (20% weight)
     const recentVitals = vitals.filter(v => {
       const vitalDate = new Date(v.measured_at);
       const sevenDaysAgo = new Date();
@@ -145,38 +138,6 @@ const HomePage: React.FC<HomePageProps> = ({
   const wellnessScore = getWellnessScore();
   const wellnessStatus = getWellnessStatus();
 
-  // Mock refill alerts for now - will be replaced with real data when medication table is updated
-  const refillAlerts = [
-    {
-      id: 'alert-1',
-      medicationName: 'Levodopa',
-      daysLeft: 3,
-      pillsRemaining: 9,
-      nextRefillDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-      urgency: 'high' as const
-    }
-  ];
-
-  const handleRefillRequested = (medicationId: string) => {
-    console.log('Refill requested for medication:', medicationId);
-    // TODO: Implement refill request functionality
-  };
-
-  const handleViewAllActions = () => {
-    console.log('Navigate to detailed actions view');
-  };
-
-  const handleWellnessExpand = () => {
-    console.log('Navigate to trends and detailed wellness view');
-  };
-
-  const handleNavigateToHealthLog = () => {
-    if (onNavigateToHealthLog) {
-      onNavigateToHealthLog();
-    }
-  };
-
-  // Get today's appointment if any
   const getTodaysAppointment = () => {
     const today = new Date();
     const todayString = today.toISOString().split('T')[0];
@@ -187,7 +148,6 @@ const HomePage: React.FC<HomePageProps> = ({
     );
   };
 
-  // Get overdue medications
   const getOverdueMedications = () => {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
@@ -205,7 +165,6 @@ const HomePage: React.FC<HomePageProps> = ({
     }));
   };
 
-  // Calculate comorbidity summary for dashboard
   const getComorbidityStatus = () => {
     const controlled = comorbidities.filter(c => c.status === 'controlled').length;
     const needsAttention = comorbidities.filter(c => c.status === 'active' || c.status === 'monitoring').length;
@@ -215,48 +174,141 @@ const HomePage: React.FC<HomePageProps> = ({
   const comorbidityStatus = getComorbidityStatus();
 
   return (
-    <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
+    <div className="min-h-screen bg-ojas-bg-light">
       <div className="overflow-y-auto pb-32">
         <SafeAreaContainer>
-          {/* Enhanced Personalized Header with Role-Based Copy */}
-          <HomeHeader userRole={userRole} />
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 pt-6">
+            <h1 className="text-2xl font-semibold text-ojas-text-main">
+              Hi, Sarah
+            </h1>
+            <button 
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              style={{ minWidth: '44px', minHeight: '44px' }}
+            >
+              <Settings className="w-6 h-6 text-ojas-text-secondary" />
+            </button>
+          </div>
 
-          {/* Today's Focus Card */}
+          {/* Wellness Ring */}
           <div className="mb-8">
-            <TodaysFocusCard
-              userRole={userRole}
-              upcomingAppointment={getTodaysAppointment()}
-              overdueMedications={getOverdueMedications()}
-              criticalAlerts={[]}
-            />
-          </div>
-
-          {/* Enhanced Interactive Wellness Ring with Comorbidity Integration */}
-          <div className="mb-8 relative">
-            <EnhancedWellnessRing
-              status={wellnessStatus}
-              medsCount={{ taken: takenMeds, total: totalMeds }}
-              symptomsLogged={symptoms.length > 0}
-              nextAppointment={getFormattedNextAppointment()}
-              score={wellnessScore}
-              userRole={userRole}
-              onExpand={handleWellnessExpand}
-              comorbidityStatus={comorbidityStatus}
-            />
-          </div>
-
-          {/* Comorbidity Status Summary */}
-          {comorbidities.length > 0 && (
-            <div className="mb-8">
-              <ComorbidityStatusSummary 
-                comorbidities={comorbidities}
-                userRole={userRole}
-              />
+            <div className="bg-white rounded-2xl shadow-ojas-soft p-6">
+              <h2 className="text-lg font-semibold text-ojas-text-main mb-4">Wellness Ring</h2>
+              <div className="flex items-center justify-center">
+                <div className="relative w-32 h-32">
+                  <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      fill="none"
+                      stroke="#E1E4EA"
+                      strokeWidth="8"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      fill="none"
+                      stroke="#0077B6"
+                      strokeWidth="8"
+                      strokeDasharray={`${(wellnessScore / 100) * 314} 314`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-ojas-text-main">{wellnessScore}</div>
+                      <div className="text-xs text-ojas-text-secondary">Daily Health Score</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* AI Insights */}
+          <div className="mb-8">
+            <div className="bg-white rounded-2xl shadow-ojas-soft overflow-hidden">
+              <div className="relative h-40 bg-gradient-to-br from-gray-800 to-gray-900">
+                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="text-lg font-semibold text-white mb-2">AI Insights</h3>
+                  <p className="text-sm text-gray-200">
+                    Your sleep quality has been lower than usual. Consider adjusting your evening routine.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Tasks */}
+          <div className="mb-8">
+            <div className="bg-white rounded-2xl shadow-ojas-soft p-6">
+              <h3 className="text-lg font-semibold text-ojas-text-main mb-4">Pending Tasks</h3>
+              <div className="space-y-3">
+                <button 
+                  className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                  style={{ minHeight: '44px' }}
+                >
+                  <span className="text-ojas-text-main">Medications to take</span>
+                  <ChevronRight className="w-5 h-5 text-ojas-text-secondary" />
+                </button>
+                <button 
+                  onClick={onNavigateToHealthLog}
+                  className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                  style={{ minHeight: '44px' }}
+                >
+                  <span className="text-ojas-text-main">Log Symptoms</span>
+                  <ChevronRight className="w-5 h-5 text-ojas-text-secondary" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Vitals */}
+          <div className="mb-8">
+            <div className="bg-white rounded-2xl shadow-ojas-soft p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-ojas-text-main">Vitals</h3>
+                <button 
+                  onClick={onNavigateToHealthLog}
+                  className="text-sm text-ojas-primary font-medium"
+                >
+                  Quick Add
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-ojas-text-main font-medium">Blood Pressure</div>
+                    <div className="text-sm text-ojas-text-secondary">Last Reading: 120/80</div>
+                  </div>
+                  <button 
+                    className="px-3 py-1 text-sm text-ojas-primary border border-ojas-primary rounded-lg hover:bg-ojas-primary hover:text-white transition-colors"
+                    style={{ minHeight: '32px' }}
+                  >
+                    Quick Add
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-ojas-text-main font-medium">Heart Rate</div>
+                    <div className="text-sm text-ojas-text-secondary">Last Reading: 72 bpm</div>
+                  </div>
+                  <button 
+                    className="px-3 py-1 text-sm text-ojas-primary border border-ojas-primary rounded-lg hover:bg-ojas-primary hover:text-white transition-colors"
+                    style={{ minHeight: '32px' }}
+                  >
+                    Quick Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Contextual Support Banner */}
-          {onNavigateToSupportGroups && (
+          {onNavigateToSupportGroups && wellnessScore < 70 && (
             <div className="mb-8">
               <ContextualSupportBanner
                 userRole={userRole}
@@ -266,75 +318,10 @@ const HomePage: React.FC<HomePageProps> = ({
               />
             </div>
           )}
-
-          {/* AI Health Insights Panel */}
-          <div className="mb-8">
-            <AIInsightsPanel userRole={userRole} />
-          </div>
-
-          {/* Vitals Widget */}
-          <div className="mb-8">
-            <VitalsWidget 
-              userRole={userRole}
-              onNavigateToVitals={handleNavigateToHealthLog}
-            />
-          </div>
-
-          {/* Refill Alerts */}
-          {refillAlerts.length > 0 && (
-            <div className="mb-8">
-              <RefillAlertsSection 
-                refillAlerts={refillAlerts}
-                onRefillAction={handleRefillRequested}
-                onDismissRefill={(id) => console.log('Dismiss refill alert:', id)}
-              />
-            </div>
-          )}
-
-          {/* Today's Action Summary - Compact */}
-          <div className="mb-8">
-            <TodaysActionSummary 
-              medsCount={{ taken: takenMeds, total: totalMeds }}
-              symptomsLogged={symptoms.length > 0}
-              nextAppointment={getFormattedNextAppointment()}
-              userRole={userRole}
-              onViewAll={handleViewAllActions}
-              comorbidityStatus={comorbidityStatus}
-            />
-          </div>
-
-          {/* Show only urgent medications on home screen with condition indicators */}
-          {medications.filter(med => !med.taken).length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-4">
-                Medication Reminders
-              </h2>
-              <div className="space-y-4">
-                {medications.filter(med => !med.taken).slice(0, 2).map(medication => (
-                  <div key={medication.id} className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-grid-16">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-ojas-text-main dark:text-ojas-mist-white">{medication.name}</h3>
-                        <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">{medication.dosage} • {medication.time}</p>
-                        {/* Placeholder for condition tags - will be implemented in medication-condition linking */}
-                      </div>
-                      <button
-                        onClick={() => onToggleMedication(medication.id)}
-                        className="px-4 py-2 bg-ojas-primary text-white rounded-xl font-medium hover:bg-ojas-primary-hover transition-colors duration-200 active:scale-95"
-                        style={{ minHeight: '44px', minWidth: '44px' }}
-                      >
-                        Mark Taken
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </SafeAreaContainer>
       </div>
 
-      {/* Enhanced Floating Action Buttons with Safe Area - Only 2 FABs */}
+      {/* Floating Action Buttons */}
       <AIAssistantFAB />
       <EnhancedFloatingHelpButton />
     </div>
