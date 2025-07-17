@@ -13,6 +13,14 @@ import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 
+// Helper function to safely transform database results
+const transformDbRoutine = (dbRoutine: any): DailyRoutine => {
+  return {
+    ...dbRoutine,
+    routine_data: typeof dbRoutine.routine_data === 'object' ? dbRoutine.routine_data : { tasks: [], goals: [] }
+  } as DailyRoutine;
+};
+
 interface RoutineTask {
   id: string;
   title: string;
@@ -68,7 +76,7 @@ const DailyRoutinesPage = () => {
         .order('routine_date', { ascending: false });
 
       if (error) throw error;
-      setRoutines(data || []);
+      setRoutines((data || []).map(transformDbRoutine));
     } catch (error) {
       console.error('Error loading routines:', error);
       toast.error('Failed to load daily routines');
@@ -89,7 +97,7 @@ const DailyRoutinesPage = () => {
         .upsert({
           user_id: user?.id,
           routine_date: selectedDate,
-          routine_data: routineData,
+          routine_data: routineData as any,
           notes,
           completed_tasks: currentRoutine?.completed_tasks || []
         }, {
@@ -102,7 +110,7 @@ const DailyRoutinesPage = () => {
       
       setRoutines(prev => {
         const updated = prev.filter(r => r.routine_date !== selectedDate);
-        return [data, ...updated].sort((a, b) => b.routine_date.localeCompare(a.routine_date));
+        return [transformDbRoutine(data), ...updated].sort((a, b) => b.routine_date.localeCompare(a.routine_date));
       });
 
       toast.success('Routine updated successfully');
