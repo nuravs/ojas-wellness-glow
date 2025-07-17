@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Home, Pill, Activity, Heart, MoreHorizontal } from 'lucide-react';
+import { Home, Pill, Activity, Heart, MoreHorizontal, Brain, Users } from 'lucide-react';
 
 interface NavigationProps {
-  activeTab: 'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'more';
-  onTabChange: (tab: 'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'more') => void;
+  activeTab: 'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'brain-gym' | 'support' | 'more';
+  onTabChange: (tab: 'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'brain-gym' | 'support' | 'more') => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
@@ -13,6 +13,8 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
     { id: 'medications' as const, label: 'Meds', icon: Pill },
     { id: 'symptoms' as const, label: 'Symptoms', icon: Activity },
     { id: 'vitals' as const, label: 'Vitals', icon: Heart },
+    { id: 'brain-gym' as const, label: 'Brain', icon: Brain },
+    { id: 'support' as const, label: 'Support', icon: Users },
     { id: 'more' as const, label: 'More', icon: MoreHorizontal },
   ];
 

@@ -9,6 +9,9 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import CalmRoomPage from "./pages/CalmRoomPage";
+import BrainGymPage from "./pages/BrainGymPage";
+import SupportGroupsPage from "./pages/SupportGroupsPage";
+import DailyRoutinesPage from "./pages/DailyRoutinesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +28,9 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/calm-room" element={<CalmRoomPage />} />
+              <Route path="/brain-gym" element={<BrainGymPage />} />
+              <Route path="/support-groups" element={<SupportGroupsPage />} />
+              <Route path="/daily-routines" element={<DailyRoutinesPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

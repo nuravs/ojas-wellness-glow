@@ -11,13 +11,15 @@ import SymptomsPage from './SymptomsPage';
 import DoctorsHubPage from './DoctorsHubPage';
 import EnhancedSettingsPage from './EnhancedSettingsPage';
 import ComorbiditiesPage from './ComorbiditiesPage';
+import BrainGymPage from './BrainGymPage';
+import SupportGroupsPage from './SupportGroupsPage';
 import Navigation from '../components/Navigation';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useMedications } from '../hooks/useMedications';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'more'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'symptoms' | 'vitals' | 'records' | 'brain-gym' | 'support' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities'>('main');
   
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -121,6 +123,10 @@ const Index = () => {
         return <VitalsPage userRole={userRole} onBack={() => setActiveTab('home')} />;
       case 'records':
         return <RecordsPage />;
+      case 'brain-gym':
+        return <BrainGymPage />;
+      case 'support':
+        return <SupportGroupsPage />;
       case 'more':
         return (
           <MorePage 
