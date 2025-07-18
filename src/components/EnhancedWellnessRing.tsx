@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { X, TrendingUp, Activity } from 'lucide-react';
+import { X, TrendingUp, Activity, Heart, Pill, Brain } from 'lucide-react';
 import { getCopyForRole } from '../utils/roleBasedCopy';
 import GoodDayPrompt from './GoodDayPrompt';
 import { usePositiveFactors } from '../hooks/usePositiveFactors';
@@ -32,8 +31,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   onExpand,
   comorbidityStatus
 }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [showGoodDayPrompt, setShowGoodDayPrompt] = useState(false);
   const { hasLoggedToday } = usePositiveFactors();
@@ -49,66 +47,40 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   const circumference = 2 * Math.PI * radius;
   const progressOffset = circumference - (score / 100) * circumference;
 
-  // Calculate segment data for interactive tooltips
-  const getSegmentData = () => {
-    const medicationAdherence = medsCount.total > 0 ? (medsCount.taken / medsCount.total) * 100 : 100;
-    const comorbidityScore = comorbidityStatus ? 
-      (comorbidityStatus.controlled / Math.max(comorbidityStatus.total, 1)) * 100 : 100;
-    
-    return {
-      medication: {
-        percentage: Math.round(medicationAdherence),
-        label: 'Medication Adherence',
-        description: `${medsCount.taken} of ${medsCount.total} medications taken today`
-      },
-      symptoms: {
-        percentage: symptomsLogged ? 85 : 100,
-        label: 'Symptom Tracking',
-        description: symptomsLogged ? 'Symptoms logged today' : 'No symptoms logged today'
-      },
-      conditions: {
-        percentage: Math.round(comorbidityScore),
-        label: 'Health Conditions',
-        description: comorbidityStatus ? 
-          `${comorbidityStatus.controlled} of ${comorbidityStatus.total} conditions controlled` :
-          'No conditions tracked'
-      }
-    };
-  };
-
-  const segmentData = getSegmentData();
-
-  const handleSegmentClick = (segmentKey: string) => {
-    setSelectedSegment(segmentKey === selectedSegment ? null : segmentKey);
-  };
-
   const handleRingTap = () => {
-    // Good Day Protocol: Show prompt if score >= 80 and hasn't logged today
     if (score >= 80 && !hasLoggedToday()) {
       setShowGoodDayPrompt(true);
     } else {
-      setShowTooltip(!showTooltip);
+      setShowDetails(!showDetails);
     }
   };
 
   const handleDetailsClick = () => {
     onExpand?.();
-    setShowTooltip(false);
+    setShowDetails(false);
   };
 
-  const handleCloseTooltip = () => {
-    setShowTooltip(false);
+  // Calculate individual scores for details
+  const getDetailedScores = () => {
+    const medicationScore = medsCount.total > 0 ? Math.round((medsCount.taken / medsCount.total) * 100) : 100;
+    const vitalsScore = 72; // Mock data - replace with actual calculation
+    const symptomsScore = symptomsLogged ? 85 : 100;
+    const conditionsScore = comorbidityStatus ? 
+      Math.round((comorbidityStatus.controlled / Math.max(comorbidityStatus.total, 1)) * 100) : 100;
+
+    return {
+      vitals: vitalsScore,
+      medications: medicationScore,
+      symptoms: symptomsScore,
+      conditions: conditionsScore
+    };
   };
 
-  const handleOutsideClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setShowTooltip(false);
-    }
-  };
+  const detailedScores = getDetailedScores();
 
   return (
     <div className="w-full max-w-sm mx-auto relative">
-      {/* Progress Ring with Touch Feedback and Subtle Pulse Animation */}
+      {/* Wellness Ring - Same Size as Before */}
       <div className="relative">
         <button
           onClick={handleRingTap}
@@ -119,7 +91,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
           onTouchEnd={() => setIsPressed(false)}
           className={`relative w-72 h-72 mx-auto flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-ojas-primary/50 rounded-full transition-all duration-200 ${
             isPressed ? 'scale-95' : 'scale-100'
-          } active:scale-95 hover:scale-105 animate-pulse-gentle`}
+          } active:scale-95 hover:scale-105`}
           aria-label={`Health status: ${score} - ${scoreZone.label}. Tap for details.`}
           style={{
             boxShadow: `0 0 30px ${scoreZone.color}30`,
@@ -128,9 +100,8 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
             filter: isPressed ? `drop-shadow(0 0 20px ${scoreZone.color}60)` : `drop-shadow(0 0 12px ${scoreZone.color}40)`
           }}
         >
-          {/* SVG Progress Ring with Subtle Glow Animation */}
+          {/* SVG Progress Ring */}
           <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 240 240">
-            {/* Background circle */}
             <circle
               cx="120"
               cy="120"
@@ -139,8 +110,6 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
               strokeWidth="8"
               fill="none"
             />
-            
-            {/* Progress circle with gentle glow animation */}
             <circle
               cx="120"
               cy="120"
@@ -151,14 +120,14 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={progressOffset}
-              className="transition-all duration-1000 ease-out animate-pulse-glow"
+              className="transition-all duration-1000 ease-out"
               style={{
                 filter: `drop-shadow(0 0 8px ${scoreZone.color}40)`
               }}
             />
           </svg>
 
-          {/* Center Content with Subtle Scale Animation */}
+          {/* Center Content */}
           <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray transition-transform duration-200 hover:scale-105">
             <div className="text-3xl font-bold text-ojas-text-main dark:text-ojas-mist-white mb-2">
               {score}
@@ -175,66 +144,79 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
           </div>
         </button>
 
-        {/* Enhanced Tooltip Overlay with Comorbidity Information */}
-        {showTooltip && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-gentle-fade-in"
-            onClick={handleOutsideClick}
-          >
-            <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-strong max-w-sm mx-4 relative">
+        {/* Expandable Details Panel - Slides up from bottom */}
+        {showDetails && (
+          <div className="absolute top-full left-0 right-0 mt-4 bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-strong border border-ojas-border dark:border-ojas-slate-gray p-6 animate-gentle-fade-in">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
+                Health Details
+              </h4>
               <button
-                onClick={handleCloseTooltip}
-                className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                aria-label="Close details"
-                style={{ minWidth: '44px', minHeight: '44px' }}
+                onClick={() => setShowDetails(false)}
+                className="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center transition-colors"
+                aria-label="Hide details"
               >
-                <X className="w-6 h-6" />
+                <X className="w-4 h-4" />
               </button>
-              
-              <div className="p-6 pt-12">
-                <p className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
-                  {getCopyForRole('wellnessRingTooltip', userRole)}
-                </p>
-                <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver mb-4">
-                  {score}/100 – {scoreZone.label}
-                </p>
+            </div>
 
-                {/* Health Breakdown */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">Medications</span>
-                    <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-                      {medsCount.taken}/{medsCount.total} taken
-                    </span>
-                  </div>
-                  
-                  {comorbidityStatus && comorbidityStatus.total > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">Conditions</span>
-                      <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-                        {comorbidityStatus.controlled} controlled, {comorbidityStatus.needsAttention} need attention
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">Symptoms</span>
-                    <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-                      {symptomsLogged ? 'Logged today' : 'None today'}
-                    </span>
-                  </div>
+            {/* Individual Metrics */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-ojas-bg-light dark:bg-ojas-slate-gray/20 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">Vitals</span>
                 </div>
+                <div className="text-2xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
+                  {detailedScores.vitals}
+                </div>
+              </div>
 
-                <button
-                  onClick={handleDetailsClick}
-                  className="w-full px-4 py-3 bg-ojas-primary text-white rounded-xl text-sm font-medium hover:bg-ojas-primary-hover transition-colors duration-200 flex items-center justify-center gap-2"
-                  style={{ minHeight: '44px' }}
-                >
-                  <TrendingUp className="w-4 h-4" />
-                  View Trends & Details
-                </button>
+              <div className="bg-ojas-bg-light dark:bg-ojas-slate-gray/20 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Pill className="w-4 h-4 text-ojas-primary" />
+                  <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">Meds</span>
+                </div>
+                <div className="text-2xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
+                  {detailedScores.medications}
+                </div>
+              </div>
+
+              <div className="bg-ojas-bg-light dark:bg-ojas-slate-gray/20 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="w-4 h-4 text-purple-500" />
+                  <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">Symptoms</span>
+                </div>
+                <div className="text-2xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
+                  {detailedScores.symptoms}
+                </div>
+              </div>
+
+              <div className="bg-ojas-bg-light dark:bg-ojas-slate-gray/20 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="w-4 h-4 text-ojas-calming-green" />
+                  <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">Conditions</span>
+                </div>
+                <div className="text-2xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
+                  {detailedScores.conditions}
+                </div>
               </div>
             </div>
+
+            {/* Summary Text */}
+            <div className="text-center mb-4">
+              <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                Your wellness score updates throughout the day based on your health activities.
+              </p>
+            </div>
+
+            {/* Hide Details Button */}
+            <button
+              onClick={() => setShowDetails(false)}
+              className="w-full py-3 bg-ojas-bg-light dark:bg-ojas-slate-gray/20 text-ojas-text-main dark:text-ojas-mist-white rounded-xl text-sm font-medium hover:bg-ojas-border dark:hover:bg-ojas-slate-gray/30 transition-colors"
+            >
+              Hide Details
+            </button>
           </div>
         )}
 
@@ -247,7 +229,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
         )}
       </div>
 
-      {/* Score Legend - Updated with better spacing */}
+      {/* Score Legend - Keep existing */}
       <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mt-6">
         <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-3 text-center">
           Health Score Zones
