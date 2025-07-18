@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
@@ -16,12 +15,13 @@ import Navigation from '../components/Navigation';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useMedications } from '../hooks/useMedications';
+import { useAuthDebug } from '../hooks/useAuthDebug';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups'>('main');
   
-  const { user, userProfile, loading: authLoading } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuthDebug(); // Using debug hook
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
 
   console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);

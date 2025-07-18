@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../integrations/supabase/client';
@@ -10,6 +11,7 @@ interface AuthContextType {
   session: Session | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  error: string | null;
   signUp: (email: string, password: string, userData: { role: 'patient' | 'caregiver'; full_name: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -31,21 +33,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchUserProfile = async (userId: string) => {
-    console.log("AUTH_CONTEXT: Attempting to fetch profile for user:", userId);
-    const { data: profile, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+  const fetchUserProfile = async (userId: string, retryCount = 0): Promise<UserProfile | null> => {
+    console.log(`AUTH_CONTEXT: Attempting to fetch profile for user: ${userId} (attempt ${retryCount + 1})`);
+    
+    try {
+      // Check if we have a valid session
+      const { data: currentSession } = await supabase.auth.getSession();
+      console.log("AUTH_CONTEXT: Current session check:", !!currentSession.session);
+      
+      if (!currentSession.session) {
+        console.error("AUTH_CONTEXT: No valid session found when fetching profile");
+        return null;
+      }
 
-    if (error) {
-      console.error('AUTH_CONTEXT: Error fetching user profile:', error.message);
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('AUTH_CONTEXT: Error fetching user profile:', error.message, error.details);
+        
+        // Retry logic for transient errors
+        if (retryCount < 2 && (error.code === 'PGRST116' || error.message.includes('JWT'))) {
+          console.log(`AUTH_CONTEXT: Retrying profile fetch in 1 second...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return fetchUserProfile(userId, retryCount + 1);
+        }
+        
+        setError(`Failed to load user profile: ${error.message}`);
+        return null;
+      }
+
+      console.log("AUTH_CONTEXT: Profile fetched successfully:", profile);
+      setError(null);
+      return profile;
+    } catch (err) {
+      console.error('AUTH_CONTEXT: Unexpected error fetching profile:', err);
+      setError('An unexpected error occurred while loading your profile');
       return null;
     }
-    console.log("AUTH_CONTEXT: Profile fetched successfully:", profile);
-    return profile;
   };
 
   useEffect(() => {
@@ -55,22 +85,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log(`AUTH_CONTEXT: Auth state changed. Event: ${event}, Session: ${session ? 'Exists' : 'null'}`);
+        console.log("AUTH_CONTEXT: Session details:", session ? { 
+          user_id: session.user.id, 
+          expires_at: session.expires_at,
+          access_token: session.access_token ? 'present' : 'missing'
+        } : 'no session');
 
         if (session?.user) {
           setUser(session.user);
           setSession(session);
-          const profile = await fetchUserProfile(session.user.id);
-          setUserProfile(profile);
+          
+          // Add a small delay to ensure the session is fully established
+          setTimeout(async () => {
+            const profile = await fetchUserProfile(session.user.id);
+            setUserProfile(profile);
+            setLoading(false);
+          }, 100);
         } else {
           setUser(null);
           setSession(null);
           setUserProfile(null);
+          setError(null);
+          setLoading(false);
         }
-        // This is the most important part: always stop loading after the event is handled.
-        console.log("AUTH_CONTEXT: Auth check complete. Setting loading to false.");
-        setLoading(false);
       }
     );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("AUTH_CONTEXT: Error getting initial session:", error);
+        setLoading(false);
+        return;
+      }
+      
+      console.log("AUTH_CONTEXT: Initial session check:", session ? 'Found' : 'None');
+      if (!session) {
+        setLoading(false);
+      }
+    });
 
     return () => {
       console.log("AUTH_CONTEXT: Unsubscribing from auth changes.");
@@ -108,7 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const value = { user, session, userProfile, loading, signUp, signIn, signOut, updateProfile };
+  const value = { user, session, userProfile, loading, error, signUp, signIn, signOut, updateProfile };
 
   return (
     <AuthContext.Provider value={value}>

@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 // --- This is the new "Protected Route" component ---
 // It acts as a guard for your main application.
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { user, loading: authLoading, userProfile } = useAuth();
+  const { user, loading: authLoading, userProfile, error } = useAuth();
 
   // 1. While we are checking for a user, show a loading screen.
   if (authLoading) {
@@ -28,12 +28,35 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     );
   }
 
-  // 2. If checking is done and there's no user, redirect to the login page.
+  // 2. If there's an error loading the profile, show error state with retry option
+  if (error && user) {
+    return (
+      <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-red-500 mb-4">
+            <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-ojas-slate-gray mb-2">Unable to load your profile</h3>
+          <p className="text-sm text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-ojas-primary-blue text-white rounded-md hover:bg-blue-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. If checking is done and there's no user, redirect to the login page.
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
   
-  // 3. If there IS a user but no profile yet, keep showing loading.
+  // 4. If there IS a user but no profile yet, keep showing loading.
   // This is the key fix for your issue.
   if (user && !userProfile) {
      return (
@@ -46,7 +69,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     );
   }
 
-  // 4. If the user and profile are fully loaded, show the app.
+  // 5. If the user and profile are fully loaded, show the app.
   return children;
 };
 
