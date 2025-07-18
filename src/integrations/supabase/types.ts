@@ -223,6 +223,42 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          location: string | null
+          logged_at: string
+          notes: string | null
+          severity: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          location?: string | null
+          logged_at?: string
+          notes?: string | null
+          severity?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          logged_at?: string
+          notes?: string | null
+          severity?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       medication_conditions: {
         Row: {
           comorbidity_id: string

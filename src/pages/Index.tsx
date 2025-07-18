@@ -12,6 +12,7 @@ import EnhancedSettingsPage from './EnhancedSettingsPage';
 import ComorbiditiesPage from './ComorbiditiesPage';
 import BrainGymPage from './BrainGymPage';
 import SupportGroupsPage from './SupportGroupsPage';
+import EventsPage from './EventsPage';
 import Navigation from '../components/Navigation';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,8 +20,8 @@ import { useMedications } from '../hooks/useMedications';
 import { useAuthDebug } from '../hooks/useAuthDebug';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');
-  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups'>('main');
+  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');  
+  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups' | 'events'>('main');
   
   const { user, userProfile, loading: authLoading } = useAuthDebug();
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
@@ -49,6 +50,10 @@ const Index = () => {
 
   const handleNavigateToSupportGroups = () => {
     setCurrentPage('support-groups');
+  };
+
+  const handleNavigateToEvents = () => {
+    setCurrentPage('events');
   };
 
   const handleBackToMore = () => {
@@ -85,6 +90,14 @@ const Index = () => {
     return (
       <ThemeProvider>
         <SupportGroupsPage />
+      </ThemeProvider>
+    );
+  }
+
+  if (currentPage === 'events') {
+    return (
+      <ThemeProvider>
+        <EventsPage />
       </ThemeProvider>
     );
   }
