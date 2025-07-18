@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HomePage from './HomePage';
@@ -21,13 +22,12 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups'>('main');
   
-  const { user, userProfile, loading: authLoading } = useAuthDebug(); // Using debug hook
+  const { user, userProfile, loading: authLoading } = useAuthDebug();
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
 
   console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);
 
   const handleAddMedication = () => {
-    // This would open an add medication modal or navigate to add medication page
     console.log('Add medication functionality would be implemented here');
   };
 
@@ -104,21 +104,11 @@ const Index = () => {
   }
 
   const renderCurrentPage = () => {
-    // Use demo user role if no user profile
     const userRole = userProfile?.role as 'patient' | 'caregiver' || 'patient';
     
     switch (activeTab) {
       case 'home':
-        return (
-          <HomePage
-            medications={medications}
-            onToggleMedication={toggleMedication}
-            onPostponeMedication={postponeMedication}
-            userRole={userRole}
-            onNavigateToHealthLog={handleNavigateToHealthLog}
-            onNavigateToSupportGroups={handleNavigateToSupportGroups}
-          />
-        );
+        return <HomePage />;
       case 'medications':
         return (
           <MedicationsPage
@@ -141,16 +131,7 @@ const Index = () => {
           />
         );
       default:
-        return (
-          <HomePage 
-            medications={medications} 
-            onToggleMedication={toggleMedication} 
-            onPostponeMedication={postponeMedication} 
-            userRole={userRole}
-            onNavigateToHealthLog={handleNavigateToHealthLog}
-            onNavigateToSupportGroups={handleNavigateToSupportGroups}
-          />
-        );
+        return <HomePage />;
     }
   };
 

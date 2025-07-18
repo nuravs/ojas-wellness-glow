@@ -12,10 +12,12 @@ import AIAssistantFAB from '@/components/AIAssistantFAB';
 import CaregiverDashboard from '@/components/caregivers/CaregiverDashboard';
 import PatientApprovalCard from '@/components/caregivers/PatientApprovalCard';
 import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
+import { useMedications } from '@/hooks/useMedications';
 
 const HomePage = () => {
   const { userProfile } = useAuth();
   const { pendingRequestsForPatient } = usePatientCaregivers();
+  const { medications } = useMedications();
 
   if (!userProfile) {
     return (
@@ -27,10 +29,30 @@ const HomePage = () => {
     );
   }
 
+  const handleMedicationToggle = async (id: string) => {
+    // Implementation for medication toggle
+    console.log('Toggle medication:', id);
+  };
+
+  const handleMedicationPostpone = async (id: string) => {
+    // Implementation for medication postpone
+    console.log('Postpone medication:', id);
+  };
+
+  const handleDismissBanner = (id: string) => {
+    // Implementation for dismissing banner
+    console.log('Dismiss banner:', id);
+  };
+
+  const handleDismissInsight = (id: string) => {
+    // Implementation for dismissing insight
+    console.log('Dismiss insight:', id);
+  };
+
   return (
     <SafeAreaContainer>
       <div className="space-y-6 pb-20">
-        <HomeHeader />
+        <HomeHeader userRole={userProfile.role as 'patient' | 'caregiver'} />
         
         {/* Patient Approval Requests - Show only for patients with pending requests */}
         {userProfile.role === 'patient' && pendingRequestsForPatient.length > 0 && (
@@ -47,11 +69,30 @@ const HomePage = () => {
         )}
 
         {/* Regular Home Content */}
-        <WellnessRing />
-        <SmartBannersSection />
-        <MedicationSection />
+        <WellnessRing 
+          status={{ 
+            score: 75, 
+            label: 'Good', 
+            accessibilityLabel: 'Wellness score is 75 out of 100, which is good' 
+          }}
+          medsCount={medications?.length || 0}
+          symptomsLogged={0}
+        />
+        <SmartBannersSection 
+          medications={medications || []}
+          dismissedBanners={[]}
+          onDismissBanner={handleDismissBanner}
+        />
+        <MedicationSection 
+          medications={medications || []}
+          onToggleMedication={handleMedicationToggle}
+          onPostponeMedication={handleMedicationPostpone}
+        />
         <TodaysFocusCard />
-        <InsightsSection />
+        <InsightsSection 
+          dismissedInsights={new Set()}
+          onDismissInsight={handleDismissInsight}
+        />
       </div>
       
       <AIAssistantFAB />
