@@ -3,17 +3,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './use-toast';
+import type { Tables } from '@/integrations/supabase/types';
 
-export interface Event {
-  id: string;
-  user_id: string;
+// Use the Supabase generated type as the base
+type DatabaseEvent = Tables<'events'>;
+
+export interface Event extends DatabaseEvent {
   event_type: 'fall' | 'near-fall' | 'confusion' | 'emergency' | 'other';
-  severity: number;
-  notes?: string;
-  location?: string;
-  logged_at: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface CreateEventData {
@@ -52,7 +48,8 @@ export const useEvents = () => {
         return;
       }
 
-      setEvents(data || []);
+      // Type assertion since we know the event_type will be one of our valid types
+      setEvents((data as Event[]) || []);
     } catch (error) {
       console.error('Error in loadEvents:', error);
       toast({
@@ -98,15 +95,18 @@ export const useEvents = () => {
         return null;
       }
 
+      // Type assertion for the returned data
+      const newEvent = data as Event;
+      
       // Add to local state
-      setEvents(prev => [data, ...prev]);
+      setEvents(prev => [newEvent, ...prev]);
       
       toast({
         title: "Event logged successfully",
         description: `${eventData.event_type.replace('-', ' ')} has been recorded`,
       });
 
-      return data;
+      return newEvent;
     } catch (error) {
       console.error('Error in createEvent:', error);
       toast({
