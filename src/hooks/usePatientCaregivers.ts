@@ -79,7 +79,7 @@ export const usePatientCaregivers = () => {
 
       if (error) {
         if (error.message.includes('duplicate')) {
-          throw new E rror('You have already sent an invitation to this patient.');
+          throw new Error('You have already sent an invitation to this patient.');
         }
         throw error;
       }
