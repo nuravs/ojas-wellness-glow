@@ -32,6 +32,11 @@ const UnifiedFloatingActionButton: React.FC<UnifiedFloatingActionButtonProps> = 
     setIsExpanded(false);
   };
 
+  const handleEventLogged = (event?: any) => {
+    onEventLogged?.();
+    setIsExpanded(false);
+  };
+
   return (
     <div className="fixed bottom-28 right-6 z-50">
       {/* Backdrop */}
@@ -46,10 +51,7 @@ const UnifiedFloatingActionButton: React.FC<UnifiedFloatingActionButtonProps> = 
       {isExpanded && (
         <div className="absolute bottom-16 right-0 space-y-3 mb-2">
           {showEvents && (
-            <EventLoggerModal onEventLogged={(event) => {
-              onEventLogged?.();
-              setIsExpanded(false);
-            }}>
+            <EventLoggerModal onEventLogged={handleEventLogged}>
               <Button
                 className="w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full shadow-ojas-strong flex items-center justify-center text-white transform transition-all duration-200 hover:scale-110"
                 style={{ minWidth: '48px', minHeight: '48px' }}
