@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   const fetchUserProfile = async (userId: string) => {
-    console.log("Attempting to fetch profile for user:", userId);
+    console.log("AUTH_CONTEXT: Attempting to fetch profile for user:", userId);
     const { data: profile, error } = await supabase
       .from('user_profiles')
       .select('*')
@@ -41,20 +41,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .single();
 
     if (error) {
-      console.error('Error fetching user profile:', error.message);
+      console.error('AUTH_CONTEXT: Error fetching user profile:', error.message);
       return null;
     }
-    console.log("Profile fetched successfully:", profile);
+    console.log("AUTH_CONTEXT: Profile fetched successfully:", profile);
     return profile;
   };
 
   useEffect(() => {
-    console.log("Auth context mounting. Kicking off session check.");
+    console.log("AUTH_CONTEXT: Setting up auth state listener.");
     setLoading(true);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        console.log("Auth state changed. Event:", _event);
+      async (event, session) => {
+        console.log(`AUTH_CONTEXT: Auth state changed. Event: ${event}, Session: ${session ? 'Exists' : 'null'}`);
+
         if (session?.user) {
           setUser(session.user);
           setSession(session);
@@ -65,22 +66,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(null);
           setUserProfile(null);
         }
-        // This is the key: always stop loading after the state change is handled.
+        // This is the most important part: always stop loading after the event is handled.
+        console.log("AUTH_CONTEXT: Auth check complete. Setting loading to false.");
         setLoading(false);
       }
     );
 
-    // This ensures the initial check also correctly sets loading state
-    const checkInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setLoading(false);
-      }
-    };
-    checkInitialSession();
-
     return () => {
-      console.log("Unsubscribing from auth changes.");
+      console.log("AUTH_CONTEXT: Unsubscribing from auth changes.");
       subscription.unsubscribe();
     };
   }, []);
