@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,7 +8,7 @@ export interface Vital {
   id: string;
   user_id: string;
   vital_type: 'blood_pressure' | 'blood_sugar' | 'pulse' | 'weight' | 'temperature';
-  values: any; // JSONB field
+  values: any;          // JSONB field
   measured_at: string;
   notes?: string;
   out_of_range: boolean;
@@ -29,50 +28,48 @@ export const useVitals = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
+  /** --------------------------- Helpers --------------------------- */
+
   const fetchVitals = async () => {
     if (!user) {
-      console.log('useVitals: No user found, setting loading to false');
       setLoading(false);
       return;
     }
 
-    console.log('useVitals: Fetching vitals for user:', user.id);
-    
     try {
       const { data, error } = await supabase
         .from('vitals')
         .select('*')
         .eq('user_id', user.id)
         .order('measured_at', { ascending: false });
-        
+
       if (error) {
-        console.error('Error fetching vitals:', error);
-        // Don't show toast for missing table - it's expected until migration runs
-        if (!error.message?.includes('relation "public.vitals" does not exist')) {
+        // Show toast only for real errors, not “table missing” during migrations
+        if (!error.message?.includes('does not exist')) {
           toast({
-            title: "Connection Error",
-            description: "Unable to load vitals data. Please check your connection.",
-            variant: "destructive",
+            title: 'Connection Error',
+            description: 'Unable to load vitals data. Please check your connection.',
+            variant: 'destructive',
           });
         }
         setVitals([]);
       } else {
-        console.log('useVitals: Successfully fetched vitals:', data?.length || 0, 'records');
-        setVitals((data || []) as unknown as Vital[]);
+        setVitals((data || []) as Vital[]);
       }
-    } catch (error) {
-      console.error('Error fetching vitals:', error);
+    } catch (err) {
+      console.error('useVitals → fetchVitals error:', err);
       toast({
-        title: "Database Error", 
-        description: "Failed to load vitals. Please try again.",
-        variant: "destructive",
+        title: 'Database Error',
+        description: 'Failed to load vitals. Please try again.',
+        variant: 'destructive',
       });
       setVitals([]);
     } finally {
-      console.log('useVitals: Setting loading to false');
       setLoading(false);
     }
   };
+
+  /** --------------------------- Mutations --------------------------- */
 
   const addVital = async (vitalData: {
     vital_type: Vital['vital_type'];
@@ -82,69 +79,75 @@ export const useVitals = () => {
   }) => {
     if (!user) {
       toast({
-        title: "Authentication Error",
-        description: "Please log in to add vitals",
-        variant: "destructive",
+        title: 'Authentication Error',
+        description: 'Please log in to add vitals.',
+        variant: 'destructive',
       });
       throw new Error('User not authenticated');
     }
 
     try {
       const outOfRange = isOutOfRange(vitalData.vital_type, vitalData.values);
-      
-      const vitalPayload = {
-        user_id: user.id,
-        vital_type: vitalData.vital_type,
-        values: vitalData.values as any, // JSONB field needs type casting
-        notes: vitalData.notes,
-        measured_at: vitalData.measured_at || new Date().toISOString(),
-        out_of_range: outOfRange,
-      };
 
       const { data, error } = await supabase
         .from('vitals')
-        .insert(vitalPayload)
+        .insert({
+          user_id: user.id,
+          vital_type: vitalData.vital_type,
+          values: vitalData.values as any, // cast for JSONB
+          notes: vitalData.notes,
+          measured_at: vitalData.measured_at || new Date().toISOString(),
+          out_of_range: outOfRange,
+        })
         .select()
         .single();
 
       if (error) {
-        console.error('Error adding vital:', error);
         toast({
-          title: "Database Error",
-          description: "Failed to save vital sign. Please try again.",
-          variant: "destructive",
+          title: 'Database Error',
+          description: 'Failed to save vital sign. Please try again.',
+          variant: 'destructive',
         });
         throw error;
       }
 
-      // Show success message
       toast({
-        title: "Vital Added",
-        description: outOfRange ? 
-          "Vital sign recorded. Please review the out-of-range alert." :
-          "Vital sign recorded successfully",
-        variant: outOfRange ? "destructive" : "default",
+        title: 'Vital Added',
+        description: outOfRange
+          ? 'Vital sign recorded. Please review the out-of-range alert.'
+          : 'Vital sign recorded successfully.',
+        variant: outOfRange ? 'destructive' : 'default',
       });
-      
-      setVitals(prev => [data as unknown as Vital, ...prev]);
+
+      // ⚠️  Remove optimistic local push to prevent duplicate rendering
+      await fetchVitals();          // refresh from server instead
       return data;
-    } catch (error) {
-      console.error('Error adding vital:', error);
-      throw error;
+    } catch (err) {
+      console.error('useVitals → addVital error:', err);
+      throw err;
     }
   };
 
-  const checkIfOutOfRange = (type: Vital['vital_type'], values: VitalReading): boolean => {
-    return isOutOfRange(type, values);
-  };
+  /** --------------------------- Utilities --------------------------- */
 
-  const getVitalRangeStatus = (type: Vital['vital_type'], values: VitalReading) => {
-    return getVitalStatus(type, values);
-  };
+  const checkIfOutOfRange = (
+    type: Vital['vital_type'],
+    values: VitalReading,
+  ) => isOutOfRange(type, values);
+
+  const getVitalRangeStatus = (
+    type: Vital['vital_type'],
+    values: VitalReading,
+  ) => getVitalStatus(type, values);
+
+  /** --------------------------- Effects --------------------------- */
 
   useEffect(() => {
     fetchVitals();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);            // refetch when user context changes
+
+  /** --------------------------- Return API --------------------------- */
 
   return {
     vitals,
@@ -152,6 +155,6 @@ export const useVitals = () => {
     addVital,
     getVitalRangeStatus,
     checkIfOutOfRange,
-    refetch: fetchVitals
+    refetch: fetchVitals,
   };
 };
