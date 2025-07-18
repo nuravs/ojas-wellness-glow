@@ -33,95 +33,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return null;
-      }
-      
-      return profile;
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
+    console.log("Attempting to fetch profile for user:", userId);
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user profile:', error.message);
       return null;
     }
+    console.log("Profile fetched successfully:", profile);
+    return profile;
   };
 
   useEffect(() => {
-    setLoading(true); // Start loading when the effect runs
-
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-        } else if (session) {
-          setSession(session);
-          setUser(session.user);
-          const profile = await fetchUserProfile(session.user.id);
-          setUserProfile(profile);
-        }
-        // ** THE KEY FIX IS HERE: setLoading(false) is now in a finally block **
-      } catch (error) {
-        console.error('Error getting initial session:', error);
-      } finally {
-        setLoading(false); // This will now run even if there is no session
-      }
-    };
-
-    getInitialSession();
+    console.log("Auth context mounting. Kicking off session check.");
+    setLoading(true);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setUserProfile(null); // Reset profile on auth change
-
+      async (_event, session) => {
+        console.log("Auth state changed. Event:", _event);
         if (session?.user) {
-          setLoading(true);
+          setUser(session.user);
+          setSession(session);
           const profile = await fetchUserProfile(session.user.id);
           setUserProfile(profile);
-          setLoading(false);
         } else {
-          // Also ensure loading is false on sign-out
-          setLoading(false);
+          setUser(null);
+          setSession(null);
+          setUserProfile(null);
         }
+        // This is the key: always stop loading after the state change is handled.
+        setLoading(false);
       }
     );
 
+    // This ensures the initial check also correctly sets loading state
+    const checkInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+      }
+    };
+    checkInitialSession();
+
     return () => {
+      console.log("Unsubscribing from auth changes.");
       subscription.unsubscribe();
     };
   }, []);
 
   const signUp = async (email: string, password: string, userData: { role: 'patient' | 'caregiver'; full_name: string }) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          role: userData.role,
-          full_name: userData.full_name
-        }
-      }
+      options: { data: { role: userData.role, full_name: userData.full_name } }
     });
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
 
@@ -131,29 +105,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return { error: new Error('No user logged in') };
-
     const { error } = await supabase
       .from('user_profiles')
       .update(updates)
       .eq('user_id', user.id);
-
     if (!error) {
       setUserProfile(prev => prev ? { ...prev, ...updates } : null);
     }
-
     return { error };
   };
 
-  const value = {
-    user,
-    session,
-    userProfile,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-    updateProfile
-  };
+  const value = { user, session, userProfile, loading, signUp, signIn, signOut, updateProfile };
 
   return (
     <AuthContext.Provider value={value}>
