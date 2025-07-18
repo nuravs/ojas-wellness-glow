@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import EnhancedWellnessRing from '../components/EnhancedWellnessRing';
 import TodaysActionSummary from '../components/TodaysActionSummary';
@@ -16,7 +17,7 @@ import { useSymptoms } from '../hooks/useSymptoms';
 import { useAppointments } from '../hooks/useAppointments';
 import { useVitals } from '../hooks/useVitals';
 import { calculateWellnessScore } from '../utils/wellnessScore';
-import { Plus, Calendar, Activity, Heart } from 'lucide-react';
+
 
 interface HomePageProps {
   medications: Array<{
@@ -213,37 +214,24 @@ const HomePage: React.FC<HomePageProps> = ({
 
   const comorbidityStatus = getComorbidityStatus();
 
-  // Get current date for header
-  const currentDate = new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-
   return (
     <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
       <div className="overflow-y-auto pb-32">
         <SafeAreaContainer>
-          {/* New Header Design */}
-          <div className="pt-8 pb-6">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h1 className="text-2xl font-bold text-ojas-text-main dark:text-ojas-mist-white">
-                  Good morning, Sarah
-                </h1>
-                <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                  {currentDate}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button className="w-10 h-10 rounded-full bg-white dark:bg-ojas-charcoal-gray shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray flex items-center justify-center">
-                  <div className="w-2 h-2 bg-ojas-primary rounded-full"></div>
-                </button>
-              </div>
-            </div>
+          {/* Enhanced Personalized Header with Role-Based Copy */}
+          <HomeHeader userRole={userRole} />
+
+          {/* Today's Focus Card */}
+          <div className="mb-8">
+            <TodaysFocusCard
+              userRole={userRole}
+              upcomingAppointment={getTodaysAppointment()}
+              overdueMedications={getOverdueMedications()}
+              criticalAlerts={[]}
+            />
           </div>
 
-          {/* Enhanced Wellness Ring - Same Size */}
+          {/* Enhanced Interactive Wellness Ring with Comorbidity Integration */}
           <div className="mb-8 relative">
             <EnhancedWellnessRing
               status={wellnessStatus}
@@ -257,93 +245,18 @@ const HomePage: React.FC<HomePageProps> = ({
             />
           </div>
 
-          {/* AI Insights Panel - Enhanced Design */}
-          <div className="mb-6">
-            <AIInsightsPanel userRole={userRole} />
-          </div>
-
-          {/* Today's Actions - Streamlined */}
-          <div className="mb-6">
-            <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-                  Today's Actions
-                </h3>
-                <button className="text-ojas-primary text-sm font-medium">
-                  View All
-                </button>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-ojas-bg-light dark:bg-ojas-slate-gray/20 rounded-xl">
-                  <div className="w-8 h-8 rounded-full bg-ojas-primary/10 flex items-center justify-center">
-                    <Activity className="w-4 h-4 text-ojas-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-                      Medications
-                    </p>
-                    <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                      {takenMeds} of {totalMeds} taken today
-                    </p>
-                  </div>
-                  <div className="text-xs text-ojas-primary font-medium">
-                    {totalMeds - takenMeds} pending
-                  </div>
-                </div>
-
-                {getTodaysAppointment() && (
-                  <div className="flex items-center gap-3 p-3 bg-ojas-bg-light dark:bg-ojas-slate-gray/20 rounded-xl">
-                    <div className="w-8 h-8 rounded-full bg-ojas-calming-green/10 flex items-center justify-center">
-                      <Calendar className="w-4 h-4 text-ojas-calming-green" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
-                        Appointment Today
-                      </p>
-                      <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                        {getTodaysAppointment()?.appointment_time} with {getTodaysAppointment()?.doctor_name}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Latest Vitals - Enhanced */}
-          <div className="mb-6">
-            <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-                  Latest Vitals
-                </h3>
-                <button 
-                  onClick={handleNavigateToHealthLog}
-                  className="text-ojas-primary text-sm font-medium"
-                >
-                  View All
-                </button>
-              </div>
-              
-              <VitalsWidget 
+          {/* Comorbidity Status Summary */}
+          {comorbidities.length > 0 && (
+            <div className="mb-8">
+              <ComorbidityStatusSummary 
+                comorbidities={comorbidities}
                 userRole={userRole}
-                onNavigateToVitals={handleNavigateToHealthLog}
               />
-              
-              {/* Add Vital Button */}
-              <button 
-                onClick={handleNavigateToHealthLog}
-                className="w-full mt-4 flex items-center justify-center gap-2 p-3 border-2 border-dashed border-ojas-border dark:border-ojas-slate-gray rounded-xl text-ojas-text-secondary dark:text-ojas-cloud-silver hover:border-ojas-primary hover:text-ojas-primary transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="text-sm font-medium">Add Vital Reading</span>
-              </button>
             </div>
-          </div>
+          )}
 
-          {/* Contextual Support Banner - Only show if needed */}
-          {onNavigateToSupportGroups && wellnessScore < 70 && (
+          {/* Contextual Support Banner */}
+          {onNavigateToSupportGroups && (
             <div className="mb-8">
               <ContextualSupportBanner
                 userRole={userRole}
@@ -354,7 +267,20 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
           )}
 
-          {/* Refill Alerts - Only if present */}
+          {/* AI Health Insights Panel */}
+          <div className="mb-8">
+            <AIInsightsPanel userRole={userRole} />
+          </div>
+
+          {/* Vitals Widget */}
+          <div className="mb-8">
+            <VitalsWidget 
+              userRole={userRole}
+              onNavigateToVitals={handleNavigateToHealthLog}
+            />
+          </div>
+
+          {/* Refill Alerts */}
           {refillAlerts.length > 0 && (
             <div className="mb-8">
               <RefillAlertsSection 
@@ -364,10 +290,51 @@ const HomePage: React.FC<HomePageProps> = ({
               />
             </div>
           )}
+
+          {/* Today's Action Summary - Compact */}
+          <div className="mb-8">
+            <TodaysActionSummary 
+              medsCount={{ taken: takenMeds, total: totalMeds }}
+              symptomsLogged={symptoms.length > 0}
+              nextAppointment={getFormattedNextAppointment()}
+              userRole={userRole}
+              onViewAll={handleViewAllActions}
+              comorbidityStatus={comorbidityStatus}
+            />
+          </div>
+
+          {/* Show only urgent medications on home screen with condition indicators */}
+          {medications.filter(med => !med.taken).length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-4">
+                Medication Reminders
+              </h2>
+              <div className="space-y-4">
+                {medications.filter(med => !med.taken).slice(0, 2).map(medication => (
+                  <div key={medication.id} className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-grid-16">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-ojas-text-main dark:text-ojas-mist-white">{medication.name}</h3>
+                        <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">{medication.dosage} • {medication.time}</p>
+                        {/* Placeholder for condition tags - will be implemented in medication-condition linking */}
+                      </div>
+                      <button
+                        onClick={() => onToggleMedication(medication.id)}
+                        className="px-4 py-2 bg-ojas-primary text-white rounded-xl font-medium hover:bg-ojas-primary-hover transition-colors duration-200 active:scale-95"
+                        style={{ minHeight: '44px', minWidth: '44px' }}
+                      >
+                        Mark Taken
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </SafeAreaContainer>
       </div>
 
-      {/* Enhanced Floating Action Buttons */}
+      {/* Enhanced Floating Action Buttons with Safe Area - Only 2 FABs */}
       <AIAssistantFAB />
       <EnhancedFloatingHelpButton />
     </div>
