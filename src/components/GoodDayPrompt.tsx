@@ -26,7 +26,7 @@ const GoodDayPrompt: React.FC<GoodDayPromptProps> = ({ wellnessScore, onClose })
           user_id: user.id,
           factor_text: positiveFactors.trim(),
           wellness_score: wellnessScore
-        });
+        } as any);
 
       if (error) throw error;
 

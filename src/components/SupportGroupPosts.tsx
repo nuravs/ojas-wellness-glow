@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Plus, Heart, Reply, MoreHorizontal, Pin, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
@@ -52,12 +53,12 @@ const SupportGroupPosts: React.FC<SupportGroupPostsProps> = ({ groupId, groupNam
       const { data, error } = await supabase
         .from('support_group_posts')
         .select('*')
-        .eq('group_id', groupId)
+        .eq('group_id' as any, groupId)
         .order('pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts(data || []);
+      setPosts((data as any) || []);
     } catch (error) {
       console.error('Error loading posts:', error);
       toast.error('Failed to load posts');
@@ -82,13 +83,13 @@ const SupportGroupPosts: React.FC<SupportGroupPostsProps> = ({ groupId, groupNam
           content: newPost.content.trim(),
           post_type: newPost.post_type,
           anonymous: newPost.anonymous
-        })
+        } as any)
         .select()
         .single();
 
       if (error) throw error;
 
-      setPosts(prev => [data, ...prev]);
+      setPosts(prev => [(data as any), ...prev]);
       setNewPost({
         title: '',
         content: '',

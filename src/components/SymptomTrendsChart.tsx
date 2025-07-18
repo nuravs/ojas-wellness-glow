@@ -65,16 +65,17 @@ const SymptomTrendsChart: React.FC<SymptomTrendsChartProps> = ({ symptomName, on
           date.setDate(date.getDate() - i);
           const dayName = dayNames[date.getDay()];
           
-          // Get symptoms for this day
-          const daySymptoms = symptoms?.filter(symptom => {
+          // Get symptoms for this day - properly type the symptoms
+          const daySymptoms = (symptoms as any[] || []).filter((symptom: any) => {
+            if (!symptom.logged_at) return false;
             const symptomDate = new Date(symptom.logged_at);
             return symptomDate.toDateString() === date.toDateString();
-          }) || [];
+          });
 
           // Calculate average severity for the day
           let avgSeverity = 0;
           if (daySymptoms.length > 0) {
-            const totalSeverity = daySymptoms.reduce((sum, symptom) => 
+            const totalSeverity = daySymptoms.reduce((sum: number, symptom: any) => 
               sum + (symptom.severity || 0), 0);
             avgSeverity = Math.round(totalSeverity / daySymptoms.length);
           }
@@ -89,8 +90,8 @@ const SymptomTrendsChart: React.FC<SymptomTrendsChartProps> = ({ symptomName, on
         setWeeklyData(processedData);
 
         // Calculate insights
-        const totalEntries = symptoms?.length || 0;
-        const severityData = symptoms?.map(s => s.severity || 0) || [];
+        const totalEntries = (symptoms as any[] || []).length;
+        const severityData = (symptoms as any[] || []).map((s: any) => s.severity || 0);
         
         const lowSeverityDays = processedData.filter(d => d.severity > 0 && d.severity <= 3).length;
         const moderateDays = processedData.filter(d => d.severity >= 4 && d.severity <= 6).length;

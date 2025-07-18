@@ -175,7 +175,7 @@ const BrainGymExercise: React.FC<BrainGymExerciseProps> = ({ exercise, onBack, o
 
   const handleStart = async () => {
     const session = await startSession(exercise.id, exercise.difficulty_level);
-    if (session) {
+    if (session && typeof session === 'object' && 'id' in session) {
       setSessionId(session.id);
       setStartTime(Date.now());
       setIsRunning(true);
