@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import MedicationTimeline from '../components/MedicationTimeline';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import MedicationActionsHeader from '../components/medication/MedicationActionsHeader';
-import RefillAlertsSection from '../components/medication/RefillAlertsSection';
+import EnhancedRefillAlertsSection from '../components/medication/EnhancedRefillAlertsSection';
 import MedicationsList from '../components/medication/MedicationsList';
 import MedicationEmptyState from '../components/medication/MedicationEmptyState';
 import { useMedications } from '../hooks/useMedications';
+import { useRefillAlerts } from '../hooks/useRefillAlerts';
 
 interface MedicationsPageProps {
   medications: Array<{
@@ -32,31 +33,11 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
   userRole = 'patient'
 }) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [dismissedRefills, setDismissedRefills] = useState<string[]>([]);
   const { toggleCaregiverVisibility } = useMedications();
+  const { refillAlerts, dismissAlert, handleRefill, loading: refillLoading } = useRefillAlerts();
   
   const pendingMeds = medications.filter(med => !med.taken);
   const completedMeds = medications.filter(med => med.taken);
-
-  // Mock refill data - in real app this would come from backend
-  const refillAlerts = [
-    { 
-      id: '1', 
-      medicationName: 'Levodopa', 
-      daysLeft: 2, 
-      pillsRemaining: 6, 
-      nextRefillDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), 
-      urgency: 'high' as const 
-    },
-    { 
-      id: '2', 
-      medicationName: 'Evening Supplement', 
-      daysLeft: 5, 
-      pillsRemaining: 15, 
-      nextRefillDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), 
-      urgency: 'medium' as const 
-    }
-  ].filter(alert => !dismissedRefills.includes(alert.id));
 
   // Sort pending meds by overdue status and time
   const sortedPendingMeds = pendingMeds.sort((a, b) => {
@@ -82,14 +63,6 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
     }, 1500);
   };
 
-  const handleRefillAction = (medicationName: string) => {
-    alert(`Would redirect to pharmacy or doctor to refill ${medicationName}`);
-  };
-
-  const handleDismissRefill = (id: string) => {
-    setDismissedRefills(prev => [...prev, id]);
-  };
-
   return (
     <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
       <div className="overflow-y-auto pb-20" style={{ padding: '0 16px' }}>
@@ -111,15 +84,16 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
             </div>
           )}
 
-          {/* Refill Reminders - Separate section */}
+          {/* Enhanced Refill Reminders */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-6">
               Refill Reminders
             </h2>
-            <RefillAlertsSection
+            <EnhancedRefillAlertsSection
               refillAlerts={refillAlerts}
-              onRefillAction={handleRefillAction}
-              onDismissRefill={handleDismissRefill}
+              onRefillAction={handleRefill}
+              onDismissRefill={dismissAlert}
+              loading={refillLoading}
             />
           </div>
 

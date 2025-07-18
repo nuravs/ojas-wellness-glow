@@ -11,6 +11,8 @@ import TodaysFocusCard from '@/components/TodaysFocusCard';
 import AIAssistantFAB from '@/components/AIAssistantFAB';
 import CaregiverDashboard from '@/components/caregivers/CaregiverDashboard';
 import PatientApprovalCard from '@/components/caregivers/PatientApprovalCard';
+import { AIInsightsPanel } from '@/components/AIInsightsPanel';
+import WellnessScoreExplanation from '@/components/insights/WellnessScoreExplanation';
 import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
 import { useMedications } from '@/hooks/useMedications';
 
@@ -70,6 +72,17 @@ const HomePage = () => {
     return { taken, total };
   };
 
+  // Calculate wellness score (simplified for demo)
+  const getWellnessScore = () => {
+    const { taken, total } = getMedsCount();
+    const medicationScore = total > 0 ? (taken / total) * 100 : 100;
+    
+    // Simple calculation - in real app this would be more sophisticated
+    return Math.round(medicationScore * 0.8 + 20); // Base score of 20 + medication adherence
+  };
+
+  const wellnessScore = getWellnessScore();
+
   return (
     <SafeAreaContainer>
       <div className="space-y-6 pb-20">
@@ -95,16 +108,39 @@ const HomePage = () => {
           medsCount={getMedsCount()}
           symptomsLogged={false}
         />
+
+        {/* Wellness Score Explanation */}
+        <WellnessScoreExplanation
+          score={wellnessScore}
+          breakdown={{
+            medications: Math.round((getMedsCount().taken / Math.max(getMedsCount().total, 1)) * 100),
+            symptoms: 75,
+            vitals: 85,
+            events: 90,
+            activities: 60
+          }}
+          trends={{
+            direction: wellnessScore > 70 ? 'up' : wellnessScore < 50 ? 'down' : 'stable',
+            change: Math.floor(Math.random() * 10) - 5,
+            period: 'last week'
+          }}
+        />
+
         <SmartBannersSection 
           medications={medications || []}
           dismissedBanners={new Set<string>()}
           onDismissBanner={handleDismissBanner}
         />
+        
         <MedicationSection 
           medications={medications || []}
           onToggleMedication={handleMedicationToggle}
           onPostponeMedication={handleMedicationPostpone}
         />
+
+        {/* AI Insights Panel */}
+        <AIInsightsPanel userRole={userProfile.role as 'patient' | 'caregiver'} />
+        
         <TodaysFocusCard />
         <InsightsSection 
           dismissedInsights={new Set<string>()}
