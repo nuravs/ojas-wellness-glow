@@ -13,5 +13,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+  },
+  // THIS IS THE NEW LINE THAT POINTS TO YOUR STAGING DATA
+  db: {
+    schema: 'staging',
   }
 });
