@@ -34,7 +34,7 @@ export const usePatientCaregivers = () => {
 
       try {
         // Use the RPC function to get relationships
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .rpc('get_patient_caregiver_relationships', { user_id: user.id });
 
         if (error) {
@@ -71,7 +71,7 @@ export const usePatientCaregivers = () => {
       }
 
       // Create the invitation using RPC function
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .rpc('create_caregiver_request', {
           patient_user_id: patientData.user_id,
           caregiver_user_id: user.id
@@ -79,7 +79,7 @@ export const usePatientCaregivers = () => {
 
       if (error) {
         if (error.message.includes('duplicate')) {
-          throw new Error('You have already sent an invitation to this patient.');
+          throw new E rror('You have already sent an invitation to this patient.');
         }
         throw error;
       }
@@ -111,7 +111,7 @@ export const usePatientCaregivers = () => {
       relationshipId: string; 
       status: 'approved' | 'rejected' 
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .rpc('update_caregiver_request_status', {
           request_id: relationshipId,
           new_status: status
