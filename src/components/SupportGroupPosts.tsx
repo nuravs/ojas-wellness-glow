@@ -2,304 +2,273 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Plus, Heart, Reply, MoreHorizontal, Pin, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader } from './ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Badge } from './ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Switch } from './ui/switch';
-import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
-import { toast } from 'sonner';
+import { supabase } from '../integrations/supabase/client';
+import { useToast } from '../hooks/use-toast';
 
 interface SupportGroupPost {
   id: string;
-  title?: string;
+  title: string | null;
   content: string;
+  created_at: string;
+  user_id: string;
+  group_id: string;
   post_type: string;
   anonymous: boolean;
   pinned: boolean;
   reply_count: number;
-  created_at: string;
-  user_id: string;
-  group_id: string;
+  moderated: boolean;
+  updated_at: string;
 }
 
 interface SupportGroupPostsProps {
   groupId: string;
-  groupName: string;
+  canPost: boolean;
 }
 
-const SupportGroupPosts: React.FC<SupportGroupPostsProps> = ({ groupId, groupName }) => {
-  const { user } = useAuth();
+const SupportGroupPosts: React.FC<SupportGroupPostsProps> = ({ groupId, canPost }) => {
   const [posts, setPosts] = useState<SupportGroupPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showNewPost, setShowNewPost] = useState(false);
   const [newPost, setNewPost] = useState({
     title: '',
     content: '',
     post_type: 'discussion',
     anonymous: false
   });
+  const [submitting, setSubmitting] = useState(false);
+
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
-    loadPosts();
+    if (groupId) {
+      loadPosts();
+    }
   }, [groupId]);
 
   const loadPosts = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('support_group_posts')
         .select('*')
-        .eq('group_id' as any, groupId)
+        .eq('group_id', groupId)
         .order('pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts((data as any) || []);
+      setPosts(data || []);
     } catch (error) {
       console.error('Error loading posts:', error);
-      toast.error('Failed to load posts');
+      toast({
+        title: "Error",
+        description: "Failed to load posts",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const createPost = async () => {
-    if (!newPost.content.trim()) {
-      toast.error('Post content is required');
-      return;
-    }
+  const handleSubmitPost = async () => {
+    if (!user || !newPost.content.trim()) return;
 
     try {
+      setSubmitting(true);
       const { data, error } = await supabase
         .from('support_group_posts')
         .insert({
           group_id: groupId,
-          user_id: user?.id,
+          user_id: user.id,
           title: newPost.title.trim() || null,
           content: newPost.content.trim(),
           post_type: newPost.post_type,
           anonymous: newPost.anonymous
-        } as any)
+        })
         .select()
         .single();
 
       if (error) throw error;
 
-      setPosts(prev => [(data as any), ...prev]);
+      setPosts(prev => [data, ...prev]);
       setNewPost({
         title: '',
         content: '',
         post_type: 'discussion',
         anonymous: false
       });
-      setShowCreateDialog(false);
-      toast.success('Post created successfully!');
+      setShowNewPost(false);
+      
+      toast({
+        title: "Success",
+        description: "Your post has been shared!"
+      });
     } catch (error) {
       console.error('Error creating post:', error);
-      toast.error('Failed to create post');
+      toast({
+        title: "Error",
+        description: "Failed to create post",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const getPostTypeIcon = (type: string) => {
-    switch (type) {
-      case 'question': return '❓';
-      case 'resource': return '📚';
-      case 'announcement': return '📢';
-      default: return '💬';
-    }
-  };
-
-  const getPostTypeColor = (type: string) => {
-    switch (type) {
-      case 'question': return 'bg-blue-100 text-blue-800';
-      case 'resource': return 'bg-green-100 text-green-800';
-      case 'announcement': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatRelativeTime = (timestamp: string) => {
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays}d ago`;
-    
-    return date.toLocaleDateString();
+    const postTime = new Date(timestamp);
+    const diffInMinutes = Math.floor((now.getTime() - postTime.getTime()) / 60000);
+
+    if (diffInMinutes < 1) return 'just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
   if (loading) {
     return (
-      <div className="p-4 text-center">
-        <div className="w-8 h-8 border-4 border-ojas-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-        <p className="text-ojas-text-secondary">Loading posts...</p>
+      <div className="flex items-center justify-center py-8">
+        <div className="w-8 h-8 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-ojas-text-primary">
-          {groupName} Discussion
-        </h2>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="bg-ojas-primary hover:bg-ojas-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              New Post
+    <div className="space-y-6">
+      {/* New Post Button/Form */}
+      {canPost && (
+        <div className="bg-white rounded-xl shadow-ojas-soft p-6">
+          {!showNewPost ? (
+            <Button
+              onClick={() => setShowNewPost(true)}
+              className="w-full flex items-center justify-center space-x-2 py-3 bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover rounded-xl"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Share your thoughts</span>
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Post</DialogTitle>
-              <DialogDescription>
-                Share your thoughts with the {groupName} community
-              </DialogDescription>
-            </DialogHeader>
+          ) : (
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="post-type">Post Type</Label>
-                <Select
-                  value={newPost.post_type}
-                  onValueChange={(value) => setNewPost({ ...newPost, post_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="discussion">Discussion</SelectItem>
-                    <SelectItem value="question">Question</SelectItem>
-                    <SelectItem value="resource">Resource</SelectItem>
-                    <SelectItem value="announcement">Announcement</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="title">Title (Optional)</Label>
-                <Input
-                  id="title"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                  placeholder="Enter post title"
-                />
-              </div>
-              <div>
-                <Label htmlFor="content">Content</Label>
-                <Textarea
-                  id="content"
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                  placeholder="What would you like to share?"
-                  rows={4}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="anonymous"
-                  checked={newPost.anonymous}
-                  onCheckedChange={(checked) => setNewPost({ ...newPost, anonymous: checked })}
-                />
-                <Label htmlFor="anonymous">Post anonymously</Label>
-              </div>
-              <div className="flex justify-end space-x-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-ojas-charcoal-gray">New Post</h3>
                 <Button
-                  variant="outline"
-                  onClick={() => setShowCreateDialog(false)}
+                  onClick={() => setShowNewPost(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-ojas-slate-gray hover:text-ojas-charcoal-gray"
                 >
                   Cancel
                 </Button>
-                <Button onClick={createPost}>
-                  Create Post
+              </div>
+
+              <Input
+                placeholder="Post title (optional)"
+                value={newPost.title}
+                onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
+                className="border-ojas-cloud-silver focus:border-ojas-primary-blue"
+              />
+
+              <Textarea
+                placeholder="Share your thoughts, experiences, or questions..."
+                value={newPost.content}
+                onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+                className="min-h-[120px] border-ojas-cloud-silver focus:border-ojas-primary-blue resize-none"
+              />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center space-x-2 text-sm text-ojas-slate-gray">
+                    <input
+                      type="checkbox"
+                      checked={newPost.anonymous}
+                      onChange={(e) => setNewPost(prev => ({ ...prev, anonymous: e.target.checked }))}
+                      className="w-4 h-4 text-ojas-primary-blue border-ojas-cloud-silver rounded focus:ring-ojas-primary-blue"
+                    />
+                    <span>Post anonymously</span>
+                  </label>
+                </div>
+
+                <Button
+                  onClick={handleSubmitPost}
+                  disabled={!newPost.content.trim() || submitting}
+                  className="px-6 py-2 bg-ojas-primary-blue text-white hover:bg-ojas-primary-blue-hover rounded-lg disabled:opacity-50"
+                >
+                  {submitting ? 'Posting...' : 'Post'}
                 </Button>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          )}
+        </div>
+      )}
 
-      {/* Posts */}
-      <div className="space-y-3">
-        {posts.map((post) => (
-          <Card key={post.id} className="border-ojas-border">
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                {/* Post Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">{getPostTypeIcon(post.post_type)}</span>
-                    <Badge className={getPostTypeColor(post.post_type)}>
-                      {post.post_type}
-                    </Badge>
-                    {post.pinned && (
-                      <Badge variant="outline" className="text-orange-600 border-orange-200">
-                        <Pin className="w-3 h-3 mr-1" />
-                        Pinned
-                      </Badge>
-                    )}
-                    {post.anonymous && (
-                      <Badge variant="outline" className="text-gray-600">
-                        Anonymous
-                      </Badge>
+      {/* Posts List */}
+      {posts.length === 0 ? (
+        <div className="text-center py-12">
+          <MessageCircle className="w-16 h-16 text-ojas-slate-gray mx-auto mb-4 opacity-50" />
+          <h3 className="text-lg font-medium text-ojas-charcoal-gray mb-2">No posts yet</h3>
+          <p className="text-ojas-slate-gray">
+            {canPost ? 'Be the first to start a conversation!' : 'Join this group to participate in discussions.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <div key={post.id} className="bg-white rounded-xl shadow-ojas-soft p-6 hover:shadow-ojas-medium transition-shadow">
+              {/* Post Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-ojas-primary-blue/10 rounded-full flex items-center justify-center">
+                    {post.anonymous ? (
+                      <span className="text-sm font-medium text-ojas-primary-blue">A</span>
+                    ) : (
+                      <span className="text-sm font-medium text-ojas-primary-blue">U</span>
                     )}
                   </div>
-                  <Button variant="ghost" size="sm" className="p-1">
+                  <div>
+                    <p className="text-sm font-medium text-ojas-charcoal-gray">
+                      {post.anonymous ? 'Anonymous' : 'Community Member'}
+                    </p>
+                    <p className="text-xs text-ojas-slate-gray">
+                      {formatRelativeTime(post.created_at)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  {post.pinned && (
+                    <Pin className="w-4 h-4 text-ojas-soft-gold" />
+                  )}
+                  <Button variant="ghost" size="sm" className="text-ojas-slate-gray hover:text-ojas-charcoal-gray">
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </div>
-
-                {/* Post Content */}
-                <div>
-                  {post.title && (
-                    <h3 className="font-medium text-ojas-text-primary mb-2">{post.title}</h3>
-                  )}
-                  <p className="text-ojas-text-secondary whitespace-pre-wrap">{post.content}</p>
-                </div>
-
-                {/* Post Footer */}
-                <div className="flex items-center justify-between pt-2 border-t border-ojas-border">
-                  <div className="flex items-center space-x-4 text-sm text-ojas-text-secondary">
-                    <span>{formatTimeAgo(post.created_at)}</span>
-                    <div className="flex items-center space-x-1">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>{post.reply_count} replies</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" className="text-ojas-text-secondary hover:text-ojas-primary">
-                      <Heart className="w-4 h-4 mr-1" />
-                      Like
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-ojas-text-secondary hover:text-ojas-primary">
-                      <Reply className="w-4 h-4 mr-1" />
-                      Reply
-                    </Button>
-                  </div>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {posts.length === 0 && (
-        <div className="text-center py-12">
-          <MessageCircle className="w-12 h-12 text-ojas-text-secondary mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-ojas-text-primary mb-2">No posts yet</h3>
-          <p className="text-ojas-text-secondary mb-4">Be the first to start a conversation in this group</p>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create First Post
-          </Button>
+              {/* Post Content */}
+              {post.title && (
+                <h3 className="text-lg font-semibold text-ojas-charcoal-gray mb-2">{post.title}</h3>
+              )}
+              <p className="text-ojas-charcoal-gray mb-4 leading-relaxed">{post.content}</p>
+
+              {/* Post Actions */}
+              <div className="flex items-center space-x-6 pt-4 border-t border-ojas-cloud-silver">
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-ojas-slate-gray hover:text-ojas-vibrant-coral">
+                  <Heart className="w-4 h-4" />
+                  <span className="text-sm">Support</span>
+                </Button>
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-ojas-slate-gray hover:text-ojas-primary-blue">
+                  <Reply className="w-4 h-4" />
+                  <span className="text-sm">Reply</span>
+                  {post.reply_count > 0 && (
+                    <span className="text-xs">({post.reply_count})</span>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
