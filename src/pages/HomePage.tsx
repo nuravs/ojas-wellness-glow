@@ -1,343 +1,61 @@
 
-import React, { useState } from 'react';
-import EnhancedWellnessRing from '../components/EnhancedWellnessRing';
-import TodaysActionSummary from '../components/TodaysActionSummary';
-import TodaysFocusCard from '../components/TodaysFocusCard';
-import ContextualSupportBanner from '../components/ContextualSupportBanner';
-import HomeHeader from '../components/HomeHeader';
-import AIAssistantFAB from '../components/AIAssistantFAB';
-import EnhancedFloatingHelpButton from '../components/EnhancedFloatingHelpButton';
-import SafeAreaContainer from '../components/SafeAreaContainer';
-import ComorbidityStatusSummary from '../components/ComorbidityStatusSummary';
-import VitalsWidget from '../components/vitals/VitalsWidget';
-import RefillAlertsSection from '../components/medication/RefillAlertsSection';
-import { AIInsightsPanel } from '../components/AIInsightsPanel';
-import { useComorbidities } from '../hooks/useComorbidities';
-import { useSymptoms } from '../hooks/useSymptoms';
-import { useAppointments } from '../hooks/useAppointments';
-import { useVitals } from '../hooks/useVitals';
-import { calculateWellnessScore } from '../utils/wellnessScore';
+import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import SafeAreaContainer from '@/components/SafeAreaContainer';
+import HomeHeader from '@/components/HomeHeader';
+import WellnessRing from '@/components/WellnessRing';
+import SmartBannersSection from '@/components/SmartBannersSection';
+import MedicationSection from '@/components/MedicationSection';
+import InsightsSection from '@/components/InsightsSection';
+import TodaysFocusCard from '@/components/TodaysFocusCard';
+import AIAssistantFAB from '@/components/AIAssistantFAB';
+import CaregiverDashboard from '@/components/caregivers/CaregiverDashboard';
+import PatientApprovalCard from '@/components/caregivers/PatientApprovalCard';
+import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
 
+const HomePage = () => {
+  const { userProfile } = useAuth();
+  const { pendingRequestsForPatient } = usePatientCaregivers();
 
-interface HomePageProps {
-  medications: Array<{
-    id: string;
-    name: string;
-    dosage: string;
-    time: string;
-    taken: boolean;
-    medication_id?: string;
-    caregiver_visible?: boolean;
-    logged_by?: string;
-    logged_by_role?: 'patient' | 'caregiver';
-  }>;
-  onToggleMedication: (id: string) => void;
-  onPostponeMedication: (id: string) => void;
-  userRole: 'patient' | 'caregiver';
-  onNavigateToHealthLog?: () => void;
-  onNavigateToSupportGroups?: () => void;
-}
-
-const HomePage: React.FC<HomePageProps> = ({ 
-  medications, 
-  onToggleMedication, 
-  onPostponeMedication,
-  userRole,
-  onNavigateToHealthLog,
-  onNavigateToSupportGroups
-}) => {
-  const { comorbidities } = useComorbidities();
-  const { symptoms, getNeurologicalSymptoms, calculateAverageSeverity } = useSymptoms();
-  const { appointments, getFormattedNextAppointment } = useAppointments();
-  const { vitals } = useVitals();
-  
-  // Calculate wellness status and score with real data integration
-  const takenMeds = medications.filter(med => med.taken).length;
-  const totalMeds = medications.length;
-  
-  // Real wellness score calculation using integrated data
-  const getWellnessScore = () => {
-    // Transform data for wellness score calculation
-    const medicationLogs = medications.map(med => ({
-      status: med.taken ? 'taken' : 'pending',
-      created_at: new Date().toISOString()
-    }));
-
-    const wellnessData = {
-      medications: medications.map(med => ({
-        id: med.medication_id || med.id,
-        name: med.name,
-        dosage: med.dosage,
-        frequency: { times_per_day: 1 },
-        active: true,
-        user_id: '',
-        instructions: '',
-        created_at: '',
-        updated_at: ''
-      })),
-      medicationLogs,
-      comorbidities: comorbidities.map(c => ({
-        ...c,
-        updated_at: c.updated_at
-      })),
-      vitals: vitals.map(v => ({
-        ...v,
-        measured_at: v.measured_at
-      })),
-      symptoms: symptoms.map(s => ({
-        ...s,
-        logged_at: s.logged_at
-      }))
-    };
-
-    try {
-      const score = calculateWellnessScore(wellnessData);
-      return score.overall;
-    } catch (error) {
-      console.error('Error calculating wellness score:', error);
-      // Fallback to simple calculation
-      return getSimpleWellnessScore();
-    }
-  };
-
-  const getSimpleWellnessScore = () => {
-    if (totalMeds === 0 && comorbidities.length === 0) return 85;
-    
-    const medScore = totalMeds > 0 ? (takenMeds / totalMeds) * 30 : 30;
-    
-    let comorbidityScore = 25;
-    if (comorbidities.length > 0) {
-      const controlledConditions = comorbidities.filter(c => c.status === 'controlled').length;
-      const monitoringConditions = comorbidities.filter(c => c.status === 'monitoring').length;
-      const activeConditions = comorbidities.filter(c => c.status === 'active').length;
-      
-      const totalConditionScore = (controlledConditions * 1.0) + (monitoringConditions * 0.7) + (activeConditions * 0.4);
-      comorbidityScore = (totalConditionScore / comorbidities.length) * 25;
-    }
-    
-    // Real symptom scoring
-    const recentNeurologicalSymptoms = getNeurologicalSymptoms();
-    const avgSeverity = calculateAverageSeverity(recentNeurologicalSymptoms);
-    const symptomScore = Math.max(0, 25 - (avgSeverity * 2.5));
-    
-    // Vitals scoring (20% weight)
-    const recentVitals = vitals.filter(v => {
-      const vitalDate = new Date(v.measured_at);
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      return vitalDate >= sevenDaysAgo;
-    });
-    
-    const outOfRangeVitals = recentVitals.filter(v => v.out_of_range).length;
-    const vitalsScore = recentVitals.length > 0 ? 
-      Math.max(0, 20 - ((outOfRangeVitals / recentVitals.length) * 20)) : 15;
-    
-    return Math.round(medScore + comorbidityScore + symptomScore + vitalsScore);
-  };
-
-  const getWellnessStatus = () => {
-    const score = getWellnessScore();
-    if (score >= 80) return 'good';
-    if (score >= 60) return 'attention';
-    return 'urgent';
-  };
-
-  const wellnessScore = getWellnessScore();
-  const wellnessStatus = getWellnessStatus();
-
-  // Mock refill alerts for now - will be replaced with real data when medication table is updated
-  const refillAlerts = [
-    {
-      id: 'alert-1',
-      medicationName: 'Levodopa',
-      daysLeft: 3,
-      pillsRemaining: 9,
-      nextRefillDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-      urgency: 'high' as const
-    }
-  ];
-
-  const handleRefillRequested = (medicationId: string) => {
-    console.log('Refill requested for medication:', medicationId);
-    // TODO: Implement refill request functionality
-  };
-
-  const handleViewAllActions = () => {
-    console.log('Navigate to detailed actions view');
-  };
-
-  const handleWellnessExpand = () => {
-    console.log('Navigate to trends and detailed wellness view');
-  };
-
-  const handleNavigateToHealthLog = () => {
-    if (onNavigateToHealthLog) {
-      onNavigateToHealthLog();
-    }
-  };
-
-  // Get today's appointment if any
-  const getTodaysAppointment = () => {
-    const today = new Date();
-    const todayString = today.toISOString().split('T')[0];
-    
-    return appointments.find(apt => 
-      apt.appointment_date === todayString && 
-      apt.status === 'scheduled'
+  if (!userProfile) {
+    return (
+      <SafeAreaContainer>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="w-8 h-8 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin" />
+        </div>
+      </SafeAreaContainer>
     );
-  };
-
-  // Get overdue medications
-  const getOverdueMedications = () => {
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    
-    return medications.filter(med => {
-      if (med.taken) return false;
-      
-      const [hours, minutes] = med.time.split(':').map(Number);
-      const medTime = hours * 60 + minutes;
-      
-      return medTime < currentTime;
-    }).map(med => ({
-      name: med.name,
-      time: med.time
-    }));
-  };
-
-  // Calculate comorbidity summary for dashboard
-  const getComorbidityStatus = () => {
-    const controlled = comorbidities.filter(c => c.status === 'controlled').length;
-    const needsAttention = comorbidities.filter(c => c.status === 'active' || c.status === 'monitoring').length;
-    return { controlled, needsAttention, total: comorbidities.length };
-  };
-
-  const comorbidityStatus = getComorbidityStatus();
+  }
 
   return (
-    <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
-      <div className="overflow-y-auto pb-32">
-        <SafeAreaContainer>
-          {/* Enhanced Personalized Header with Role-Based Copy */}
-          <HomeHeader userRole={userRole} />
-
-          {/* Today's Focus Card */}
-          <div className="mb-8">
-            <TodaysFocusCard
-              userRole={userRole}
-              upcomingAppointment={getTodaysAppointment()}
-              overdueMedications={getOverdueMedications()}
-              criticalAlerts={[]}
-            />
+    <SafeAreaContainer>
+      <div className="space-y-6 pb-20">
+        <HomeHeader />
+        
+        {/* Patient Approval Requests - Show only for patients with pending requests */}
+        {userProfile.role === 'patient' && pendingRequestsForPatient.length > 0 && (
+          <div className="space-y-4">
+            {pendingRequestsForPatient.map((request) => (
+              <PatientApprovalCard key={request.id} request={request} />
+            ))}
           </div>
+        )}
 
-          {/* Enhanced Interactive Wellness Ring with Comorbidity Integration */}
-          <div className="mb-8 relative">
-            <EnhancedWellnessRing
-              status={wellnessStatus}
-              medsCount={{ taken: takenMeds, total: totalMeds }}
-              symptomsLogged={symptoms.length > 0}
-              nextAppointment={getFormattedNextAppointment()}
-              score={wellnessScore}
-              userRole={userRole}
-              onExpand={handleWellnessExpand}
-              comorbidityStatus={comorbidityStatus}
-            />
-          </div>
+        {/* Caregiver Dashboard - Show only for caregivers */}
+        {userProfile.role === 'caregiver' && (
+          <CaregiverDashboard />
+        )}
 
-          {/* Comorbidity Status Summary */}
-          {comorbidities.length > 0 && (
-            <div className="mb-8">
-              <ComorbidityStatusSummary 
-                comorbidities={comorbidities}
-                userRole={userRole}
-              />
-            </div>
-          )}
-
-          {/* Contextual Support Banner */}
-          {onNavigateToSupportGroups && (
-            <div className="mb-8">
-              <ContextualSupportBanner
-                userRole={userRole}
-                wellnessScore={wellnessScore}
-                recentSymptoms={symptoms.slice(0, 5)}
-                onNavigateToSupport={onNavigateToSupportGroups}
-              />
-            </div>
-          )}
-
-          {/* AI Health Insights Panel */}
-          <div className="mb-8">
-            <AIInsightsPanel userRole={userRole} />
-          </div>
-
-          {/* Vitals Widget */}
-          <div className="mb-8">
-            <VitalsWidget 
-              userRole={userRole}
-              onNavigateToVitals={handleNavigateToHealthLog}
-            />
-          </div>
-
-          {/* Refill Alerts */}
-          {refillAlerts.length > 0 && (
-            <div className="mb-8">
-              <RefillAlertsSection 
-                refillAlerts={refillAlerts}
-                onRefillAction={handleRefillRequested}
-                onDismissRefill={(id) => console.log('Dismiss refill alert:', id)}
-              />
-            </div>
-          )}
-
-          {/* Today's Action Summary - Compact */}
-          <div className="mb-8">
-            <TodaysActionSummary 
-              medsCount={{ taken: takenMeds, total: totalMeds }}
-              symptomsLogged={symptoms.length > 0}
-              nextAppointment={getFormattedNextAppointment()}
-              userRole={userRole}
-              onViewAll={handleViewAllActions}
-              comorbidityStatus={comorbidityStatus}
-            />
-          </div>
-
-          {/* Show only urgent medications on home screen with condition indicators */}
-          {medications.filter(med => !med.taken).length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-4">
-                Medication Reminders
-              </h2>
-              <div className="space-y-4">
-                {medications.filter(med => !med.taken).slice(0, 2).map(medication => (
-                  <div key={medication.id} className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-grid-16">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-ojas-text-main dark:text-ojas-mist-white">{medication.name}</h3>
-                        <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">{medication.dosage} • {medication.time}</p>
-                        {/* Placeholder for condition tags - will be implemented in medication-condition linking */}
-                      </div>
-                      <button
-                        onClick={() => onToggleMedication(medication.id)}
-                        className="px-4 py-2 bg-ojas-primary text-white rounded-xl font-medium hover:bg-ojas-primary-hover transition-colors duration-200 active:scale-95"
-                        style={{ minHeight: '44px', minWidth: '44px' }}
-                      >
-                        Mark Taken
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </SafeAreaContainer>
+        {/* Regular Home Content */}
+        <WellnessRing />
+        <SmartBannersSection />
+        <MedicationSection />
+        <TodaysFocusCard />
+        <InsightsSection />
       </div>
-
-      {/* Enhanced Floating Action Buttons with Safe Area - Only 2 FABs */}
+      
       <AIAssistantFAB />
-      <EnhancedFloatingHelpButton />
-    </div>
+    </SafeAreaContainer>
   );
 };
 
