@@ -5,7 +5,8 @@ import VitalEntryForm from '../components/vitals/VitalEntryForm';
 import VitalsList from '../components/vitals/VitalsList';
 import VitalsDashboard from '../components/vitals/VitalsDashboard';
 import SafeAreaContainer from '../components/SafeAreaContainer';
-import { ArrowLeft, Plus } from 'lucide-react';
+import UnifiedFloatingActionButton from '../components/UnifiedFloatingActionButton';
+import { ArrowLeft } from 'lucide-react';
 
 interface VitalsPageProps {
   onBack?: () => void;
@@ -33,6 +34,11 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
   const handleQuickAdd = (vitalType: string) => {
     setSelectedVitalType(vitalType);
     setShowAddForm(true);
+  };
+
+  const handleFloatingAdd = () => {
+    setShowAddForm(true);
+    setSelectedVitalType('');
   };
 
   if (loading) {
@@ -76,13 +82,6 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="w-12 h-12 flex items-center justify-center bg-ojas-primary text-white rounded-full hover:bg-ojas-primary-hover transition-colors"
-              style={{ minWidth: '44px', minHeight: '44px' }}
-            >
-              <Plus className="w-6 h-6" />
-            </button>
           </div>
 
           {/* Dashboard Overview */}
@@ -94,12 +93,16 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
             />
           </div>
 
-          {/* Vitals List */}
-          <VitalsList 
-            vitals={vitals} 
-            userRole={userRole}
-            getVitalRangeStatus={getVitalRangeStatus}
-          />
+          {/* Vitals List - Only show if there are vitals */}
+          {vitals.length > 0 && (
+            <div className="mb-8">
+              <VitalsList 
+                vitals={vitals} 
+                userRole={userRole}
+                getVitalRangeStatus={getVitalRangeStatus}
+              />
+            </div>
+          )}
 
           {/* Add Vital Form Modal */}
           {showAddForm && (
@@ -119,6 +122,14 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
           )}
         </SafeAreaContainer>
       </div>
+
+      {/* Unified Floating Action Button - Only show vitals option */}
+      <UnifiedFloatingActionButton
+        onVitalAdd={handleFloatingAdd}
+        showVitals={true}
+        showSymptoms={false}
+        showEvents={false}
+      />
     </div>
   );
 };
