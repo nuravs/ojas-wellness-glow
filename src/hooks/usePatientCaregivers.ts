@@ -32,17 +32,22 @@ export const usePatientCaregivers = () => {
     queryFn: async () => {
       if (!user) return [];
 
-      // Use a direct query since the table isn't in the generated types yet
-      const { data, error } = await supabase
-        .rpc('get_patient_caregiver_relationships', { user_id: user.id });
+      try {
+        // Use the RPC function to get relationships
+        const { data, error } = await supabase
+          .rpc('get_patient_caregiver_relationships', { user_id: user.id });
 
-      if (error) {
-        console.error('Error fetching patient-caregiver relationships:', error);
-        // Fallback to empty array if function doesn't exist yet
+        if (error) {
+          console.error('Error fetching patient-caregiver relationships:', error);
+          return [];
+        }
+
+        // Parse the JSON response
+        return (data || []) as PatientCaregiverRelationship[];
+      } catch (err) {
+        console.error('Failed to fetch relationships:', err);
         return [];
       }
-
-      return data as PatientCaregiverRelationship[];
     },
     enabled: !!user,
   });
@@ -65,7 +70,7 @@ export const usePatientCaregivers = () => {
         throw new Error('Patient not found. Please ensure the email is correct and the user has an account.');
       }
 
-      // Create the invitation using raw query
+      // Create the invitation using RPC function
       const { data, error } = await supabase
         .rpc('create_caregiver_request', {
           patient_user_id: patientData.user_id,

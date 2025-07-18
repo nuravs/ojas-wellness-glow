@@ -49,6 +49,27 @@ const HomePage = () => {
     console.log('Dismiss insight:', id);
   };
 
+  // Calculate wellness status based on medications
+  const getWellnessStatus = (): 'good' | 'attention' | 'urgent' => {
+    if (!medications || medications.length === 0) return 'good';
+    
+    const overdueMeds = medications.filter(med => !med.taken);
+    if (overdueMeds.length > 2) return 'urgent';
+    if (overdueMeds.length > 0) return 'attention';
+    return 'good';
+  };
+
+  // Calculate medication counts
+  const getMedsCount = () => {
+    if (!medications || medications.length === 0) {
+      return { taken: 0, total: 0 };
+    }
+    
+    const taken = medications.filter(med => med.taken).length;
+    const total = medications.length;
+    return { taken, total };
+  };
+
   return (
     <SafeAreaContainer>
       <div className="space-y-6 pb-20">
@@ -70,17 +91,13 @@ const HomePage = () => {
 
         {/* Regular Home Content */}
         <WellnessRing 
-          status={{ 
-            score: 75, 
-            label: 'Good', 
-            accessibilityLabel: 'Wellness score is 75 out of 100, which is good' 
-          }}
-          medsCount={medications?.length || 0}
-          symptomsLogged={0}
+          status={getWellnessStatus()}
+          medsCount={getMedsCount()}
+          symptomsLogged={false}
         />
         <SmartBannersSection 
           medications={medications || []}
-          dismissedBanners={[]}
+          dismissedBanners={new Set<string>()}
           onDismissBanner={handleDismissBanner}
         />
         <MedicationSection 
@@ -90,7 +107,7 @@ const HomePage = () => {
         />
         <TodaysFocusCard />
         <InsightsSection 
-          dismissedInsights={new Set()}
+          dismissedInsights={new Set<string>()}
           onDismissInsight={handleDismissInsight}
         />
       </div>

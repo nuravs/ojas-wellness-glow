@@ -36,7 +36,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           description: 'All systems looking great',
           accessibilityLabel: 'Excellent health status - Everything is on track',
           statusIcon: <Check className="w-4 h-4" />,
-          score: Math.round((medsCount.taken / medsCount.total) * 100) || 100,
+          score: Math.round((medsCount.taken / Math.max(medsCount.total, 1)) * 100),
           ringColor: '#00B488',
           glowColor: 'rgba(0, 180, 136, 0.3)'
         };
@@ -47,7 +47,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           description: 'Minor attention needed',
           accessibilityLabel: 'Good health status - Small reminders pending',
           statusIcon: <Clock className="w-4 h-4" />,
-          score: Math.round((medsCount.taken / medsCount.total) * 100) || 75,
+          score: Math.round((medsCount.taken / Math.max(medsCount.total, 1)) * 100),
           ringColor: '#FFC300',
           glowColor: 'rgba(255, 195, 0, 0.3)'
         };
@@ -58,7 +58,7 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
           description: 'Important items require action',
           accessibilityLabel: 'Health status needs attention - Action required',
           statusIcon: <AlertTriangle className="w-4 h-4" />,
-          score: Math.round((medsCount.taken / medsCount.total) * 100) || 50,
+          score: Math.round((medsCount.taken / Math.max(medsCount.total, 1)) * 100),
           ringColor: '#FF4E4E',
           glowColor: 'rgba(255, 78, 78, 0.4)'
         };
