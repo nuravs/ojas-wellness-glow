@@ -1,21 +1,38 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const useAuthDebug = () => {
-  const { user, session, userProfile, loading, error } = useAuth();
+  const { user, userProfile, loading } = useAuth();
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
-    console.log('AUTH_DEBUG: State changed', {
-      hasUser: !!user,
-      hasSession: !!session,
-      hasProfile: !!userProfile,
+    const info = {
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        created_at: user.created_at
+      } : null,
+      userProfile: userProfile ? {
+        user_id: userProfile.user_id,
+        role: userProfile.role,
+        full_name: userProfile.full_name,
+        consent_given: userProfile.consent_given,
+        linked_user_id: userProfile.linked_user_id
+      } : null,
       loading,
-      error,
-      userId: user?.id,
-      sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : null
-    });
-  }, [user, session, userProfile, loading, error]);
+      timestamp: new Date().toISOString()
+    };
+    
+    setDebugInfo(info);
+    console.log('Auth Debug Info (staging schema):', info);
+  }, [user, userProfile, loading]);
 
-  return { user, session, userProfile, loading, error };
+  return {
+    user,
+    userProfile,
+    loading,
+    debugInfo
+  };
 };

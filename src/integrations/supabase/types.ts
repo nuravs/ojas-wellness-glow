@@ -722,6 +722,14 @@ export type Database = {
         Args: { comorbidities_user_id: string }
         Returns: Json
       }
+      get_user_medication_conditions: {
+        Args: { conditions_user_id: string }
+        Returns: Json
+      }
+      get_user_medication_logs: {
+        Args: { logs_user_id: string }
+        Returns: Json
+      }
       get_user_medications: {
         Args: { medication_user_id: string }
         Returns: Json

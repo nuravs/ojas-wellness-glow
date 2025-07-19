@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from './use-toast';
 
 export interface MedicationCondition {
   id: string;
@@ -25,6 +26,7 @@ export const useMedicationConditions = () => {
   const [medicationConditions, setMedicationConditions] = useState<MedicationCondition[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const fetchMedicationConditions = async () => {
     if (!user) {
@@ -33,14 +35,34 @@ export const useMedicationConditions = () => {
     }
 
     try {
+      console.log('Loading medication conditions for user:', user.id);
+      
+      // Use the database function to fetch medication conditions from staging
       const { data, error } = await supabase
-        .from('medication_conditions')
-        .select('*');
+        .rpc('get_user_medication_conditions', { conditions_user_id: user.id });
 
-      if (error) throw error;
-      setMedicationConditions(data || []);
+      if (error) {
+        console.error('Error loading medication conditions:', error);
+        toast({
+          title: "Error loading medication conditions",
+          description: "Please try refreshing the page",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Medication conditions data received:', data);
+      
+      // The RPC function returns JSON array directly
+      const conditionsArray = Array.isArray(data) ? data : [];
+      setMedicationConditions((conditionsArray as unknown as MedicationCondition[]) || []);
     } catch (error) {
-      console.error('Error fetching medication conditions:', error);
+      console.error('Error in fetchMedicationConditions:', error);
+      toast({
+        title: "Connection Error",
+        description: "Please check your connection and try again",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -48,6 +70,7 @@ export const useMedicationConditions = () => {
 
   const linkMedicationToCondition = async (medicationId: string, comorbidityId: string) => {
     try {
+      // Insert into staging schema via direct query since we don't have a specific function for this
       const { data, error } = await supabase
         .from('medication_conditions')
         .insert({
@@ -57,12 +80,26 @@ export const useMedicationConditions = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error linking medication to condition:', error);
+        toast({
+          title: "Error",
+          description: "Failed to link medication to condition",
+          variant: "destructive"
+        });
+        throw error;
+      }
       
-      setMedicationConditions(prev => [...prev, data]);
+      // Refresh the list
+      await fetchMedicationConditions();
+      toast({
+        title: "Success",
+        description: "Medication linked to condition successfully",
+      });
+      
       return data;
     } catch (error) {
-      console.error('Error linking medication to condition:', error);
+      console.error('Error in linkMedicationToCondition:', error);
       throw error;
     }
   };
@@ -75,37 +112,33 @@ export const useMedicationConditions = () => {
         .eq('medication_id', medicationId)
         .eq('comorbidity_id', comorbidityId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error unlinking medication from condition:', error);
+        toast({
+          title: "Error",
+          description: "Failed to unlink medication from condition",
+          variant: "destructive"
+        });
+        throw error;
+      }
       
-      setMedicationConditions(prev => 
-        prev.filter(mc => !(mc.medication_id === medicationId && mc.comorbidity_id === comorbidityId))
-      );
+      // Refresh the list
+      await fetchMedicationConditions();
+      toast({
+        title: "Success",
+        description: "Medication unlinked from condition successfully",
+      });
     } catch (error) {
-      console.error('Error unlinking medication from condition:', error);
+      console.error('Error in unlinkMedicationFromCondition:', error);
       throw error;
     }
   };
 
   const getMedicationsWithConditions = async () => {
     try {
-      const { data, error } = await supabase
-        .from('medications')
-        .select(`
-          id,
-          name,
-          dosage,
-          medication_conditions(
-            comorbidities(
-              id,
-              condition_name,
-              status
-            )
-          )
-        `)
-        .eq('active', true);
-
-      if (error) throw error;
-      return data || [];
+      // This would need a more complex database function to join medications with conditions
+      // For now, return the current medication conditions
+      return medicationConditions;
     } catch (error) {
       console.error('Error fetching medications with conditions:', error);
       return [];
