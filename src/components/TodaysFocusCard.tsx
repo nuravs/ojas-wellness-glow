@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Calendar, AlertTriangle, Heart, Sparkles } from 'lucide-react';
+import { Calendar, AlertTriangle, Heart, Sparkles, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface TodaysFocusCardProps {
@@ -17,15 +18,19 @@ interface TodaysFocusCardProps {
     type: 'vital' | 'symptom' | 'medication';
     message: string;
   }>;
+  medsCount?: { taken: number; total: number };
+  symptomsLogged?: boolean;
 }
 
 const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
   userRole = 'patient',
   upcomingAppointment,
   overdueMedications = [],
-  criticalAlerts = []
+  criticalAlerts = [],
+  medsCount = { taken: 0, total: 0 },
+  symptomsLogged = false
 }) => {
-  // Determine priority content
+  // Determine priority content based on real data
   const getPriorityContent = () => {
     // Check for critical alerts first
     if (criticalAlerts.length > 0) {
@@ -42,17 +47,17 @@ const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
       };
     }
 
-    // Check for overdue medications
-    if (overdueMedications.length > 0) {
-      const medication = overdueMedications[0];
+    // Check for overdue medications based on real data
+    const overdueMedsCount = medsCount.total - medsCount.taken;
+    if (overdueMedsCount > 0) {
       return {
-        icon: AlertTriangle,
+        icon: Clock,
         iconColor: 'text-orange-500',
         bgColor: 'bg-orange-50 dark:bg-orange-900/20',
         borderColor: 'border-orange-200 dark:border-orange-800',
-        title: 'Medication Overdue',
-        content: `${medication.name} was due at ${medication.time}`,
-        actionText: 'Mark Taken',
+        title: 'Medications Pending',
+        content: `${overdueMedsCount} medication${overdueMedsCount > 1 ? 's' : ''} still need${overdueMedsCount === 1 ? 's' : ''} to be taken today`,
+        actionText: 'View Medications',
         actionColor: 'bg-orange-500 hover:bg-orange-600'
       };
     }
@@ -71,10 +76,24 @@ const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
       };
     }
 
-    // Default positive content
+    // Check if symptoms haven't been logged
+    if (!symptomsLogged) {
+      return {
+        icon: Heart,
+        iconColor: 'text-blue-500',
+        bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+        borderColor: 'border-blue-200 dark:border-blue-800',
+        title: 'Track Your Health',
+        content: 'Consider logging how you\'re feeling today to help track your wellness journey',
+        actionText: 'Log Symptoms',
+        actionColor: 'bg-blue-500 hover:bg-blue-600'
+      };
+    }
+
+    // Default positive content when everything is up to date
     const positiveMessages = [
       "Great job staying on top of your health! 🌟",
-      "Your wellness journey is looking fantastic today! ✨",
+      "Your wellness journey is looking fantastic today! ✨", 
       "Keep up the excellent health management! 💪",
       "You're doing amazing with your daily routine! 🎉"
     ];

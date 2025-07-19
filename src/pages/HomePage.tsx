@@ -15,13 +15,17 @@ import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import WellnessScoreExplanation from '@/components/insights/WellnessScoreExplanation';
 import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
 import { useMedications } from '@/hooks/useMedications';
+import { useSymptoms } from '@/hooks/useSymptoms';
+import { useMedicationLogs } from '@/hooks/useMedicationLogs';
 import CaregiverLinkModal from '@/components/CaregiverLinkModal';
 import { Button } from '@/components/ui/button';
 
 const HomePage = () => {
   const { userProfile } = useAuth();
   const { pendingRequestsForPatient } = usePatientCaregivers();
-  const { medications } = useMedications();
+  const { medications, loading: medicationsLoading } = useMedications();
+  const { symptoms, loading: symptomsLoading } = useSymptoms();
+  const { medicationLogs, loading: logsLoading } = useMedicationLogs();
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -34,6 +38,45 @@ const HomePage = () => {
       </SafeAreaContainer>
     );
   }
+
+  // Helper function to check if symptoms were logged today
+  const getSymptomsLoggedToday = (): boolean => {
+    if (!symptoms || symptoms.length === 0) return false;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return symptoms.some(symptom => {
+      const symptomDate = new Date(symptom.logged_at);
+      symptomDate.setHours(0, 0, 0, 0);
+      return symptomDate.getTime() === today.getTime();
+    });
+  };
+
+  // Helper function to determine medication taken status from logs
+  const getMedicationStatus = () => {
+    if (!medications || medications.length === 0) {
+      return { taken: 0, total: 0 };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Get today's medication logs
+    const todaysLogs = medicationLogs.filter(log => {
+      const logDate = new Date(log.created_at);
+      return logDate >= today && logDate < tomorrow && log.status === 'taken';
+    });
+
+    // Count unique medications taken today
+    const takenMedicationIds = new Set(todaysLogs.map(log => log.medication_id));
+    const taken = takenMedicationIds.size;
+    const total = medications.length;
+
+    return { taken, total };
+  };
 
   const handleMedicationToggle = async (id: string) => {
     console.log('Toggle medication:', id);
@@ -52,31 +95,50 @@ const HomePage = () => {
   };
 
   const getWellnessStatus = (): 'good' | 'attention' | 'urgent' => {
-    if (!medications || medications.length === 0) return 'good';
+    const { taken, total } = getMedicationStatus();
+    
+    if (total === 0) return 'good';
 
-    const overdueMeds = medications.filter(med => !med.taken);
-    if (overdueMeds.length > 2) return 'urgent';
-    if (overdueMeds.length > 0) return 'attention';
+    const overdueMeds = total - taken;
+    if (overdueMeds > 2) return 'urgent';
+    if (overdueMeds > 0) return 'attention';
     return 'good';
   };
 
-  const getMedsCount = () => {
-    if (!medications || medications.length === 0) {
-      return { taken: 0, total: 0 };
-    }
-
-    const taken = medications.filter(med => med.taken).length;
-    const total = medications.length;
-    return { taken, total };
-  };
-
   const getWellnessScore = () => {
-    const { taken, total } = getMedsCount();
+    const { taken, total } = getMedicationStatus();
     const medicationScore = total > 0 ? (taken / total) * 100 : 100;
-    return Math.round(medicationScore * 0.8 + 20);
+    
+    // Factor in symptoms - if logged today, slight boost for engagement
+    const symptomsLogged = getSymptomsLoggedToday();
+    const symptomBonus = symptomsLogged ? 5 : 0;
+    
+    return Math.min(100, Math.round(medicationScore * 0.8 + 20 + symptomBonus));
   };
 
+  // Show loading state if any critical data is still loading
+  if (medicationsLoading || symptomsLoading || logsLoading) {
+    return (
+      <SafeAreaContainer>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="w-8 h-8 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin" />
+        </div>
+      </SafeAreaContainer>
+    );
+  }
+
+  const medsCount = getMedicationStatus();
+  const symptomsLogged = getSymptomsLoggedToday();
   const wellnessScore = getWellnessScore();
+
+  console.log('HomePage Data Debug:', {
+    medicationsCount: medications?.length || 0,
+    symptomsCount: symptoms?.length || 0,
+    logsCount: medicationLogs?.length || 0,
+    medsCount,
+    symptomsLogged,
+    wellnessScore
+  });
 
   return (
     <SafeAreaContainer>
@@ -107,19 +169,19 @@ const HomePage = () => {
         {/* Caregiver Modal */}
         <CaregiverLinkModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
-        {/* Wellness Ring */}
+        {/* Wellness Ring with Real Data */}
         <WellnessRing
           status={getWellnessStatus()}
-          medsCount={getMedsCount()}
-          symptomsLogged={false}
+          medsCount={medsCount}
+          symptomsLogged={symptomsLogged}
         />
 
-        {/* Wellness Score Explanation */}
+        {/* Wellness Score Explanation with Real Data */}
         <WellnessScoreExplanation
           score={wellnessScore}
           breakdown={{
-            medications: Math.round((getMedsCount().taken / Math.max(getMedsCount().total, 1)) * 100),
-            symptoms: 75,
+            medications: Math.round((medsCount.taken / Math.max(medsCount.total, 1)) * 100),
+            symptoms: symptomsLogged ? 85 : 75,
             vitals: 85,
             events: 90,
             activities: 60
@@ -144,7 +206,14 @@ const HomePage = () => {
         />
 
         <AIInsightsPanel userRole={userProfile.role as 'patient' | 'caregiver'} />
-        <TodaysFocusCard />
+        
+        {/* Today's Focus Card with Real Data */}
+        <TodaysFocusCard 
+          userRole={userProfile.role as 'patient' | 'caregiver'}
+          medsCount={medsCount}
+          symptomsLogged={symptomsLogged}
+        />
+        
         <InsightsSection
           dismissedInsights={new Set<string>()}
           onDismissInsight={handleDismissInsight}

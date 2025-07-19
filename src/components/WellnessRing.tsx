@@ -114,10 +114,16 @@ const WellnessRing: React.FC<WellnessRingProps> = ({
         <WellnessRingCenter statusConfig={statusConfig} isExpanded={isExpanded} />
       </button>
 
-      {/* Status Summary */}
+      {/* Status Summary with Real Data */}
       <p className="text-center mt-6 text-ojas-text-secondary dark:text-ojas-cloud-silver text-lg font-medium">
         {statusConfig.description}
       </p>
+
+      {/* Data Summary Display */}
+      <div className="text-center mt-4 text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
+        <p>Medications: {medsCount.taken}/{medsCount.total} taken</p>
+        <p>Symptoms: {symptomsLogged ? 'Logged today' : 'No entries today'}</p>
+      </div>
 
       {/* Health Score Zones Legend */}
       <WellnessRingLegend />

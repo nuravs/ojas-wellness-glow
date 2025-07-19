@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
+import { useMedicationLogs } from './useMedicationLogs';
 
 export interface Medication {
   id: string;
@@ -26,6 +27,24 @@ export const useMedications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { medicationLogs, loading: logsLoading } = useMedicationLogs();
+
+  // Helper function to determine if medication was taken today
+  const isMedicationTakenToday = (medicationId: string): boolean => {
+    if (!medicationLogs || medicationLogs.length === 0) return false;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return medicationLogs.some(log => 
+      log.medication_id === medicationId &&
+      log.status === 'taken' &&
+      new Date(log.created_at) >= today &&
+      new Date(log.created_at) < tomorrow
+    );
+  };
 
   const fetchMedications = async () => {
     if (!user) {
@@ -48,10 +67,10 @@ export const useMedications = () => {
         // The RPC function returns JSON array directly
         const medicationsArray = Array.isArray(data) ? data : [];
         
-        // Transform the data to include taken status and time
+        // Transform the data and determine taken status from logs
         const transformedMedications = medicationsArray.map((med: any) => ({
           ...med,
-          taken: false, // This would be determined by checking medication logs
+          taken: false, // Will be updated when logs are loaded
           time: med.next_dose ? new Date(med.next_dose).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00',
         }));
         
@@ -64,6 +83,26 @@ export const useMedications = () => {
       setLoading(false);
     }
   };
+
+  // Update medication taken status when logs change
+  useEffect(() => {
+    if (!logsLoading && medications.length > 0) {
+      const updatedMedications = medications.map(med => ({
+        ...med,
+        taken: isMedicationTakenToday(med.id)
+      }));
+      
+      // Only update if there's a change to avoid infinite loops
+      const hasChanges = updatedMedications.some((med, index) => 
+        med.taken !== medications[index].taken
+      );
+      
+      if (hasChanges) {
+        console.log('Updating medication taken status based on logs');
+        setMedications(updatedMedications);
+      }
+    }
+  }, [medicationLogs, logsLoading]);
 
   const toggleMedication = async (medicationId: string) => {
     if (!user) return;
@@ -80,10 +119,10 @@ export const useMedications = () => {
       if (error) {
         console.error('Error logging medication:', error);
       } else {
-        // Update local state
+        // Update local state immediately for better UX
         setMedications(prev =>
           prev.map(med =>
-            med.id === medicationId ? { ...med, taken: !med.taken } : med
+            med.id === medicationId ? { ...med, taken: true } : med
           )
         );
       }
@@ -147,7 +186,7 @@ export const useMedications = () => {
 
   return {
     medications,
-    loading,
+    loading: loading || logsLoading,
     toggleMedication,
     postponeMedication,
     toggleCaregiverVisibility,
