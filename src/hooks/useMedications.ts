@@ -44,8 +44,9 @@ export const useMedications = () => {
         });
         setTargetPatientId(null);
       } else {
-        // Find approved relationship where current user is caregiver
-        const approvedRelationship = data?.find((rel: any) => 
+        // Parse the JSON data and find approved relationship where current user is caregiver
+        const relationships = Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
+        const approvedRelationship = relationships.find((rel: any) => 
           rel.caregiver_id === user.id && rel.status === 'approved'
         );
         setTargetPatientId(approvedRelationship?.patient_id ?? null);

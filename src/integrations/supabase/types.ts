@@ -387,6 +387,48 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_caregivers: {
+        Row: {
+          approved_at: string | null
+          caregiver_id: string | null
+          id: string
+          invited_at: string | null
+          patient_id: string | null
+          status: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          caregiver_id?: string | null
+          id?: string
+          invited_at?: string | null
+          patient_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          caregiver_id?: string | null
+          id?: string
+          invited_at?: string | null
+          patient_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_caregivers_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patient_caregivers_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       positive_factors: {
         Row: {
           created_at: string
@@ -664,13 +706,25 @@ export type Database = {
         Args: { patient_user_id: string }
         Returns: boolean
       }
+      create_caregiver_request: {
+        Args: { patient_user_id: string; caregiver_user_id: string }
+        Returns: string
+      }
       decrement_group_member_count: {
         Args: { group_id: string }
         Returns: undefined
       }
+      get_patient_caregiver_relationships: {
+        Args: { user_id: string }
+        Returns: Json
+      }
       increment_group_member_count: {
         Args: { group_id: string }
         Returns: undefined
+      }
+      update_caregiver_request_status: {
+        Args: { request_id: string; new_status: string }
+        Returns: boolean
       }
     }
     Enums: {

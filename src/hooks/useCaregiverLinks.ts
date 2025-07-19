@@ -34,6 +34,7 @@ export function useCaregiverLinks() {
       if (!user) return [];
 
       try {
+        // Use .rpc() method with proper typing
         const { data, error } = await supabase.rpc('get_patient_caregiver_relationships', {
           user_id: user.id
         });
@@ -43,7 +44,8 @@ export function useCaregiverLinks() {
           return [];
         }
 
-        return data || [];
+        // Parse JSON data if it exists
+        return Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
       } catch (err) {
         console.error('Failed to fetch caregiver relationships:', err);
         return [];
