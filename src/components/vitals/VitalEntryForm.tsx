@@ -113,31 +113,32 @@ const VitalEntryForm = ({ selectedType, onAddVital }) => {
         </>
       )}
       {selectedType === "blood_sugar" && (
-        <>
-          <div>
-            <label>Blood Sugar</label>
-            <input
-              type="number"
-              name="value"
-              value={formValues.value}
-              onChange={handleInputChange}
-              className="input"
-              min={40}
-              max={600}
-              required
-            />
-            <select
-              name="unit"
-              value={formValues.unit || "mg/dL"}
-              onChange={handleInputChange}
-              className="input"
-            >
-              <option value="mg/dL">mg/dL</option>
-              <option value="mmol/L">mmol/L</option>
-            </select>
-          </div>
-        </>
-      )}
+  <div className="flex flex-col gap-2">
+    <label htmlFor="bloodSugarValue">Blood Sugar</label>
+    <input
+      id="bloodSugarValue"
+      type="number"
+      name="value"
+      value={formValues.value}
+      onChange={handleInputChange}
+      min={40}
+      max={600}
+      placeholder="Enter value"
+      className="input w-full"
+      required
+    />
+    <select
+      name="unit"
+      value={formValues.unit || "mg/dL"}
+      onChange={handleInputChange}
+      className="input w-full"
+    >
+      <option value="mg/dL">mg/dL</option>
+      <option value="mmol/L">mmol/L</option>
+    </select>
+  </div>
+)}
+
       {selectedType === "pulse" && (
         <>
           <div>
