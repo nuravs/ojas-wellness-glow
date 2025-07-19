@@ -80,25 +80,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('📦 Raw profile data received:', data);
       
-      // Handle the case where data is an array (TABLE return type)
-      const profileData = Array.isArray(data) ? data[0] : data;
-      
-      if (!profileData) {
+      // The function now returns direct JSON, not an array
+      if (!data) {
         console.warn('⚠️ No profile data found for user:', userId);
         setError('No profile found for user');
         return null;
       }
 
       // Validate the profile data structure
-      if (!isValidUserProfile(profileData)) {
-        console.error('❌ Invalid profile data structure:', profileData);
+      if (!isValidUserProfile(data)) {
+        console.error('❌ Invalid profile data structure:', data);
         setError('Invalid profile data received');
         return null;
       }
 
-      console.log('✅ Valid profile data:', profileData);
+      console.log('✅ Valid profile data:', data);
       setError(null); // Clear any previous errors
-      return profileData;
+      return data;
     } catch (error) {
       console.error('💥 Exception in fetchUserProfile:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -130,16 +128,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('📦 Update response data:', data);
       
-      // Handle array response from TABLE return type
-      const updatedProfileData = Array.isArray(data) ? data[0] : data;
-      
-      if (updatedProfileData && isValidUserProfile(updatedProfileData)) {
-        console.log('✅ Profile updated successfully:', updatedProfileData);
-        setUserProfile(updatedProfileData);
+      // The function now returns direct JSON
+      if (data && isValidUserProfile(data)) {
+        console.log('✅ Profile updated successfully:', data);
+        setUserProfile(data);
         setError(null);
         return true;
       } else {
-        console.error('❌ Invalid updated profile data:', updatedProfileData);
+        console.error('❌ Invalid updated profile data:', data);
         setError('Invalid updated profile data received');
         return false;
       }
@@ -161,7 +157,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false);
         setError('Profile loading timed out - some features may be limited');
       }
-    }, 8000); // 8 second timeout for profile fetch
+    }, 5000); // Reduced to 5 second timeout for better UX
 
     return () => clearTimeout(timeout);
   }, [loading, user, userProfile]);
@@ -194,10 +190,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (!isOnAuthPage()) {
             const profile = await fetchUserProfile(initialSession.user.id);
             setUserProfile(profile);
-          } else {
-            // On auth page, don't fetch profile but still set loading to false
-            setLoading(false);
           }
+          setLoading(false);
         } else {
           console.log('👤 No user in initial session');
           setLoading(false);

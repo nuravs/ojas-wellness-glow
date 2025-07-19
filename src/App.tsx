@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,7 +35,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
 
   // 2. If there's an error loading the profile (but not timeout errors), show error state with retry option
-  if (error && user && !error.includes('timeout')) {
+  if (error && user && !error.includes('timeout') && !error.includes('timed out')) {
     return (
       <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
@@ -64,7 +63,13 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  // 4. If there IS a user but no profile yet, keep showing loading.
+  // 4. If there IS a user but no profile yet, and there's a timeout error, allow app to continue with limited functionality
+  if (user && !userProfile && (error?.includes('timeout') || error?.includes('timed out'))) {
+    console.log('⚠️ Profile timeout, allowing app to continue with limited functionality');
+    return children;
+  }
+  
+  // 5. If there IS a user but no profile yet (and no timeout), keep showing loading.
   if (user && !userProfile) {
      return (
       <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
@@ -76,7 +81,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     );
   }
 
-  // 5. If the user and profile are fully loaded, show the app.
+  // 6. If the user and profile are fully loaded, show the app.
   console.log('✅ User and profile loaded, showing protected content');
   return children;
 };

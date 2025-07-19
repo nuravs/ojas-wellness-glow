@@ -94,6 +94,7 @@ const AuthPage = () => {
           setPassword('');
           setFullName('');
         }
+        setLoading(false);
       } else {
         console.log('🔑 Starting signin process...');
         const { error } = await signIn(email, password);
@@ -105,6 +106,7 @@ const AuthPage = () => {
             description: error.message,
             variant: "destructive"
           });
+          setLoading(false);
         } else {
           console.log('✅ Signin request successful');
           toast({
@@ -113,7 +115,6 @@ const AuthPage = () => {
             duration: 2000
           });
           // Don't set loading to false here - let auth state change handle it
-          return;
         }
       }
     } catch (error) {
@@ -123,11 +124,7 @@ const AuthPage = () => {
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      if (isSignUp) {
-        setLoading(false);
-      }
-      // For signin, let the auth state change handle loading state
+      setLoading(false);
     }
   };
 
@@ -204,7 +201,7 @@ const AuthPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-ojas-medium p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
               {isSignUp && (
                 <>
                   <div>
@@ -217,6 +214,7 @@ const AuthPage = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full px-4 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                       placeholder="Enter your full name"
+                      autoComplete="off"
                       required
                     />
                   </div>
@@ -279,6 +277,7 @@ const AuthPage = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-12 pr-4 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                     placeholder="Enter your email"
+                    autoComplete="new-email"
                     required
                   />
                 </div>
@@ -296,6 +295,7 @@ const AuthPage = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-12 pr-12 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                     placeholder="Enter your password"
+                    autoComplete="new-password"
                     required
                   />
                   <button
