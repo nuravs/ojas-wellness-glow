@@ -14,7 +14,6 @@ export interface Vital {
   notes?: string;
   out_of_range: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 export interface VitalReading {
