@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -59,8 +60,8 @@ export const useVitals = () => {
         });
         setTargetPatientId(null);
       } else {
-        // The RPC function returns JSON directly, cast to our type
-        const relationships = (data as CaregiverRelationship[]) || [];
+        // The RPC function returns JSON directly, cast via unknown to our type
+        const relationships = (data as unknown as CaregiverRelationship[]) || [];
         const approvedRelationship = relationships.find((rel: CaregiverRelationship) => 
           rel.caregiver_id === user.id && rel.status === 'approved'
         );

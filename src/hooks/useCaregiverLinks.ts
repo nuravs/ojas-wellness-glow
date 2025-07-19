@@ -44,8 +44,8 @@ export function useCaregiverLinks() {
           return [];
         }
 
-        // The RPC function returns JSON directly, cast to our type
-        return (data as CaregiverRelationship[]) || [];
+        // The RPC function returns JSON directly, cast via unknown to our type
+        return (data as unknown as CaregiverRelationship[]) || [];
       } catch (err) {
         console.error('Failed to fetch caregiver relationships:', err);
         return [];
