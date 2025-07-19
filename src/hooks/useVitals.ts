@@ -8,7 +8,7 @@ export interface Vital {
   id: string;
   user_id: string;
   vital_type: 'blood_pressure' | 'blood_sugar' | 'pulse' | 'weight' | 'temperature';
-  values: any;          // JSONB field
+  values: any;
   measured_at: string;
   notes?: string;
   out_of_range: boolean;
@@ -26,12 +26,47 @@ export interface VitalReading {
 export const useVitals = () => {
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
+  const [targetPatientId, setTargetPatientId] = useState<string | null>(null);
 
-  /** --------------------------- Helpers --------------------------- */
+  const isCaregiver = userProfile?.role === 'caregiver';
 
+  /** --------------------------- Fetch Patient Link (if caregiver) --------------------------- */
+  const fetchLinkedPatientId = async () => {
+    if (!user || !isCaregiver) {
+      setTargetPatientId(user?.id ?? null);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('patient_caregivers')
+        .select('patient_id')
+        .eq('caregiver_id', user.id)
+        .not('approved_at', 'is', null)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Failed to fetch linked patient:', error.message);
+        toast({
+          title: 'Access Error',
+          description: 'Could not verify caregiver access.',
+          variant: 'destructive',
+        });
+        setTargetPatientId(null);
+      } else {
+        setTargetPatientId(data?.patient_id ?? null);
+      }
+    } catch (err) {
+      console.error('Unexpected error in fetchLinkedPatientId:', err);
+      setTargetPatientId(null);
+    }
+  };
+
+  /** --------------------------- Fetch Vitals --------------------------- */
   const fetchVitals = async () => {
-    if (!user) {
+    if (!targetPatientId) {
+      setVitals([]);
       setLoading(false);
       return;
     }
@@ -40,11 +75,10 @@ export const useVitals = () => {
       const { data, error } = await supabase
         .from('vitals')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetPatientId)
         .order('measured_at', { ascending: false });
 
       if (error) {
-        // Show toast only for real errors, not “table missing” during migrations
         if (!error.message?.includes('does not exist')) {
           toast({
             title: 'Connection Error',
@@ -69,8 +103,7 @@ export const useVitals = () => {
     }
   };
 
-  /** --------------------------- Mutations --------------------------- */
-
+  /** --------------------------- Add Vital --------------------------- */
   const addVital = async (vitalData: {
     vital_type: Vital['vital_type'];
     values: VitalReading;
@@ -94,7 +127,7 @@ export const useVitals = () => {
         .insert({
           user_id: user.id,
           vital_type: vitalData.vital_type,
-          values: vitalData.values as any, // cast for JSONB
+          values: vitalData.values as any,
           notes: vitalData.notes,
           measured_at: vitalData.measured_at || new Date().toISOString(),
           out_of_range: outOfRange,
@@ -119,8 +152,7 @@ export const useVitals = () => {
         variant: outOfRange ? 'destructive' : 'default',
       });
 
-      // ⚠️  Remove optimistic local push to prevent duplicate rendering
-      await fetchVitals();          // refresh from server instead
+      await fetchVitals();
       return data;
     } catch (err) {
       console.error('useVitals → addVital error:', err);
@@ -128,8 +160,18 @@ export const useVitals = () => {
     }
   };
 
-  /** --------------------------- Utilities --------------------------- */
+  /** --------------------------- Hooks --------------------------- */
+  useEffect(() => {
+    fetchLinkedPatientId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, isCaregiver]);
 
+  useEffect(() => {
+    fetchVitals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetPatientId]);
+
+  /** --------------------------- Utilities --------------------------- */
   const checkIfOutOfRange = (
     type: Vital['vital_type'],
     values: VitalReading,
@@ -139,15 +181,6 @@ export const useVitals = () => {
     type: Vital['vital_type'],
     values: VitalReading,
   ) => getVitalStatus(type, values);
-
-  /** --------------------------- Effects --------------------------- */
-
-  useEffect(() => {
-    fetchVitals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);            // refetch when user context changes
-
-  /** --------------------------- Return API --------------------------- */
 
   return {
     vitals,
