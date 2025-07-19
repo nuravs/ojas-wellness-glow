@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +21,12 @@ export interface VitalReading {
   diastolic?: number;
   value?: number;
   unit?: string;
+}
+
+interface CaregiverRelationship {
+  patient_id: string;
+  caregiver_id: string;
+  status: string;
 }
 
 export const useVitals = () => {
@@ -54,9 +59,9 @@ export const useVitals = () => {
         });
         setTargetPatientId(null);
       } else {
-        // The RPC function returns JSON directly, no need to parse
-        const relationships = Array.isArray(data) ? data : [];
-        const approvedRelationship = relationships.find((rel: any) => 
+        // The RPC function returns JSON directly, cast to our type
+        const relationships = (data as CaregiverRelationship[]) || [];
+        const approvedRelationship = relationships.find((rel: CaregiverRelationship) => 
           rel.caregiver_id === user.id && rel.status === 'approved'
         );
         setTargetPatientId(approvedRelationship?.patient_id ?? null);

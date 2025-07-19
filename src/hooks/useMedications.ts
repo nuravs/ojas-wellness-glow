@@ -15,6 +15,12 @@ interface Medication {
   logged_by_role?: 'patient' | 'caregiver';
 }
 
+interface CaregiverRelationship {
+  patient_id: string;
+  caregiver_id: string;
+  status: string;
+}
+
 export const useMedications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,9 +50,9 @@ export const useMedications = () => {
         });
         setTargetPatientId(null);
       } else {
-        // The RPC function returns JSON directly, no need to parse
-        const relationships = Array.isArray(data) ? data : [];
-        const approvedRelationship = relationships.find((rel: any) => 
+        // The RPC function returns JSON directly, cast to our type
+        const relationships = (data as CaregiverRelationship[]) || [];
+        const approvedRelationship = relationships.find((rel: CaregiverRelationship) => 
           rel.caregiver_id === user.id && rel.status === 'approved'
         );
         setTargetPatientId(approvedRelationship?.patient_id ?? null);
