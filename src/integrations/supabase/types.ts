@@ -718,13 +718,38 @@ export type Database = {
         Args: { user_id: string }
         Returns: Json
       }
+      get_user_medications: {
+        Args: { medication_user_id: string }
+        Returns: Json
+      }
+      get_user_profile: {
+        Args: { profile_user_id: string }
+        Returns: Json
+      }
       increment_group_member_count: {
         Args: { group_id: string }
         Returns: undefined
       }
+      log_medication: {
+        Args: {
+          med_id: string
+          med_user_id: string
+          log_status: string
+          log_time: string
+        }
+        Returns: boolean
+      }
       update_caregiver_request_status: {
         Args: { request_id: string; new_status: string }
         Returns: boolean
+      }
+      update_medication_visibility: {
+        Args: { med_id: string; med_user_id: string; is_visible: boolean }
+        Returns: boolean
+      }
+      update_user_profile: {
+        Args: { profile_user_id: string; profile_updates: Json }
+        Returns: Json
       }
     }
     Enums: {

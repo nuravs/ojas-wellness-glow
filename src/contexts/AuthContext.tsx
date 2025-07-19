@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase, stagingSupabase } from '../integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
 
 type UserProfile = {
   user_id: string;
@@ -58,8 +58,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      // Use raw SQL query to access staging schema
-      const { data: profile, error } = await stagingSupabase
+      // Use the database function to fetch user profile
+      const { data: profile, error } = await supabase
         .rpc('get_user_profile', { profile_user_id: userId });
 
       if (error) {
@@ -160,8 +160,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return { error: new Error('No user logged in') };
     
-    // Use raw SQL for profile updates
-    const { error } = await stagingSupabase
+    // Use the database function for profile updates
+    const { error } = await supabase
       .rpc('update_user_profile', { 
         profile_user_id: user.id, 
         profile_updates: updates 

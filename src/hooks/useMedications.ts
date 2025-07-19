@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { stagingSupabase } from '../integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
 
 export interface Medication {
@@ -34,8 +34,8 @@ export const useMedications = () => {
     }
 
     try {
-      // Use raw SQL query to fetch medications from staging schema
-      const { data, error } = await stagingSupabase
+      // Use the database function to fetch medications
+      const { data, error } = await supabase
         .rpc('get_user_medications', { medication_user_id: user.id });
 
       if (error) {
@@ -64,8 +64,8 @@ export const useMedications = () => {
     if (!user) return;
 
     try {
-      // Use raw SQL for medication logging
-      const { error } = await stagingSupabase.rpc('log_medication', {
+      // Use the database function for medication logging
+      const { error } = await supabase.rpc('log_medication', {
         med_id: medicationId,
         med_user_id: user.id,
         log_status: 'taken',
@@ -91,7 +91,7 @@ export const useMedications = () => {
     if (!user) return;
 
     try {
-      const { error } = await stagingSupabase.rpc('log_medication', {
+      const { error } = await supabase.rpc('log_medication', {
         med_id: medicationId,
         med_user_id: user.id,
         log_status: 'postponed',
@@ -113,7 +113,7 @@ export const useMedications = () => {
       const medication = medications.find(med => med.id === medicationId);
       if (!medication) return;
 
-      const { error } = await stagingSupabase.rpc('update_medication_visibility', {
+      const { error } = await supabase.rpc('update_medication_visibility', {
         med_id: medicationId,
         med_user_id: user.id,
         is_visible: !medication.caregiver_visible,
