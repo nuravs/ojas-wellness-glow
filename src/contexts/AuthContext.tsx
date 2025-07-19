@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('📦 Raw profile data received:', data);
       
-      // The function now returns direct JSON, not an array
+      // Handle the response - RPC returns the JSON directly now
       if (!data) {
         console.warn('⚠️ No profile data found for user:', userId);
         setError('No profile found for user');
@@ -90,12 +90,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Validate the profile data structure
       if (!isValidUserProfile(data)) {
         console.error('❌ Invalid profile data structure:', data);
-        setError('Invalid profile data received');
+        console.log('Expected fields: user_id, full_name, role');
+        setError('Profile data incomplete - missing required fields');
         return null;
       }
 
       console.log('✅ Valid profile data:', data);
-      setError(null); // Clear any previous errors
+      setError(null);
       return data;
     } catch (error) {
       console.error('💥 Exception in fetchUserProfile:', error);
@@ -128,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('📦 Update response data:', data);
       
-      // The function now returns direct JSON
+      // Handle the updated profile response
       if (data && isValidUserProfile(data)) {
         console.log('✅ Profile updated successfully:', data);
         setUserProfile(data);
@@ -147,7 +148,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Profile fetch timeout - only for protected routes
+  // Profile fetch timeout - reduced to 3 seconds
   useEffect(() => {
     if (isOnAuthPage()) return;
 
@@ -157,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false);
         setError('Profile loading timed out - some features may be limited');
       }
-    }, 5000); // Reduced to 5 second timeout for better UX
+    }, 3000);
 
     return () => clearTimeout(timeout);
   }, [loading, user, userProfile]);
@@ -191,11 +192,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const profile = await fetchUserProfile(initialSession.user.id);
             setUserProfile(profile);
           }
-          setLoading(false);
-        } else {
-          console.log('👤 No user in initial session');
-          setLoading(false);
         }
+        
+        // Always clear loading after initial check
+        setLoading(false);
       } catch (error) {
         console.error('💥 Exception in getInitialSession:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -221,10 +221,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Only fetch profile if not on auth page
           if (!isOnAuthPage()) {
-            setLoading(true); // Set loading when starting profile fetch
-            const profile = await fetchUserProfile(session.user.id);
+            setLoading(true);
+            
+            // Fetch profile with timeout safeguard
+            const profilePromise = fetchUserProfile(session.user.id);
+            const timeoutPromise = new Promise<null>((resolve) => {
+              setTimeout(() => {
+                console.warn('⏰ Profile fetch timeout in auth state change');
+                resolve(null);
+              }, 3000);
+            });
+            
+            const profile = await Promise.race([profilePromise, timeoutPromise]);
             setUserProfile(profile);
-            setLoading(false); // Clear loading after profile fetch completes
+            setLoading(false);
           } else {
             // On auth page, clear loading immediately
             setLoading(false);
@@ -235,9 +245,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(null);
           setUserProfile(null);
           setLoading(false);
-          if (!isOnAuthPage()) {
-            setError(null);
-          }
+          setError(null);
         }
       } catch (error) {
         console.error('💥 Exception in auth state change:', error);
@@ -303,7 +311,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       console.log('✅ Signin successful:', data);
-      // Don't set loading to false here - let the auth state change handle it
       return data;
     } catch (error) {
       console.error('💥 Signin failed:', error);

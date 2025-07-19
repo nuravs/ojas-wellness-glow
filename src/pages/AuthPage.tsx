@@ -37,7 +37,7 @@ const AuthPage = () => {
 
   // Handle auth errors from context - only show actual authentication errors, not timeouts
   useEffect(() => {
-    if (authError && !authError.includes('timeout')) {
+    if (authError && !authError.includes('timeout') && !authError.includes('timed out')) {
       console.error('🔥 Auth error from context:', authError);
       toast({
         title: "Authentication Error",
@@ -111,10 +111,10 @@ const AuthPage = () => {
           console.log('✅ Signin request successful');
           toast({
             title: "Signing in...",
-            description: "Please wait while we sign you in.",
-            duration: 2000
+            description: "Please wait while we load your profile.",
+            duration: 3000
           });
-          // Don't set loading to false here - let auth state change handle it
+          // Let the auth state change handle loading state
         }
       }
     } catch (error) {
@@ -277,7 +277,7 @@ const AuthPage = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-12 pr-4 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                     placeholder="Enter your email"
-                    autoComplete="new-email"
+                    autoComplete="username"
                     required
                   />
                 </div>
@@ -295,7 +295,7 @@ const AuthPage = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-12 pr-12 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                     placeholder="Enter your password"
-                    autoComplete="new-password"
+                    autoComplete={isSignUp ? "new-password" : "current-password"}
                     required
                   />
                   <button
