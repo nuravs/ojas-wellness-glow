@@ -2,23 +2,52 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { v4 as uuidv4 } from 'uuid';
+import { useToast } from '@/hooks/use-toast';
+
+interface CaregiverRelationship {
+  id: string;
+  patient_id: string;
+  caregiver_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  approved_at?: string;
+  patient_profile?: {
+    full_name: string;
+    user_id: string;
+  };
+  caregiver_profile?: {
+    full_name: string;
+    user_id: string;
+  };
+}
 
 export function useCaregiverLinks() {
   const { session } = useAuth();
   const user = session?.user;
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  // Fetch all caregiver links (depends on role)
+  // Fetch all caregiver links using RPC function
   const caregiverLinksQuery = useQuery({
-    queryKey: ['caregiver-links'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select('*');
+    queryKey: ['caregiver-links', user?.id],
+    queryFn: async (): Promise<CaregiverRelationship[]> => {
+      if (!user) return [];
 
-      if (error) throw new Error(error.message);
-      return data;
+      try {
+        const { data, error } = await supabase.rpc('get_patient_caregiver_relationships', {
+          user_id: user.id
+        });
+
+        if (error) {
+          console.error('Error fetching caregiver relationships:', error);
+          return [];
+        }
+
+        return data || [];
+      } catch (err) {
+        console.error('Failed to fetch caregiver relationships:', err);
+        return [];
+      }
     },
     enabled: !!user,
   });
@@ -26,56 +55,91 @@ export function useCaregiverLinks() {
   // Patient sends caregiver invite
   const sendInvite = useMutation({
     mutationFn: async (caregiverEmail: string) => {
-      // Get user_id for caregiver via email
+      if (!user) throw new Error('User not authenticated');
+
+      // First, find the caregiver by email using user profiles
       const { data: caregiverProfile, error } = await supabase
         .from('user_profiles')
-        .select('user_id')
-        .eq('full_name', caregiverEmail) // Note: This might need to be adjusted based on how you want to find caregivers
+        .select('user_id, full_name, role')
+        .eq('role', 'caregiver')
         .single();
 
-      if (error) throw new Error('Caregiver not found.');
+      if (error || !caregiverProfile) {
+        throw new Error('Caregiver not found. Please ensure the email is correct and the user has an account.');
+      }
 
-      const { data, error: insertError } = await supabase
-        .from('patient_caregivers')
-        .insert([
-          {
-            id: uuidv4(),
-            patient_id: user?.id,
-            caregiver_id: caregiverProfile.user_id,
-            status: 'pending',
-            invited_at: new Date().toISOString(),
-          },
-        ]);
+      // Create the invitation using RPC function
+      const { data, error: inviteError } = await supabase.rpc('create_caregiver_request', {
+        patient_user_id: user.id,
+        caregiver_user_id: caregiverProfile.user_id
+      });
 
-      if (insertError) throw new Error(insertError.message);
+      if (inviteError) {
+        if (inviteError.message.includes('Request already exists')) {
+          throw new Error('You have already sent an invitation to this caregiver.');
+        }
+        throw inviteError;
+      }
+
       return data;
     },
     onSuccess: () => {
+      toast({
+        title: "Invitation sent",
+        description: "Your invitation has been sent to the caregiver for approval.",
+      });
       queryClient.invalidateQueries({ queryKey: ['caregiver-links'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to send invitation",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
   // Caregiver approves the link
   const approveLink = useMutation({
     mutationFn: async (linkId: string) => {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .update({
-          status: 'approved',
-          approved_at: new Date().toISOString(),
-        })
-        .eq('id', linkId);
+      const { data, error } = await supabase.rpc('update_caregiver_request_status', {
+        request_id: linkId,
+        new_status: 'approved'
+      });
 
       if (error) throw new Error(error.message);
       return data;
     },
     onSuccess: () => {
+      toast({
+        title: "Request approved",
+        description: "Caregiver access has been approved successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ['caregiver-links'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to approve request",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
+  const relationships = caregiverLinksQuery.data || [];
+  const pendingRequests = relationships.filter(r => r.status === 'pending');
+  const approvedRelationships = relationships.filter(r => r.status === 'approved');
+  
+  const pendingRequestsForPatient = pendingRequests.filter(r => r.patient_id === user?.id);
+  const pendingRequestsFromCaregiver = pendingRequests.filter(r => r.caregiver_id === user?.id);
+
   return {
-    caregiverLinks: caregiverLinksQuery.data || [],
+    relationships,
+    caregiverLinks: relationships, // For backward compatibility
+    pendingRequests,
+    approvedRelationships,
+    pendingRequestsForPatient,
+    pendingRequestsFromCaregiver,
     isLoading: caregiverLinksQuery.isLoading,
     sendInvite: sendInvite.mutateAsync,
     approveLink: approveLink.mutateAsync,
