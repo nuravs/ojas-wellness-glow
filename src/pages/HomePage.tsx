@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import HomeHeader from '@/components/HomeHeader';
@@ -15,11 +14,15 @@ import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import WellnessScoreExplanation from '@/components/insights/WellnessScoreExplanation';
 import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
 import { useMedications } from '@/hooks/useMedications';
+import { CaregiverLinkModal } from '@/components/CaregiverLinkModal';
+import { Button } from '@/components/ui/button';
 
 const HomePage = () => {
   const { userProfile } = useAuth();
   const { pendingRequestsForPatient } = usePatientCaregivers();
   const { medications } = useMedications();
+
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (!userProfile) {
     return (
@@ -32,53 +35,44 @@ const HomePage = () => {
   }
 
   const handleMedicationToggle = async (id: string) => {
-    // Implementation for medication toggle
     console.log('Toggle medication:', id);
   };
 
   const handleMedicationPostpone = async (id: string) => {
-    // Implementation for medication postpone
     console.log('Postpone medication:', id);
   };
 
   const handleDismissBanner = (id: string) => {
-    // Implementation for dismissing banner
     console.log('Dismiss banner:', id);
   };
 
   const handleDismissInsight = (id: string) => {
-    // Implementation for dismissing insight
     console.log('Dismiss insight:', id);
   };
 
-  // Calculate wellness status based on medications
   const getWellnessStatus = (): 'good' | 'attention' | 'urgent' => {
     if (!medications || medications.length === 0) return 'good';
-    
+
     const overdueMeds = medications.filter(med => !med.taken);
     if (overdueMeds.length > 2) return 'urgent';
     if (overdueMeds.length > 0) return 'attention';
     return 'good';
   };
 
-  // Calculate medication counts
   const getMedsCount = () => {
     if (!medications || medications.length === 0) {
       return { taken: 0, total: 0 };
     }
-    
+
     const taken = medications.filter(med => med.taken).length;
     const total = medications.length;
     return { taken, total };
   };
 
-  // Calculate wellness score (simplified for demo)
   const getWellnessScore = () => {
     const { taken, total } = getMedsCount();
     const medicationScore = total > 0 ? (taken / total) * 100 : 100;
-    
-    // Simple calculation - in real app this would be more sophisticated
-    return Math.round(medicationScore * 0.8 + 20); // Base score of 20 + medication adherence
+    return Math.round(medicationScore * 0.8 + 20);
   };
 
   const wellnessScore = getWellnessScore();
@@ -87,8 +81,8 @@ const HomePage = () => {
     <SafeAreaContainer>
       <div className="space-y-6 pb-20">
         <HomeHeader userRole={userProfile.role as 'patient' | 'caregiver'} />
-        
-        {/* Patient Approval Requests - Show only for patients with pending requests */}
+
+        {/* Patient Approval Requests */}
         {userProfile.role === 'patient' && pendingRequestsForPatient.length > 0 && (
           <div className="space-y-4">
             {pendingRequestsForPatient.map((request) => (
@@ -97,13 +91,23 @@ const HomePage = () => {
           </div>
         )}
 
-        {/* Caregiver Dashboard - Show only for caregivers */}
+        {/* Caregiver Dashboard */}
         {userProfile.role === 'caregiver' && (
           <CaregiverDashboard />
         )}
 
-        {/* Regular Home Content */}
-        <WellnessRing 
+        {/* Link Caregiver Button (Only for Patients) */}
+        {userProfile.role === 'patient' && (
+          <div className="flex justify-end px-4">
+            <Button onClick={() => setModalOpen(true)}>Link Caregiver</Button>
+          </div>
+        )}
+
+        {/* Caregiver Modal */}
+        <CaregiverLinkModal open={modalOpen} onClose={() => setModalOpen(false)} />
+
+        {/* Wellness Ring */}
+        <WellnessRing
           status={getWellnessStatus()}
           medsCount={getMedsCount()}
           symptomsLogged={false}
@@ -126,28 +130,26 @@ const HomePage = () => {
           }}
         />
 
-        <SmartBannersSection 
+        <SmartBannersSection
           medications={medications || []}
           dismissedBanners={new Set<string>()}
           onDismissBanner={handleDismissBanner}
         />
-        
-        <MedicationSection 
+
+        <MedicationSection
           medications={medications || []}
           onToggleMedication={handleMedicationToggle}
           onPostponeMedication={handleMedicationPostpone}
         />
 
-        {/* AI Insights Panel */}
         <AIInsightsPanel userRole={userProfile.role as 'patient' | 'caregiver'} />
-        
         <TodaysFocusCard />
-        <InsightsSection 
+        <InsightsSection
           dismissedInsights={new Set<string>()}
           onDismissInsight={handleDismissInsight}
         />
       </div>
-      
+
       <AIAssistantFAB />
     </SafeAreaContainer>
   );
