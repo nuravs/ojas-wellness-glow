@@ -50,6 +50,8 @@ export const useComorbidities = () => {
         return;
       }
 
+      console.log('Comorbidities data received:', data);
+      
       // Parse the JSON response and ensure it's an array with proper typing
       const comorbiditiesArray = Array.isArray(data) ? data : (data ? [data] : []);
       setComorbidities((comorbiditiesArray as unknown as Comorbidity[]) || []);

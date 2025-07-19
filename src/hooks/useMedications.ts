@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,6 +34,8 @@ export const useMedications = () => {
     }
 
     try {
+      console.log('Fetching medications for user:', user.id);
+      
       // Use the database function to fetch medications
       const { data, error } = await supabase
         .rpc('get_user_medications', { medication_user_id: user.id });
@@ -40,6 +43,8 @@ export const useMedications = () => {
       if (error) {
         console.error('Error fetching medications:', error);
       } else {
+        console.log('Medications data received:', data);
+        
         // Parse the JSON response and ensure it's an array
         const medicationsArray = Array.isArray(data) ? data : (data ? [data] : []);
         
@@ -49,6 +54,8 @@ export const useMedications = () => {
           taken: false, // This would be determined by checking medication logs
           time: med.next_dose ? new Date(med.next_dose).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00',
         }));
+        
+        console.log('Transformed medications:', transformedMedications);
         setMedications(transformedMedications);
       }
     } catch (error) {
@@ -57,10 +64,6 @@ export const useMedications = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchMedications();
-  }, [user]);
 
   const toggleMedication = async (medicationId: string) => {
     if (!user) return;
@@ -137,6 +140,10 @@ export const useMedications = () => {
       console.error('Unexpected error toggling caregiver visibility:', error);
     }
   };
+
+  useEffect(() => {
+    fetchMedications();
+  }, [user]);
 
   return {
     medications,

@@ -27,6 +27,8 @@ export const useSymptoms = () => {
     }
 
     try {
+      console.log('Loading symptoms for user:', user.id);
+      
       // Use the database function to fetch symptoms from staging schema
       const { data, error } = await supabase
         .rpc('get_user_symptoms', { symptoms_user_id: user.id });
@@ -41,6 +43,8 @@ export const useSymptoms = () => {
         return;
       }
 
+      console.log('Symptoms data received:', data);
+      
       // Parse the JSON response and ensure it's an array with proper typing
       const symptomsArray = Array.isArray(data) ? data : (data ? [data] : []);
       setSymptoms((symptomsArray as unknown as Symptom[]) || []);

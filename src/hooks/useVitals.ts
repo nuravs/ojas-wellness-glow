@@ -81,6 +81,8 @@ export const useVitals = () => {
     }
 
     try {
+      console.log('Fetching vitals for user:', targetPatientId);
+      
       // Use the database function to fetch vitals from staging schema
       const { data, error } = await supabase
         .rpc('get_user_vitals', { vitals_user_id: targetPatientId });
@@ -94,6 +96,8 @@ export const useVitals = () => {
         });
         setVitals([]);
       } else {
+        console.log('Vitals data received:', data);
+        
         // Parse the JSON response and ensure it's an array with proper typing
         const vitalsArray = Array.isArray(data) ? data : (data ? [data] : []);
         setVitals((vitalsArray as unknown as Vital[]) || []);
