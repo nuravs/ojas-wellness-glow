@@ -15,4 +15,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
   },
+  db: {
+    schema: "staging", // 👈 This tells Supabase to use the staging schema
+  },
 });
