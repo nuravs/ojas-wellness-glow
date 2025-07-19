@@ -30,7 +30,7 @@ export const useMedications = () => {
     }
 
     try {
-      // Use raw query to avoid TypeScript issues with patient_caregivers table
+      // Use RPC function to avoid TypeScript issues with patient_caregivers table
       const { data, error } = await supabase.rpc('get_patient_caregiver_relationships', {
         user_id: user.id
       });
@@ -44,8 +44,8 @@ export const useMedications = () => {
         });
         setTargetPatientId(null);
       } else {
-        // Parse the JSON data and find approved relationship where current user is caregiver
-        const relationships = Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
+        // The RPC function returns JSON directly, no need to parse
+        const relationships = Array.isArray(data) ? data : [];
         const approvedRelationship = relationships.find((rel: any) => 
           rel.caregiver_id === user.id && rel.status === 'approved'
         );

@@ -54,8 +54,8 @@ export const useVitals = () => {
         });
         setTargetPatientId(null);
       } else {
-        // Parse the JSON data and find approved relationship where current user is caregiver
-        const relationships = Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
+        // The RPC function returns JSON directly, no need to parse
+        const relationships = Array.isArray(data) ? data : [];
         const approvedRelationship = relationships.find((rel: any) => 
           rel.caregiver_id === user.id && rel.status === 'approved'
         );

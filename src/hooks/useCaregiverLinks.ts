@@ -44,8 +44,8 @@ export function useCaregiverLinks() {
           return [];
         }
 
-        // Parse JSON data if it exists
-        return Array.isArray(data) ? data : (data ? JSON.parse(data) : []);
+        // The RPC function returns JSON directly, no need to parse
+        return Array.isArray(data) ? data : [];
       } catch (err) {
         console.error('Failed to fetch caregiver relationships:', err);
         return [];
