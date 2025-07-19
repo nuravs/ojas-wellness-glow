@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
@@ -14,7 +15,7 @@ import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import WellnessScoreExplanation from '@/components/insights/WellnessScoreExplanation';
 import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
 import { useMedications } from '@/hooks/useMedications';
-import { CaregiverLinkModal } from '@/components/CaregiverLinkModal';
+import CaregiverLinkModal from '@/components/CaregiverLinkModal';
 import { Button } from '@/components/ui/button';
 
 const HomePage = () => {

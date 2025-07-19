@@ -1,4 +1,3 @@
-// src/components/CaregiverLinkModal.tsx
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
@@ -9,7 +8,7 @@ interface CaregiverLinkModalProps {
   onClose: () => void;
 }
 
-export const CaregiverLinkModal: React.FC<CaregiverLinkModalProps> = ({ open, onClose }) => {
+const CaregiverLinkModal: React.FC<CaregiverLinkModalProps> = ({ open, onClose }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
@@ -26,3 +25,5 @@ export const CaregiverLinkModal: React.FC<CaregiverLinkModalProps> = ({ open, on
     </Dialog>
   );
 };
+
+export default CaregiverLinkModal;
