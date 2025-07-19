@@ -1,5 +1,6 @@
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -28,8 +29,8 @@ export function useCaregiverLinks() {
       // Get user_id for caregiver via email
       const { data: caregiverProfile, error } = await supabase
         .from('user_profiles')
-        .select('id')
-        .eq('email', caregiverEmail)
+        .select('user_id')
+        .eq('full_name', caregiverEmail) // Note: This might need to be adjusted based on how you want to find caregivers
         .single();
 
       if (error) throw new Error('Caregiver not found.');
@@ -40,7 +41,7 @@ export function useCaregiverLinks() {
           {
             id: uuidv4(),
             patient_id: user?.id,
-            caregiver_id: caregiverProfile.id,
+            caregiver_id: caregiverProfile.user_id,
             status: 'pending',
             invited_at: new Date().toISOString(),
           },

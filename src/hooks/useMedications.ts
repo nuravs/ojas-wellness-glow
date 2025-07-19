@@ -30,26 +30,28 @@ export const useMedications = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select('patient_id')
-        .eq('caregiver_id', user.id)
-        .not('approved_at', 'is', null)
-        .maybeSingle();
+      // Use raw query to avoid TypeScript issues with patient_caregivers table
+      const { data, error } = await supabase.rpc('get_patient_caregiver_relationships', {
+        user_id: user.id
+      });
 
       if (error) {
-        console.error('Error fetching linked patient:', error);
+        console.error('Error fetching linked patient:', error.message);
         toast({
           title: 'Access Error',
-          description: 'Unable to verify caregiver access',
+          description: 'Could not verify caregiver access.',
           variant: 'destructive',
         });
         setTargetPatientId(null);
       } else {
-        setTargetPatientId(data?.patient_id ?? null);
+        // Find approved relationship where current user is caregiver
+        const approvedRelationship = data?.find((rel: any) => 
+          rel.caregiver_id === user.id && rel.status === 'approved'
+        );
+        setTargetPatientId(approvedRelationship?.patient_id ?? null);
       }
-    } catch (error) {
-      console.error('Unexpected error fetching caregiver link:', error);
+    } catch (err) {
+      console.error('Unexpected error in fetchLinkedPatientId:', err);
       setTargetPatientId(null);
     }
   };
@@ -90,12 +92,7 @@ export const useMedications = () => {
 
       const { data: todayLogs, error: logsError } = await supabase
         .from('medication_logs')
-        .select(`
-          *,
-          logged_by_profile:logged_by (
-            id
-          )
-        `)
+        .select('*')
         .eq('user_id', targetPatientId)
         .gte('created_at', today.toISOString())
         .lt('created_at', tomorrow.toISOString())
@@ -148,6 +145,7 @@ export const useMedications = () => {
       setLoading(false);
     }
   };
+
   const toggleMedication = async (id: string) => {
     const medication = medications.find(med => med.id === id);
     if (!medication || !user) return;

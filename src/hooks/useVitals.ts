@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,12 +40,10 @@ export const useVitals = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select('patient_id')
-        .eq('caregiver_id', user.id)
-        .not('approved_at', 'is', null)
-        .maybeSingle();
+      // Use RPC function to avoid TypeScript issues with patient_caregivers table
+      const { data, error } = await supabase.rpc('get_patient_caregiver_relationships', {
+        user_id: user.id
+      });
 
       if (error) {
         console.error('Failed to fetch linked patient:', error.message);
@@ -55,7 +54,11 @@ export const useVitals = () => {
         });
         setTargetPatientId(null);
       } else {
-        setTargetPatientId(data?.patient_id ?? null);
+        // Find approved relationship where current user is caregiver
+        const approvedRelationship = data?.find((rel: any) => 
+          rel.caregiver_id === user.id && rel.status === 'approved'
+        );
+        setTargetPatientId(approvedRelationship?.patient_id ?? null);
       }
     } catch (err) {
       console.error('Unexpected error in fetchLinkedPatientId:', err);
