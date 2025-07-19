@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../integrations/supabase/client';
@@ -15,8 +16,10 @@ interface UserProfile {
 
 interface AuthContextProps {
   user: User | null;
+  session: Session | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  error: string | null;
   signUp: (email: string, password: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
@@ -39,8 +42,10 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -52,15 +57,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('Error fetching user profile:', error);
+        setError(error.message);
         return null;
       }
 
       console.log('User profile data received:', data);
       
-      // The RPC function returns JSON object directly
-      return data as UserProfile;
+      // The RPC function returns JSON object directly, cast via unknown for type safety
+      return data as unknown as UserProfile;
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
       return null;
     }
   };
@@ -80,6 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('Error updating user profile:', error);
+        setError(error.message);
         return false;
       }
 
@@ -87,51 +95,58 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Update local state with the returned profile
       if (data) {
-        setUserProfile(data as UserProfile);
+        setUserProfile(data as unknown as UserProfile);
       }
       
       return true;
     } catch (error) {
       console.error('Error in updateUserProfile:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
       return false;
     }
   };
 
   useEffect(() => {
-    const session = supabase.auth.getSession();
-
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
-      } else {
-        setUser(null);
-        setUserProfile(null);
-      }
-
-      setLoading(false);
-    });
-
-    const loadUser = async () => {
+    const getInitialSession = async () => {
       try {
-        const {
-          data: { user: initialUser },
-        } = await session;
-
-        if (initialUser) {
-          setUser(initialUser);
-          const profile = await fetchUserProfile(initialUser.id);
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
+        if (initialSession?.user) {
+          setSession(initialSession);
+          setUser(initialSession.user);
+          const profile = await fetchUserProfile(initialSession.user.id);
           setUserProfile(profile);
         }
       } catch (error) {
-        console.error('Error loading user:', error);
+        console.error('Error loading initial session:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
       } finally {
         setLoading(false);
       }
     };
 
-    loadUser();
+    getInitialSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session);
+      
+      if (session?.user) {
+        setSession(session);
+        setUser(session.user);
+        setError(null);
+        const profile = await fetchUserProfile(session.user.id);
+        setUserProfile(profile);
+      } else {
+        setSession(null);
+        setUser(null);
+        setUserProfile(null);
+        setError(null);
+      }
+
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string) => {
@@ -143,12 +158,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error("Signup error:", error.message);
+        setError(error.message);
         throw error;
       }
 
       return data;
     } catch (error) {
       console.error("Signup failed:", error);
+      setError(error instanceof Error ? error.message : 'Signup failed');
       throw error;
     }
   };
@@ -162,12 +179,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error("Signin error:", error.message);
+        setError(error.message);
         throw error;
       }
 
       return data;
     } catch (error) {
       console.error("Signin failed:", error);
+      setError(error instanceof Error ? error.message : 'Signin failed');
       throw error;
     }
   };
@@ -176,16 +195,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await supabase.auth.signOut();
       setUser(null);
+      setSession(null);
       setUserProfile(null);
+      setError(null);
     } catch (error) {
       console.error("Signout failed:", error);
+      setError(error instanceof Error ? error.message : 'Signout failed');
     }
   };
 
   const value: AuthContextProps = {
     user,
+    session,
     userProfile,
     loading,
+    error,
     signUp,
     signIn,
     signOut,
@@ -194,7 +218,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

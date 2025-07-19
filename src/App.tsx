@@ -4,15 +4,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Import useAuth
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// --- This is the new "Protected Route" component ---
-// It acts as a guard for your main application.
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading: authLoading, userProfile, error } = useAuth();
 
@@ -57,7 +55,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
   
   // 4. If there IS a user but no profile yet, keep showing loading.
-  // This is the key fix for your issue.
   if (user && !userProfile) {
      return (
       <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
@@ -72,7 +69,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   // 5. If the user and profile are fully loaded, show the app.
   return children;
 };
-
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

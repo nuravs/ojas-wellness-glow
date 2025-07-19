@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
@@ -34,7 +33,7 @@ const AuthPage = () => {
     try {
       if (isSignUp) {
         console.log('Attempting signup');
-        const { error } = await signUp(email, password, { role, full_name: fullName });
+        const { error } = await signUp(email, password);
         if (error) {
           console.error('Signup error:', error);
           toast({

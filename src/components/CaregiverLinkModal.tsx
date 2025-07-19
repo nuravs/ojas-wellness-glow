@@ -22,8 +22,8 @@ const CaregiverLinkModal: React.FC<CaregiverLinkModalProps> = ({ open, onClose }
     sendInvite,
     approveLink
   } = useCaregiverLinks();
-  const { session, userProfile } = useAuth();
-  const userId = session?.user?.id;
+  const { user, userProfile } = useAuth();
+  const userId = user?.id;
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);

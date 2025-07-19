@@ -8,7 +8,7 @@ export const useSupabaseClient = () => {
     client: supabase,
     // Helper methods for common staging operations
     async callFunction(functionName: string, params: any) {
-      const { data, error } = await supabase.rpc(functionName, params);
+      const { data, error } = await supabase.rpc(functionName as any, params);
       
       if (error) {
         console.error(`Error calling ${functionName}:`, error);
@@ -19,7 +19,7 @@ export const useSupabaseClient = () => {
     },
     
     async getUserData(userId: string, dataType: string) {
-      const functionMap = {
+      const functionMap: Record<string, string> = {
         'profile': 'get_user_profile',
         'medications': 'get_user_medications',
         'vitals': 'get_user_vitals',
@@ -29,7 +29,7 @@ export const useSupabaseClient = () => {
         'medication_logs': 'get_user_medication_logs'
       };
       
-      const functionName = functionMap[dataType as keyof typeof functionMap];
+      const functionName = functionMap[dataType];
       if (!functionName) {
         throw new Error(`Unknown data type: ${dataType}`);
       }

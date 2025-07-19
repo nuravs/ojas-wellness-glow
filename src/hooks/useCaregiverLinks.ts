@@ -22,8 +22,7 @@ interface CaregiverRelationship {
 }
 
 export function useCaregiverLinks() {
-  const { session } = useAuth();
-  const user = session?.user;
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
