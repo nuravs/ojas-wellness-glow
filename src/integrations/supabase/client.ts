@@ -16,18 +16,18 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   },
   db: {
-    schema: "public", // Keep as public for auth compatibility
+    schema: "public",
   },
 });
 
-// Create a separate client for staging schema operations
-export const stagingSupabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+// Create an untyped client for staging schema operations using raw SQL
+export const stagingSupabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
   },
   db: {
-    schema: "public", // Use public for type compatibility but target staging tables
+    schema: "public", // Keep as public but use raw SQL for staging access
   },
 });

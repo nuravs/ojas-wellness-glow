@@ -58,12 +58,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      // Use staging client for user profile operations with explicit table name
+      // Use raw SQL query to access staging schema
       const { data: profile, error } = await stagingSupabase
-        .from('staging.user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+        .rpc('get_user_profile', { profile_user_id: userId });
 
       if (error) {
         console.error('AUTH_CONTEXT: Error fetching user profile:', error.message, error.details);
@@ -163,11 +160,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return { error: new Error('No user logged in') };
     
-    // Use staging client for profile updates with explicit table name
+    // Use raw SQL for profile updates
     const { error } = await stagingSupabase
-      .from('staging.user_profiles')
-      .update(updates)
-      .eq('user_id', user.id);
+      .rpc('update_user_profile', { 
+        profile_user_id: user.id, 
+        profile_updates: updates 
+      });
     
     if (!error) {
       setUserProfile(prev => prev ? { ...prev, ...updates } : null);

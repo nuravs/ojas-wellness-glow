@@ -11,7 +11,7 @@ export interface Medication {
   instructions?: string;
   active: boolean;
   taken: boolean;
-  time: string; // Add missing time property
+  time: string;
   next_dose?: string;
   user_id: string;
   created_at: string;
@@ -34,18 +34,15 @@ export const useMedications = () => {
     }
 
     try {
+      // Use raw SQL query to fetch medications from staging schema
       const { data, error } = await stagingSupabase
-        .from('staging.medications')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('active', true)
-        .order('created_at', { ascending: false });
+        .rpc('get_user_medications', { medication_user_id: user.id });
 
       if (error) {
         console.error('Error fetching medications:', error);
       } else {
         // Transform the data to include taken status and time
-        const transformedMedications = (data || []).map(med => ({
+        const transformedMedications = (data || []).map((med: any) => ({
           ...med,
           taken: false, // This would be determined by checking medication logs
           time: med.next_dose ? new Date(med.next_dose).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00',
@@ -67,13 +64,12 @@ export const useMedications = () => {
     if (!user) return;
 
     try {
-      // Log the medication as taken/not taken
-      const { error } = await stagingSupabase.from('staging.medication_logs').insert({
-        medication_id: medicationId,
-        user_id: user.id,
-        logged_by: user.id,
-        status: 'taken',
-        actual_time: new Date().toISOString(),
+      // Use raw SQL for medication logging
+      const { error } = await stagingSupabase.rpc('log_medication', {
+        med_id: medicationId,
+        med_user_id: user.id,
+        log_status: 'taken',
+        log_time: new Date().toISOString(),
       });
 
       if (error) {
@@ -95,12 +91,11 @@ export const useMedications = () => {
     if (!user) return;
 
     try {
-      const { error } = await stagingSupabase.from('staging.medication_logs').insert({
-        medication_id: medicationId,
-        user_id: user.id,
-        logged_by: user.id,
-        status: 'postponed',
-        scheduled_time: new Date().toISOString(),
+      const { error } = await stagingSupabase.rpc('log_medication', {
+        med_id: medicationId,
+        med_user_id: user.id,
+        log_status: 'postponed',
+        log_time: new Date().toISOString(),
       });
 
       if (error) {
@@ -118,10 +113,11 @@ export const useMedications = () => {
       const medication = medications.find(med => med.id === medicationId);
       if (!medication) return;
 
-      const { error } = await stagingSupabase
-        .from('staging.medications')
-        .update({ caregiver_visible: !medication.caregiver_visible })
-        .eq('id', medicationId);
+      const { error } = await stagingSupabase.rpc('update_medication_visibility', {
+        med_id: medicationId,
+        med_user_id: user.id,
+        is_visible: !medication.caregiver_visible,
+      });
 
       if (error) {
         console.error('Error updating caregiver visibility:', error);
