@@ -1,226 +1,249 @@
-import React, { useState } from "react";
-import { z } from "zod";
+// src/components/vitals/VitalEntryForm.tsx
 
-const bpSchema = z.object({
-  systolic: z.number({ required_error: "Systolic required" }).min(60, "Systolic must be ≥60").max(250, "Systolic must be ≤250"),
-  diastolic: z.number({ required_error: "Diastolic required" }).min(30, "Diastolic must be ≥30").max(140, "Diastolic must be ≤140"),
-});
+import React, { useState } from 'react';
+import { X, Heart, Droplets, Activity, Weight, Thermometer } from 'lucide-react';
+import { z } from 'zod';
 
-const bloodSugarSchema = z.object({
-  value: z.number({ required_error: "Blood sugar required" }).min(40, "Blood sugar must be ≥40").max(600, "Blood sugar must be ≤600"),
-  unit: z.string().optional(),
-});
+interface VitalEntryFormProps {
+  selectedType?: string;
+  onSubmit: (vitalData: any) => void;
+  onCancel: () => void;
+  userRole: 'patient' | 'caregiver';
+}
 
-const pulseSchema = z.object({
-  value: z.number({ required_error: "Pulse required" }).min(20, "Pulse must be ≥20").max(250, "Pulse must be ≤250"),
-  unit: z.string().optional(),
-});
-
-const weightSchema = z.object({
-  value: z.number({ required_error: "Weight required" }).min(10, "Weight must be ≥10").max(300, "Weight must be ≤300"),
-  unit: z.string().optional(),
-});
-
-const tempSchema = z.object({
-  value: z.number({ required_error: "Temperature required" }).min(90, "Temperature must be ≥90").max(110, "Temperature must be ≤110"),
-  unit: z.string().optional(),
-});
-
-const schemas: Record<string, z.ZodType<any, any, any>> = {
-  blood_pressure: bpSchema,
-  blood_sugar: bloodSugarSchema,
-  pulse: pulseSchema,
-  weight: weightSchema,
-  temperature: tempSchema,
+// Zod validation schemas
+const schemas: Record<string, z.ZodSchema<any>> = {
+  blood_pressure: z.object({
+    systolic: z.number().min(70).max(200),
+    diastolic: z.number().min(40).max(120),
+  }),
+  blood_sugar: z.object({
+    value: z.number().min(50).max(500),
+    unit: z.string(),
+  }),
+  pulse: z.object({
+    value: z.number().min(30).max(200),
+  }),
+  weight: z.object({
+    value: z.number().min(20).max(250),
+    unit: z.string(),
+  }),
+  temperature: z.object({
+    value: z.number().min(90).max(110),
+    unit: z.string(),
+  }),
 };
 
-const defaultValues: Record<string, any> = {
-  blood_pressure: { systolic: "", diastolic: "" },
-  blood_sugar: { value: "", unit: "" },
-  pulse: { value: "", unit: "" },
-  weight: { value: "", unit: "" },
-  temperature: { value: "", unit: "" },
-};
+const VitalEntryForm: React.FC<VitalEntryFormProps> = ({
+  selectedType = '',
+  onSubmit,
+  onCancel,
+  userRole,
+}) => {
+  const [vitalType, setVitalType] = useState(selectedType);
+  const [values, setValues] = useState<any>({});
+  const [notes, setNotes] = useState('');
+  const [measuredAt, setMeasuredAt] = useState(new Date().toISOString().slice(0, 16));
+  const [error, setError] = useState<string | null>(null);
 
-const VitalEntryForm = ({ selectedType, onAddVital }) => {
-  const [formValues, setFormValues] = useState(defaultValues[selectedType] || {});
-  const [error, setError] = useState("");
+  const vitalTypes = [
+    { type: 'blood_pressure', label: 'Blood Pressure', icon: Heart },
+    { type: 'blood_sugar', label: 'Blood Sugar', icon: Droplets },
+    { type: 'pulse', label: 'Pulse', icon: Activity },
+    { type: 'weight', label: 'Weight', icon: Weight },
+    { type: 'temperature', label: 'Temperature', icon: Thermometer },
+  ];
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormValues((prev) => ({
-      ...prev,
-      [name]: value === "" ? "" : isNaN(value) ? value : Number(value),
-    }));
-    setError("");
-  };
-
-  const validateVital = () => {
-    try {
-      const schema = schemas[selectedType];
-      if (!schema) return true;
-      schema.parse(formValues);
-      return true;
-    } catch (err: any) {
-      return err.errors?.[0]?.message || "Invalid input";
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validationResult = validateVital();
-    if (validationResult !== true) {
-      setError(validationResult);
+    if (!vitalType) return;
+
+    const schema = schemas[vitalType];
+    const parse = schema.safeParse(values);
+
+    if (!parse.success) {
+      setError('Please enter valid values for this vital.');
       return;
     }
-    setError("");
-    await onAddVital(formValues);
-    setFormValues(defaultValues[selectedType]);
+
+    setError(null);
+    onSubmit({
+      vital_type: vitalType,
+      values: parse.data,
+      notes: notes.trim() || undefined,
+      measured_at: measuredAt,
+    });
   };
 
-  // --- UI Render ---
+  const renderVitalInputs = () => {
+    switch (vitalType) {
+      case 'blood_pressure':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label>Systolic</label>
+                <input
+                  type="number"
+                  placeholder="120"
+                  value={values.systolic || ''}
+                  onChange={(e) => setValues({ ...values, systolic: parseInt(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label>Diastolic</label>
+                <input
+                  type="number"
+                  placeholder="80"
+                  value={values.diastolic || ''}
+                  onChange={(e) => setValues({ ...values, diastolic: parseInt(e.target.value) })}
+                />
+              </div>
+            </div>
+            <p className="text-xs">Normal: 90-120 / 60-80 mmHg</p>
+          </div>
+        );
+
+      case 'blood_sugar':
+        return (
+          <div className="space-y-4">
+            <label>Blood Sugar Level</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={values.value || ''}
+                onChange={(e) => setValues({ ...values, value: parseFloat(e.target.value) })}
+              />
+              <select
+                value={values.unit || 'mg/dL'}
+                onChange={(e) => setValues({ ...values, unit: e.target.value })}
+              >
+                <option value="mg/dL">mg/dL</option>
+                <option value="mmol/L">mmol/L</option>
+              </select>
+            </div>
+            <p className="text-xs">Fasting: 70-100 | Post-meal: 80-140 mg/dL</p>
+          </div>
+        );
+
+      case 'pulse':
+        return (
+          <div className="space-y-4">
+            <label>Heart Rate (bpm)</label>
+            <input
+              type="number"
+              value={values.value || ''}
+              onChange={(e) => setValues({ ...values, value: parseInt(e.target.value) })}
+            />
+            <p className="text-xs">Normal: 60-100 bpm</p>
+          </div>
+        );
+
+      case 'weight':
+        return (
+          <div className="space-y-4">
+            <label>Weight</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={values.value || ''}
+                onChange={(e) => setValues({ ...values, value: parseFloat(e.target.value) })}
+              />
+              <select
+                value={values.unit || 'kg'}
+                onChange={(e) => setValues({ ...values, unit: e.target.value })}
+              >
+                <option value="kg">kg</option>
+                <option value="lbs">lbs</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      case 'temperature':
+        return (
+          <div className="space-y-4">
+            <label>Temperature</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={values.value || ''}
+                onChange={(e) => setValues({ ...values, value: parseFloat(e.target.value) })}
+              />
+              <select
+                value={values.unit || 'F'}
+                onChange={(e) => setValues({ ...values, unit: e.target.value })}
+              >
+                <option value="F">°F</option>
+                <option value="C">°C</option>
+              </select>
+            </div>
+            <p className="text-xs">Normal: 97.0–99.5°F</p>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {selectedType === "blood_pressure" && (
-        <>
-          <div>
-            <label>Systolic (mmHg)</label>
-            <input
-              type="number"
-              name="systolic"
-              value={formValues.systolic}
-              onChange={handleInputChange}
-              className="input"
-              min={60}
-              max={250}
-              required
-            />
-          </div>
-          <div>
-            <label>Diastolic (mmHg)</label>
-            <input
-              type="number"
-              name="diastolic"
-              value={formValues.diastolic}
-              onChange={handleInputChange}
-              className="input"
-              min={30}
-              max={140}
-              required
-            />
-          </div>
-        </>
-      )}
-      {selectedType === "blood_sugar" && (
-  <div className="flex flex-col gap-2">
-    <label htmlFor="bloodSugarValue">Blood Sugar</label>
-    <input
-      id="bloodSugarValue"
-      type="number"
-      name="value"
-      value={formValues.value}
-      onChange={handleInputChange}
-      min={40}
-      max={600}
-      placeholder="Enter value"
-      className="input w-full"
-      required
-    />
-    <select
-      name="unit"
-      value={formValues.unit || "mg/dL"}
-      onChange={handleInputChange}
-      className="input w-full"
-    >
-      <option value="mg/dL">mg/dL</option>
-      <option value="mmol/L">mmol/L</option>
-    </select>
-  </div>
-)}
+    <form onSubmit={handleSubmit} className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h3>Add Vital Reading</h3>
+        <button type="button" onClick={onCancel}>
+          <X />
+        </button>
+      </div>
 
-      {selectedType === "pulse" && (
-        <>
-          <div>
-            <label>Pulse (bpm)</label>
-            <input
-              type="number"
-              name="value"
-              value={formValues.value}
-              onChange={handleInputChange}
-              className="input"
-              min={20}
-              max={250}
-              required
-            />
-          </div>
-        </>
-      )}
-      {selectedType === "weight" && (
-        <>
-          <div>
-            <label>Weight</label>
-            <input
-              type="number"
-              name="value"
-              value={formValues.value}
-              onChange={handleInputChange}
-              className="input"
-              min={10}
-              max={300}
-              required
-            />
-            <select
-              name="unit"
-              value={formValues.unit || "kg"}
-              onChange={handleInputChange}
-              className="input"
+      {!selectedType && (
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {vitalTypes.map(({ type, label, icon: Icon }) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setVitalType(type)}
+              className={vitalType === type ? 'bg-blue-100' : ''}
             >
-              <option value="kg">kg</option>
-              <option value="lbs">lbs</option>
-            </select>
-          </div>
-        </>
-      )}
-      {selectedType === "temperature" && (
-        <>
-          <div>
-            <label>Temperature</label>
-            <input
-              type="number"
-              name="value"
-              value={formValues.value}
-              onChange={handleInputChange}
-              className="input"
-              min={90}
-              max={110}
-              required
-            />
-            <select
-              name="unit"
-              value={formValues.unit || "F"}
-              onChange={handleInputChange}
-              className="input"
-            >
-              <option value="F">°F</option>
-              <option value="C">°C</option>
-            </select>
-          </div>
-        </>
-      )}
-
-      {error && (
-        <div className="text-red-600 font-medium">
-          {error}
+              <Icon className="inline-block mr-2" />
+              {label}
+            </button>
+          ))}
         </div>
       )}
 
-      <button
-        type="submit"
-        className="bg-ojas-primary text-white py-2 px-5 rounded mt-2"
-      >
-        Add Vital
-      </button>
+      {vitalType && (
+        <>
+          {renderVitalInputs()}
+
+          <div className="mt-4">
+            <label>Date & Time</label>
+            <input
+              type="datetime-local"
+              value={measuredAt}
+              onChange={(e) => setMeasuredAt(e.target.value)}
+            />
+          </div>
+
+          <div className="mt-4">
+            <label>Notes (optional)</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add context..."
+            />
+          </div>
+
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
+          <div className="flex gap-2 mt-6">
+            <button type="button" onClick={onCancel}>
+              Cancel
+            </button>
+            <button type="submit">Add Reading</button>
+          </div>
+        </>
+      )}
     </form>
   );
 };
