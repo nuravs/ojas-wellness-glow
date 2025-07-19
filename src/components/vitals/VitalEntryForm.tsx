@@ -1,302 +1,225 @@
+import React, { useState } from "react";
+import { z } from "zod";
 
-import React, { useState } from 'react';
-import { X, Heart, Droplets, Activity, Weight, Thermometer } from 'lucide-react';
+const bpSchema = z.object({
+  systolic: z.number({ required_error: "Systolic required" }).min(60, "Systolic must be ≥60").max(250, "Systolic must be ≤250"),
+  diastolic: z.number({ required_error: "Diastolic required" }).min(30, "Diastolic must be ≥30").max(140, "Diastolic must be ≤140"),
+});
 
-interface VitalEntryFormProps {
-  selectedType?: string;
-  onSubmit: (vitalData: any) => void;
-  onCancel: () => void;
-  userRole: 'patient' | 'caregiver';
-}
+const bloodSugarSchema = z.object({
+  value: z.number({ required_error: "Blood sugar required" }).min(40, "Blood sugar must be ≥40").max(600, "Blood sugar must be ≤600"),
+  unit: z.string().optional(),
+});
 
-const VitalEntryForm: React.FC<VitalEntryFormProps> = ({
-  selectedType = '',
-  onSubmit,
-  onCancel,
-  userRole
-}) => {
-  const [vitalType, setVitalType] = useState(selectedType);
-  const [values, setValues] = useState<any>({});
-  const [notes, setNotes] = useState('');
-  const [measuredAt, setMeasuredAt] = useState(new Date().toISOString().slice(0, 16));
+const pulseSchema = z.object({
+  value: z.number({ required_error: "Pulse required" }).min(20, "Pulse must be ≥20").max(250, "Pulse must be ≤250"),
+  unit: z.string().optional(),
+});
 
-  const vitalTypes = [
-    { type: 'blood_pressure', label: 'Blood Pressure', icon: Heart },
-    { type: 'blood_sugar', label: 'Blood Sugar', icon: Droplets },
-    { type: 'pulse', label: 'Pulse', icon: Activity },
-    { type: 'weight', label: 'Weight', icon: Weight },
-    { type: 'temperature', label: 'Temperature', icon: Thermometer }
-  ];
+const weightSchema = z.object({
+  value: z.number({ required_error: "Weight required" }).min(10, "Weight must be ≥10").max(300, "Weight must be ≤300"),
+  unit: z.string().optional(),
+});
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!vitalType || !values) return;
+const tempSchema = z.object({
+  value: z.number({ required_error: "Temperature required" }).min(90, "Temperature must be ≥90").max(110, "Temperature must be ≤110"),
+  unit: z.string().optional(),
+});
 
-    onSubmit({
-      vital_type: vitalType,
-      values,
-      notes: notes.trim() || undefined,
-      measured_at: measuredAt
-    });
+const schemas: Record<string, z.ZodType<any, any, any>> = {
+  blood_pressure: bpSchema,
+  blood_sugar: bloodSugarSchema,
+  pulse: pulseSchema,
+  weight: weightSchema,
+  temperature: tempSchema,
+};
+
+const defaultValues: Record<string, any> = {
+  blood_pressure: { systolic: "", diastolic: "" },
+  blood_sugar: { value: "", unit: "" },
+  pulse: { value: "", unit: "" },
+  weight: { value: "", unit: "" },
+  temperature: { value: "", unit: "" },
+};
+
+const VitalEntryForm = ({ selectedType, onAddVital }) => {
+  const [formValues, setFormValues] = useState(defaultValues[selectedType] || {});
+  const [error, setError] = useState("");
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: value === "" ? "" : isNaN(value) ? value : Number(value),
+    }));
+    setError("");
   };
 
-  const renderVitalInputs = () => {
-    switch (vitalType) {
-      case 'blood_pressure':
-        return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-                  Systolic
-                </label>
-                <input
-                  type="number"
-                  placeholder="120"
-                  value={values.systolic || ''}
-                  onChange={(e) => setValues(prev => ({ ...prev, systolic: parseInt(e.target.value) || '' }))}
-                  className="w-full px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white placeholder-ojas-text-secondary focus:ring-2 focus:ring-ojas-primary focus:border-transparent"
-                  style={{ minHeight: '44px' }}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-                  Diastolic
-                </label>
-                <input
-                  type="number"
-                  placeholder="80"
-                  value={values.diastolic || ''}
-                  onChange={(e) => setValues(prev => ({ ...prev, diastolic: parseInt(e.target.value) || '' }))}
-                  className="w-full px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white placeholder-ojas-text-secondary focus:ring-2 focus:ring-ojas-primary focus:border-transparent"
-                  style={{ minHeight: '44px' }}
-                />
-              </div>
-            </div>
-            <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
-              Normal: 90-120 / 60-80 mmHg
-            </p>
-          </div>
-        );
-
-      case 'blood_sugar':
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-                Blood Sugar Level
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="100"
-                  value={values.value || ''}
-                  onChange={(e) => setValues(prev => ({ ...prev, value: parseInt(e.target.value) || '' }))}
-                  className="flex-1 px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white placeholder-ojas-text-secondary focus:ring-2 focus:ring-ojas-primary focus:border-transparent"
-                  style={{ minHeight: '44px' }}
-                />
-                <select
-                  value={values.unit || 'mg/dL'}
-                  onChange={(e) => setValues(prev => ({ ...prev, unit: e.target.value }))}
-                  className="px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white"
-                  style={{ minHeight: '44px' }}
-                >
-                  <option value="mg/dL">mg/dL</option>
-                  <option value="mmol/L">mmol/L</option>
-                </select>
-              </div>
-            </div>
-            <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
-              Normal fasting: 70-100 mg/dL, Post-meal: 80-140 mg/dL
-            </p>
-          </div>
-        );
-
-      case 'pulse':
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-                Heart Rate (bpm)
-              </label>
-              <input
-                type="number"
-                placeholder="72"
-                value={values.value || ''}
-                onChange={(e) => setValues(prev => ({ ...prev, value: parseInt(e.target.value) || '' }))}
-                className="w-full px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white placeholder-ojas-text-secondary focus:ring-2 focus:ring-ojas-primary focus:border-transparent"
-                style={{ minHeight: '44px' }}
-              />
-            </div>
-            <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
-              Normal: 60-100 bpm, Athletic: 40-60 bpm
-            </p>
-          </div>
-        );
-
-      case 'weight':
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-                Weight
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="150"
-                  value={values.value || ''}
-                  onChange={(e) => setValues(prev => ({ ...prev, value: parseFloat(e.target.value) || '' }))}
-                  className="flex-1 px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white placeholder-ojas-text-secondary focus:ring-2 focus:ring-ojas-primary focus:border-transparent"
-                  style={{ minHeight: '44px' }}
-                />
-                <select
-                  value={values.unit || 'lbs'}
-                  onChange={(e) => setValues(prev => ({ ...prev, unit: e.target.value }))}
-                  className="px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white"
-                  style={{ minHeight: '44px' }}
-                >
-                  <option value="lbs">lbs</option>
-                  <option value="kg">kg</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'temperature':
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-                Temperature
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="98.6"
-                  value={values.value || ''}
-                  onChange={(e) => setValues(prev => ({ ...prev, value: parseFloat(e.target.value) || '' }))}
-                  className="flex-1 px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white placeholder-ojas-text-secondary focus:ring-2 focus:ring-ojas-primary focus:border-transparent"
-                  style={{ minHeight: '44px' }}
-                />
-                <select
-                  value={values.unit || 'F'}
-                  onChange={(e) => setValues(prev => ({ ...prev, unit: e.target.value }))}
-                  className="px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white"
-                  style={{ minHeight: '44px' }}
-                >
-                  <option value="F">°F</option>
-                  <option value="C">°C</option>
-                </select>
-              </div>
-            </div>
-            <p className="text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver">
-              Normal: 97.0-99.5°F (36.1-37.5°C)
-            </p>
-          </div>
-        );
-
-      default:
-        return null;
+  const validateVital = () => {
+    try {
+      const schema = schemas[selectedType];
+      if (!schema) return true;
+      schema.parse(formValues);
+      return true;
+    } catch (err: any) {
+      return err.errors?.[0]?.message || "Invalid input";
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationResult = validateVital();
+    if (validationResult !== true) {
+      setError(validationResult);
+      return;
+    }
+    setError("");
+    await onAddVital(formValues);
+    setFormValues(defaultValues[selectedType]);
+  };
+
+  // --- UI Render ---
+
   return (
-    <form onSubmit={handleSubmit} className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-          Add Vital Reading
-        </h3>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          style={{ minWidth: '44px', minHeight: '44px' }}
-        >
-          <X className="w-6 h-6" />
-        </button>
-      </div>
-
-      {!selectedType && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-3">
-            Select Vital Type
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            {vitalTypes.map(({ type, label, icon: Icon }) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setVitalType(type)}
-                className={`p-3 rounded-xl border transition-colors flex items-center gap-2 ${
-                  vitalType === type
-                    ? 'border-ojas-primary bg-ojas-primary/10 text-ojas-primary'
-                    : 'border-ojas-border dark:border-ojas-slate-gray hover:border-ojas-primary/50'
-                }`}
-                style={{ minHeight: '44px' }}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {vitalType && (
-        <div className="space-y-6">
-          {renderVitalInputs()}
-
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {selectedType === "blood_pressure" && (
+        <>
           <div>
-            <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-              Date & Time
-            </label>
+            <label>Systolic (mmHg)</label>
             <input
-              type="datetime-local"
-              value={measuredAt}
-              onChange={(e) => setMeasuredAt(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white focus:ring-2 focus:ring-ojas-primary focus:border-transparent"
-              style={{ minHeight: '44px' }}
+              type="number"
+              name="systolic"
+              value={formValues.systolic}
+              onChange={handleInputChange}
+              className="input"
+              min={60}
+              max={250}
+              required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2">
-              Notes (optional)
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add context like fasting, post-meal, after exercise..."
-              className="w-full px-4 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray bg-white dark:bg-ojas-charcoal-gray text-ojas-text-main dark:text-ojas-mist-white placeholder-ojas-text-secondary focus:ring-2 focus:ring-ojas-primary focus:border-transparent resize-none"
-              rows={3}
+            <label>Diastolic (mmHg)</label>
+            <input
+              type="number"
+              name="diastolic"
+              value={formValues.diastolic}
+              onChange={handleInputChange}
+              className="input"
+              min={30}
+              max={140}
+              required
             />
           </div>
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 px-6 py-3 rounded-xl border border-ojas-border dark:border-ojas-slate-gray text-ojas-text-main dark:text-ojas-mist-white font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              style={{ minHeight: '44px' }}
+        </>
+      )}
+      {selectedType === "blood_sugar" && (
+        <>
+          <div>
+            <label>Blood Sugar</label>
+            <input
+              type="number"
+              name="value"
+              value={formValues.value}
+              onChange={handleInputChange}
+              className="input"
+              min={40}
+              max={600}
+              required
+            />
+            <select
+              name="unit"
+              value={formValues.unit || "mg/dL"}
+              onChange={handleInputChange}
+              className="input"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!vitalType || !values || Object.keys(values).length === 0}
-              className="flex-1 px-6 py-3 bg-ojas-primary text-white rounded-xl font-medium hover:bg-ojas-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              style={{ minHeight: '44px' }}
-            >
-              Add Reading
-            </button>
+              <option value="mg/dL">mg/dL</option>
+              <option value="mmol/L">mmol/L</option>
+            </select>
           </div>
+        </>
+      )}
+      {selectedType === "pulse" && (
+        <>
+          <div>
+            <label>Pulse (bpm)</label>
+            <input
+              type="number"
+              name="value"
+              value={formValues.value}
+              onChange={handleInputChange}
+              className="input"
+              min={20}
+              max={250}
+              required
+            />
+          </div>
+        </>
+      )}
+      {selectedType === "weight" && (
+        <>
+          <div>
+            <label>Weight</label>
+            <input
+              type="number"
+              name="value"
+              value={formValues.value}
+              onChange={handleInputChange}
+              className="input"
+              min={10}
+              max={300}
+              required
+            />
+            <select
+              name="unit"
+              value={formValues.unit || "kg"}
+              onChange={handleInputChange}
+              className="input"
+            >
+              <option value="kg">kg</option>
+              <option value="lbs">lbs</option>
+            </select>
+          </div>
+        </>
+      )}
+      {selectedType === "temperature" && (
+        <>
+          <div>
+            <label>Temperature</label>
+            <input
+              type="number"
+              name="value"
+              value={formValues.value}
+              onChange={handleInputChange}
+              className="input"
+              min={90}
+              max={110}
+              required
+            />
+            <select
+              name="unit"
+              value={formValues.unit || "F"}
+              onChange={handleInputChange}
+              className="input"
+            >
+              <option value="F">°F</option>
+              <option value="C">°C</option>
+            </select>
+          </div>
+        </>
+      )}
+
+      {error && (
+        <div className="text-red-600 font-medium">
+          {error}
         </div>
       )}
+
+      <button
+        type="submit"
+        className="bg-ojas-primary text-white py-2 px-5 rounded mt-2"
+      >
+        Add Vital
+      </button>
     </form>
   );
 };
