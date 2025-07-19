@@ -18,26 +18,57 @@ interface Medication {
 export const useMedications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [targetPatientId, setTargetPatientId] = useState<string | null>(null);
   const { user, userProfile } = useAuth();
   const { toast } = useToast();
+  const isCaregiver = userProfile?.role === 'caregiver';
+
+  const fetchLinkedPatientId = async () => {
+    if (!user || !isCaregiver) {
+      setTargetPatientId(user?.id ?? null);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('patient_caregivers')
+        .select('patient_id')
+        .eq('caregiver_id', user.id)
+        .not('approved_at', 'is', null)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching linked patient:', error);
+        toast({
+          title: 'Access Error',
+          description: 'Unable to verify caregiver access',
+          variant: 'destructive',
+        });
+        setTargetPatientId(null);
+      } else {
+        setTargetPatientId(data?.patient_id ?? null);
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching caregiver link:', error);
+      setTargetPatientId(null);
+    }
+  };
 
   const loadMedications = async () => {
     console.log('loadMedications called, user:', !!user);
-    
-    if (!user) {
-      console.log('No user, setting loading to false');
+
+    if (!targetPatientId) {
+      console.log('No patient ID, setting loading to false');
+      setMedications([]);
       setLoading(false);
       return;
     }
 
     try {
-      console.log('Loading medications for user:', user.id);
-      
-      // Get user's medications
       const { data: userMedications, error: medsError } = await supabase
         .from('medications')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetPatientId)
         .eq('active', true)
         .order('created_at', { ascending: true });
 
@@ -52,9 +83,6 @@ export const useMedications = () => {
         return;
       }
 
-      console.log('Loaded medications:', userMedications?.length || 0);
-
-      // Get today's medication logs with logged_by information
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
@@ -68,7 +96,7 @@ export const useMedications = () => {
             id
           )
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', targetPatientId)
         .gte('created_at', today.toISOString())
         .lt('created_at', tomorrow.toISOString())
         .eq('status', 'taken');
@@ -77,21 +105,18 @@ export const useMedications = () => {
         console.error('Error loading medication logs:', logsError);
       }
 
-      console.log('Loaded logs:', todayLogs?.length || 0);
-
-      // Transform medications to match the expected format
       const transformedMedications: Medication[] = (userMedications || []).flatMap(med => {
         const frequency = med.frequency as { times?: string[] } || { times: ['8:00 AM'] };
         const times = frequency.times || ['8:00 AM'];
-        
+
         return times.map(time => {
-          const log = (todayLogs || []).find(log => 
-            log.medication_id === med.id && 
-            log.scheduled_time && 
-            new Date(log.scheduled_time).toLocaleTimeString('en-US', { 
-              hour: 'numeric', 
+          const log = (todayLogs || []).find(log =>
+            log.medication_id === med.id &&
+            log.scheduled_time &&
+            new Date(log.scheduled_time).toLocaleTimeString('en-US', {
+              hour: 'numeric',
               minute: '2-digit',
-              hour12: true 
+              hour12: true
             }) === time
           );
 
@@ -104,14 +129,13 @@ export const useMedications = () => {
             taken: !!log,
             caregiver_visible: med.caregiver_visible,
             logged_by: log?.logged_by,
-            logged_by_role: log?.logged_by ? 
-              (log.logged_by === user.id ? 'patient' : 'caregiver') : 
-              undefined
+            logged_by_role: log?.logged_by
+              ? (log.logged_by === user?.id ? 'patient' : 'caregiver')
+              : undefined
           };
         });
       });
 
-      console.log('Transformed medications:', transformedMedications.length);
       setMedications(transformedMedications);
     } catch (error) {
       console.error('Error in loadMedications:', error);
@@ -121,32 +145,29 @@ export const useMedications = () => {
         variant: "destructive"
       });
     } finally {
-      console.log('Setting loading to false');
       setLoading(false);
     }
   };
-
   const toggleMedication = async (id: string) => {
     const medication = medications.find(med => med.id === id);
     if (!medication || !user) return;
 
     try {
       if (!medication.taken) {
-        // Mark as taken - create a log entry
         const scheduledTime = new Date();
         const [timeStr, period] = medication.time.split(' ');
         const [hours, minutes] = timeStr.split(':').map(Number);
         let adjustedHours = hours;
         if (period === 'PM' && hours !== 12) adjustedHours += 12;
         if (period === 'AM' && hours === 12) adjustedHours = 0;
-        
+
         scheduledTime.setHours(adjustedHours, minutes, 0, 0);
 
         const { error } = await supabase
           .from('medication_logs')
           .insert({
             medication_id: medication.medication_id || medication.id.split('-')[0],
-            user_id: user.id,
+            user_id: targetPatientId,
             logged_by: user.id,
             scheduled_time: scheduledTime.toISOString(),
             actual_time: new Date().toISOString(),
@@ -164,14 +185,12 @@ export const useMedications = () => {
           return;
         }
 
-        const loggedByText = userProfile?.role === 'caregiver' ? 'caregiver' : 'patient';
         toast({
           title: "Great job! 🎉",
-          description: `${medication.name} marked as taken by ${loggedByText}.`,
+          description: `${medication.name} marked as taken.`,
           duration: 3000,
         });
       } else {
-        // Mark as not taken - remove the log entry
         const medicationId = medication.medication_id || medication.id.split('-')[0];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -182,7 +201,7 @@ export const useMedications = () => {
           .from('medication_logs')
           .delete()
           .eq('medication_id', medicationId)
-          .eq('user_id', user.id)
+          .eq('user_id', targetPatientId)
           .eq('status', 'taken')
           .gte('created_at', today.toISOString())
           .lt('created_at', tomorrow.toISOString());
@@ -198,12 +217,11 @@ export const useMedications = () => {
         }
       }
 
-      // Update local state
-      setMedications(prev => 
-        prev.map(med => 
-          med.id === id 
-            ? { 
-                ...med, 
+      setMedications(prev =>
+        prev.map(med =>
+          med.id === id
+            ? {
+                ...med,
                 taken: !med.taken,
                 logged_by: !med.taken ? user.id : undefined,
                 logged_by_role: !med.taken ? (userProfile?.role as 'patient' | 'caregiver') : undefined
@@ -225,7 +243,6 @@ export const useMedications = () => {
   const toggleCaregiverVisibility = async (medicationId: string) => {
     try {
       const realMedId = medicationId.includes('-') ? medicationId.split('-')[0] : medicationId;
-      
       const currentMed = medications.find(m => m.medication_id === realMedId);
       const newVisibility = !currentMed?.caregiver_visible;
 
@@ -244,7 +261,6 @@ export const useMedications = () => {
         return;
       }
 
-      // Update local state
       setMedications(prev =>
         prev.map(med =>
           med.medication_id === realMedId
@@ -275,14 +291,14 @@ export const useMedications = () => {
       let adjustedHours = hours;
       if (period === 'PM' && hours !== 12) adjustedHours += 12;
       if (period === 'AM' && hours === 12) adjustedHours = 0;
-      
+
       scheduledTime.setHours(adjustedHours, minutes, 0, 0);
 
       const { error } = await supabase
         .from('medication_logs')
         .insert({
           medication_id: medication.medication_id || medication.id.split('-')[0],
-          user_id: user.id,
+          user_id: targetPatientId,
           logged_by: user.id,
           scheduled_time: scheduledTime.toISOString(),
           actual_time: null,
@@ -311,9 +327,14 @@ export const useMedications = () => {
   };
 
   useEffect(() => {
-    console.log('useMedications useEffect triggered, user:', !!user);
+    fetchLinkedPatientId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, isCaregiver]);
+
+  useEffect(() => {
     loadMedications();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetPatientId]);
 
   return {
     medications,
