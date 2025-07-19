@@ -78,26 +78,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return null;
       }
 
-      console.log('📦 Raw profile data received:', data);
+      console.log('📦 Raw RPC response:', data);
       
-      // Handle the response - RPC returns the JSON directly now
-      if (!data) {
+      // Handle the RPC response - it could be wrapped or direct
+      let profileData = data;
+      
+      // If the response is wrapped in a function name key, unwrap it
+      if (data && typeof data === 'object' && data.get_user_profile) {
+        profileData = data.get_user_profile;
+        console.log('🔧 Unwrapped profile data:', profileData);
+      }
+      
+      if (!profileData) {
         console.warn('⚠️ No profile data found for user:', userId);
         setError('No profile found for user');
         return null;
       }
 
       // Validate the profile data structure
-      if (!isValidUserProfile(data)) {
-        console.error('❌ Invalid profile data structure:', data);
+      if (!isValidUserProfile(profileData)) {
+        console.error('❌ Invalid profile data structure:', profileData);
         console.log('Expected fields: user_id, full_name, role');
         setError('Profile data incomplete - missing required fields');
         return null;
       }
 
-      console.log('✅ Valid profile data:', data);
+      console.log('✅ Valid profile data:', profileData);
       setError(null);
-      return data;
+      return profileData;
     } catch (error) {
       console.error('💥 Exception in fetchUserProfile:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -129,14 +137,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('📦 Update response data:', data);
       
-      // Handle the updated profile response
-      if (data && isValidUserProfile(data)) {
-        console.log('✅ Profile updated successfully:', data);
-        setUserProfile(data);
+      // Handle the RPC response - it could be wrapped or direct
+      let updatedProfile = data;
+      
+      // If the response is wrapped in a function name key, unwrap it
+      if (data && typeof data === 'object' && data.update_user_profile) {
+        updatedProfile = data.update_user_profile;
+        console.log('🔧 Unwrapped updated profile:', updatedProfile);
+      }
+      
+      if (updatedProfile && isValidUserProfile(updatedProfile)) {
+        console.log('✅ Profile updated successfully:', updatedProfile);
+        setUserProfile(updatedProfile);
         setError(null);
         return true;
       } else {
-        console.error('❌ Invalid updated profile data:', data);
+        console.error('❌ Invalid updated profile data:', updatedProfile);
         setError('Invalid updated profile data received');
         return false;
       }
@@ -147,21 +163,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     }
   };
-
-  // Profile fetch timeout - reduced to 3 seconds
-  useEffect(() => {
-    if (isOnAuthPage()) return;
-
-    const timeout = setTimeout(() => {
-      if (loading && user && !userProfile) {
-        console.warn('⏰ Profile fetch timeout reached, allowing app to continue');
-        setLoading(false);
-        setError('Profile loading timed out - some features may be limited');
-      }
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-  }, [loading, user, userProfile]);
 
   useEffect(() => {
     console.log('🚀 Setting up auth state management');
@@ -223,18 +224,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (!isOnAuthPage()) {
             setLoading(true);
             
-            // Fetch profile with timeout safeguard
-            const profilePromise = fetchUserProfile(session.user.id);
-            const timeoutPromise = new Promise<null>((resolve) => {
-              setTimeout(() => {
-                console.warn('⏰ Profile fetch timeout in auth state change');
-                resolve(null);
-              }, 3000);
-            });
-            
-            const profile = await Promise.race([profilePromise, timeoutPromise]);
-            setUserProfile(profile);
-            setLoading(false);
+            // Fetch profile with proper timeout handling
+            const fetchProfile = async () => {
+              try {
+                const profile = await fetchUserProfile(session.user.id);
+                setUserProfile(profile);
+              } catch (error) {
+                console.error('Profile fetch error:', error);
+                setUserProfile(null);
+              } finally {
+                setLoading(false);
+              }
+            };
+
+            // Set a timeout to ensure loading state is cleared
+            const timeoutId = setTimeout(() => {
+              console.warn('⏰ Profile fetch timeout reached');
+              setLoading(false);
+            }, 3000);
+
+            await fetchProfile();
+            clearTimeout(timeoutId);
           } else {
             // On auth page, clear loading immediately
             setLoading(false);

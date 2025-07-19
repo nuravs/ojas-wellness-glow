@@ -41,40 +41,9 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  // 3. If there IS a user but no profile, allow app to continue with limited functionality
-  // (Profile loading issues shouldn't block the entire app)
-  if (user && !userProfile) {
-    // Only show error for actual errors, not timeouts
-    if (error && !error.includes('timeout') && !error.includes('timed out') && !error.includes('limited')) {
-      console.log('🔄 Profile error, showing error state:', error);
-      return (
-        <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto p-6">
-            <div className="text-red-500 mb-4">
-              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-ojas-slate-gray mb-2">Unable to load your profile</h3>
-            <p className="text-sm text-gray-600 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="px-4 py-2 bg-ojas-primary-blue text-white rounded-md hover:bg-blue-600 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      );
-    }
-    
-    // For timeouts or other non-critical errors, allow app to continue
-    console.log('✅ User authenticated, allowing app to continue with limited profile');
-    return children;
-  }
-
-  // 4. If the user and profile are fully loaded, show the app
-  console.log('✅ User and profile loaded, showing protected content');
+  // 3. User is authenticated - allow app to continue regardless of profile status
+  // Profile loading issues shouldn't block the entire app experience
+  console.log('✅ User authenticated, allowing app access');
   return children;
 };
 

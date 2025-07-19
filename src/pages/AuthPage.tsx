@@ -32,6 +32,10 @@ const AuthPage = () => {
     if (user && userProfile) {
       console.log('✅ User fully authenticated, redirecting to home');
       navigate('/', { replace: true });
+    } else if (user && !userProfile) {
+      // User is authenticated but no profile - allow app to continue
+      console.log('✅ User authenticated without profile, redirecting to home');
+      navigate('/', { replace: true });
     }
   }, [user, userProfile, navigate]);
 
@@ -109,12 +113,7 @@ const AuthPage = () => {
           setLoading(false);
         } else {
           console.log('✅ Signin request successful');
-          toast({
-            title: "Signing in...",
-            description: "Please wait while we load your profile.",
-            duration: 3000
-          });
-          // Let the auth state change handle loading state
+          // Don't show loading toast - let auth state handle redirect
         }
       }
     } catch (error) {
@@ -201,7 +200,12 @@ const AuthPage = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-ojas-medium p-8">
-            <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+            <form 
+              onSubmit={handleSubmit} 
+              className="space-y-6" 
+              autoComplete="off"
+              data-form-type="other"
+            >
               {isSignUp && (
                 <>
                   <div>
@@ -215,6 +219,7 @@ const AuthPage = () => {
                       className="w-full px-4 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                       placeholder="Enter your full name"
                       autoComplete="off"
+                      data-form-type="other"
                       required
                     />
                   </div>
@@ -278,6 +283,7 @@ const AuthPage = () => {
                     className="w-full pl-12 pr-4 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                     placeholder="Enter your email"
                     autoComplete="username"
+                    data-form-type="other"
                     required
                   />
                 </div>
@@ -296,6 +302,7 @@ const AuthPage = () => {
                     className="w-full pl-12 pr-12 py-3 border border-ojas-cloud-silver rounded-xl focus:outline-none focus:ring-2 focus:ring-ojas-primary-blue focus:border-transparent"
                     placeholder="Enter your password"
                     autoComplete={isSignUp ? "new-password" : "current-password"}
+                    data-form-type="other"
                     required
                   />
                   <button
