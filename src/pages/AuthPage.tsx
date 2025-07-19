@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
@@ -13,71 +14,122 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { signUp, signIn, user, userProfile, loading: authLoading } = useAuth();
+  const { signUp, signIn, user, userProfile, loading: authLoading, error: authError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect if user is already authenticated
+  // Debug logging for auth page
   useEffect(() => {
-    console.log('Auth check - user:', !!user, 'profile:', !!userProfile, 'authLoading:', authLoading);
+    console.log('🔍 AuthPage State:', {
+      user: user ? `${user.email} (${user.id})` : 'None',
+      userProfile: userProfile ? `${userProfile.full_name} (${userProfile.role})` : 'None',
+      authLoading,
+      authError,
+      currentPath: window.location.pathname
+    });
+  }, [user, userProfile, authLoading, authError]);
+
+  // Redirect if user is already authenticated and has profile
+  useEffect(() => {
     if (user && userProfile && !authLoading) {
-      console.log('User authenticated, redirecting to home');
+      console.log('✅ User fully authenticated, redirecting to home');
       navigate('/', { replace: true });
     }
   }, [user, userProfile, authLoading, navigate]);
 
+  // Handle auth errors from context
+  useEffect(() => {
+    if (authError) {
+      console.error('🔥 Auth error from context:', authError);
+      toast({
+        title: "Authentication Error",
+        description: authError,
+        variant: "destructive"
+      });
+    }
+  }, [authError, toast]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (isSignUp && !fullName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your full name.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isSignUp) {
-        console.log('Attempting signup');
+        console.log('📝 Starting signup process...');
         const { error } = await signUp(email, password);
+        
         if (error) {
-          console.error('Signup error:', error);
+          console.error('❌ Signup error:', error);
           toast({
             title: "Sign Up Error",
             description: error.message,
             variant: "destructive"
           });
         } else {
+          console.log('✅ Signup successful');
           toast({
             title: "Check your email",
             description: "We've sent you a confirmation link to complete your registration.",
             duration: 5000
           });
+          // Reset form after successful signup
+          setEmail('');
+          setPassword('');
+          setFullName('');
         }
       } else {
-        console.log('Attempting signin');
+        console.log('🔑 Starting signin process...');
         const { error } = await signIn(email, password);
+        
         if (error) {
-          console.error('Signin error:', error);
+          console.error('❌ Signin error:', error);
           toast({
             title: "Sign In Error",
             description: error.message,
             variant: "destructive"
           });
         } else {
-          console.log('Signin request successful, waiting for auth state change...');
+          console.log('✅ Signin request successful');
           toast({
             title: "Signing in...",
             description: "Please wait while we sign you in.",
             duration: 2000
           });
-          // Don't set loading to false here - let the auth state change handle it
+          // Don't set loading to false here - let auth state change handle it
           return;
         }
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('💥 Auth error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      if (isSignUp) {
+        setLoading(false);
+      }
+      // For signin, let the auth state change handle loading state
     }
   };
 
@@ -87,7 +139,7 @@ const AuthPage = () => {
       <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-ojas-slate-gray">Loading...</p>
+          <p className="text-ojas-slate-gray">Checking authentication...</p>
         </div>
       </div>
     );
