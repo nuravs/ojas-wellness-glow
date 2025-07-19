@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -41,8 +40,11 @@ export const useMedications = () => {
       if (error) {
         console.error('Error fetching medications:', error);
       } else {
+        // Parse the JSON response and ensure it's an array
+        const medicationsArray = Array.isArray(data) ? data : (data ? [data] : []);
+        
         // Transform the data to include taken status and time
-        const transformedMedications = (data || []).map((med: any) => ({
+        const transformedMedications = medicationsArray.map((med: any) => ({
           ...med,
           taken: false, // This would be determined by checking medication logs
           time: med.next_dose ? new Date(med.next_dose).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00',
