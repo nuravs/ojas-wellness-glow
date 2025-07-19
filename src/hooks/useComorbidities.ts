@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,9 +49,9 @@ export const useComorbidities = () => {
         return;
       }
 
-      // Parse the JSON response and ensure it's an array  
+      // Parse the JSON response and ensure it's an array with proper typing
       const comorbiditiesArray = Array.isArray(data) ? data : (data ? [data] : []);
-      setComorbidities(comorbiditiesArray || []);
+      setComorbidities(comorbiditiesArray as Comorbidity[] || []);
     } catch (error) {
       console.error('Error in loadComorbidities:', error);
       toast({

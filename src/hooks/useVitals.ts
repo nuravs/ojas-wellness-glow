@@ -95,9 +95,9 @@ export const useVitals = () => {
         });
         setVitals([]);
       } else {
-        // Parse the JSON response and ensure it's an array
+        // Parse the JSON response and ensure it's an array with proper typing
         const vitalsArray = Array.isArray(data) ? data : (data ? [data] : []);
-        setVitals(vitalsArray || []);
+        setVitals(vitalsArray as Vital[] || []);
       }
     } catch (err) {
       console.error('useVitals → fetchVitals error:', err);
