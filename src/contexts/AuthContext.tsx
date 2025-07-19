@@ -60,6 +60,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if we're on the auth page to avoid unnecessary loading states
+  const isOnAuthPage = () => {
+    return window.location.pathname === '/auth';
+  };
+
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
     try {
       console.log('🔍 Fetching user profile for:', userId);
@@ -145,8 +150,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Loading timeout to prevent infinite loading
+  // Only set loading timeout for protected routes, not auth page
   useEffect(() => {
+    if (isOnAuthPage()) return;
+
     const timeout = setTimeout(() => {
       if (loading) {
         console.warn('⏰ Loading timeout reached, forcing loading to false');
@@ -168,7 +175,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (error) {
           console.error('❌ Error getting initial session:', error);
-          setError(`Session error: ${error.message}`);
+          if (!isOnAuthPage()) {
+            setError(`Session error: ${error.message}`);
+          }
           setLoading(false);
           return;
         }
@@ -180,16 +189,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setSession(initialSession);
           setUser(initialSession.user);
           
-          // Fetch profile after setting user
-          const profile = await fetchUserProfile(initialSession.user.id);
-          setUserProfile(profile);
+          // Only fetch profile if not on auth page
+          if (!isOnAuthPage()) {
+            const profile = await fetchUserProfile(initialSession.user.id);
+            setUserProfile(profile);
+          }
         } else {
           console.log('👤 No user in initial session');
         }
       } catch (error) {
         console.error('💥 Exception in getInitialSession:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        setError(`Session initialization failed: ${errorMessage}`);
+        if (!isOnAuthPage()) {
+          setError(`Session initialization failed: ${errorMessage}`);
+        }
       } finally {
         setLoading(false);
       }
@@ -208,20 +221,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(session.user);
           setError(null);
           
-          // Fetch profile for authenticated user
-          const profile = await fetchUserProfile(session.user.id);
-          setUserProfile(profile);
+          // Only fetch profile if not on auth page
+          if (!isOnAuthPage()) {
+            const profile = await fetchUserProfile(session.user.id);
+            setUserProfile(profile);
+          }
         } else {
           console.log('👤 User signed out or no session');
           setSession(null);
           setUser(null);
           setUserProfile(null);
-          setError(null);
+          if (!isOnAuthPage()) {
+            setError(null);
+          }
         }
       } catch (error) {
         console.error('💥 Exception in auth state change:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        setError(`Auth state change error: ${errorMessage}`);
+        if (!isOnAuthPage()) {
+          setError(`Auth state change error: ${errorMessage}`);
+        }
       } finally {
         setLoading(false);
       }
@@ -322,6 +341,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       userProfile: userProfile ? `${userProfile.full_name} (${userProfile.role})` : 'None',
       loading,
       error,
+      currentPath: window.location.pathname,
       timestamp: new Date().toISOString()
     });
   }, [user, userProfile, loading, error]);

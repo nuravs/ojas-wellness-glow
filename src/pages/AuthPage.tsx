@@ -14,7 +14,7 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { signUp, signIn, user, userProfile, loading: authLoading, error: authError } = useAuth();
+  const { signUp, signIn, user, userProfile, error: authError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -23,23 +23,21 @@ const AuthPage = () => {
     console.log('🔍 AuthPage State:', {
       user: user ? `${user.email} (${user.id})` : 'None',
       userProfile: userProfile ? `${userProfile.full_name} (${userProfile.role})` : 'None',
-      authLoading,
-      authError,
       currentPath: window.location.pathname
     });
-  }, [user, userProfile, authLoading, authError]);
+  }, [user, userProfile]);
 
   // Redirect if user is already authenticated and has profile
   useEffect(() => {
-    if (user && userProfile && !authLoading) {
+    if (user && userProfile) {
       console.log('✅ User fully authenticated, redirecting to home');
       navigate('/', { replace: true });
     }
-  }, [user, userProfile, authLoading, navigate]);
+  }, [user, userProfile, navigate]);
 
-  // Handle auth errors from context
+  // Handle auth errors from context - only show actual authentication errors, not timeouts
   useEffect(() => {
-    if (authError) {
+    if (authError && !authError.includes('timeout')) {
       console.error('🔥 Auth error from context:', authError);
       toast({
         title: "Authentication Error",
@@ -132,18 +130,6 @@ const AuthPage = () => {
       // For signin, let the auth state change handle loading state
     }
   };
-
-  // Show loading while checking authentication
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-ojas-slate-gray">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-ojas-mist-white flex">
@@ -324,10 +310,10 @@ const AuthPage = () => {
 
               <button
                 type="submit"
-                disabled={loading || authLoading}
+                disabled={loading}
                 className="w-full px-8 py-4 bg-ojas-primary-blue text-white rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-ojas-primary-blue-hover active:scale-95 shadow-ojas-medium disabled:opacity-50"
               >
-                {loading || authLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
+                {loading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
               </button>
             </form>
 

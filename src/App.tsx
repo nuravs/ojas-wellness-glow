@@ -35,8 +35,8 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     );
   }
 
-  // 2. If there's an error loading the profile, show error state with retry option
-  if (error && user) {
+  // 2. If there's an error loading the profile (but not timeout errors), show error state with retry option
+  if (error && user && !error.includes('timeout')) {
     return (
       <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
