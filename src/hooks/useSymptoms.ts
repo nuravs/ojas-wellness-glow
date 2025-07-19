@@ -43,7 +43,7 @@ export const useSymptoms = () => {
 
       // Parse the JSON response and ensure it's an array with proper typing
       const symptomsArray = Array.isArray(data) ? data : (data ? [data] : []);
-      setSymptoms(symptomsArray as Symptom[] || []);
+      setSymptoms((symptomsArray as unknown as Symptom[]) || []);
     } catch (error) {
       console.error('Error in loadSymptoms:', error);
       toast({
