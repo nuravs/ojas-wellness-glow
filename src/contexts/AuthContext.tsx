@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../integrations/supabase/client';
+import { supabase, stagingSupabase } from '../integrations/supabase/client';
 import { Database } from '../integrations/supabase/types';
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
@@ -48,7 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      const { data: profile, error } = await supabase
+      // Use staging client for user profile operations
+      const { data: profile, error } = await stagingSupabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
@@ -151,10 +152,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return { error: new Error('No user logged in') };
-    const { error } = await supabase
+    
+    // Use staging client for profile updates
+    const { error } = await stagingSupabase
       .from('user_profiles')
       .update(updates)
       .eq('user_id', user.id);
+    
     if (!error) {
       setUserProfile(prev => prev ? { ...prev, ...updates } : null);
     }

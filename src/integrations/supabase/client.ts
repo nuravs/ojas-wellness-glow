@@ -16,6 +16,18 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   },
   db: {
-    schema: "staging", // 👈 This tells Supabase to use the staging schema
+    schema: "public", // Keep as public for auth compatibility
+  },
+});
+
+// Create a separate client for staging schema operations
+export const stagingSupabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  db: {
+    schema: "staging",
   },
 });
