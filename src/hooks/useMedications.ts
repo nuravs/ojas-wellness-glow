@@ -11,6 +11,7 @@ export interface Medication {
   instructions?: string;
   active: boolean;
   taken: boolean;
+  time: string; // Add missing time property
   next_dose?: string;
   user_id: string;
   created_at: string;
@@ -34,7 +35,7 @@ export const useMedications = () => {
 
     try {
       const { data, error } = await stagingSupabase
-        .from('medications')
+        .from('staging.medications')
         .select('*')
         .eq('user_id', user.id)
         .eq('active', true)
@@ -43,10 +44,11 @@ export const useMedications = () => {
       if (error) {
         console.error('Error fetching medications:', error);
       } else {
-        // Transform the data to include taken status
+        // Transform the data to include taken status and time
         const transformedMedications = (data || []).map(med => ({
           ...med,
           taken: false, // This would be determined by checking medication logs
+          time: med.next_dose ? new Date(med.next_dose).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00',
         }));
         setMedications(transformedMedications);
       }
@@ -66,7 +68,7 @@ export const useMedications = () => {
 
     try {
       // Log the medication as taken/not taken
-      const { error } = await stagingSupabase.from('medication_logs').insert({
+      const { error } = await stagingSupabase.from('staging.medication_logs').insert({
         medication_id: medicationId,
         user_id: user.id,
         logged_by: user.id,
@@ -93,7 +95,7 @@ export const useMedications = () => {
     if (!user) return;
 
     try {
-      const { error } = await stagingSupabase.from('medication_logs').insert({
+      const { error } = await stagingSupabase.from('staging.medication_logs').insert({
         medication_id: medicationId,
         user_id: user.id,
         logged_by: user.id,
@@ -109,11 +111,41 @@ export const useMedications = () => {
     }
   };
 
+  const toggleCaregiverVisibility = async (medicationId: string) => {
+    if (!user) return;
+
+    try {
+      const medication = medications.find(med => med.id === medicationId);
+      if (!medication) return;
+
+      const { error } = await stagingSupabase
+        .from('staging.medications')
+        .update({ caregiver_visible: !medication.caregiver_visible })
+        .eq('id', medicationId);
+
+      if (error) {
+        console.error('Error updating caregiver visibility:', error);
+      } else {
+        // Update local state
+        setMedications(prev =>
+          prev.map(med =>
+            med.id === medicationId 
+              ? { ...med, caregiver_visible: !med.caregiver_visible } 
+              : med
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Unexpected error toggling caregiver visibility:', error);
+    }
+  };
+
   return {
     medications,
     loading,
     toggleMedication,
     postponeMedication,
+    toggleCaregiverVisibility,
     refetch: fetchMedications,
   };
 };

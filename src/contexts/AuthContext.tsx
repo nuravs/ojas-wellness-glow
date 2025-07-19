@@ -2,9 +2,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, stagingSupabase } from '../integrations/supabase/client';
-import { Database } from '../integrations/supabase/types';
 
-type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
+type UserProfile = {
+  user_id: string;
+  role: string;
+  full_name: string;
+  created_at: string;
+  updated_at: string;
+  phone?: string;
+  emergency_contact?: string;
+  date_of_birth?: string;
+  linked_user_id?: string;
+  consent_given: boolean;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -48,9 +58,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      // Use staging client for user profile operations
+      // Use staging client for user profile operations with explicit table name
       const { data: profile, error } = await stagingSupabase
-        .from('user_profiles')
+        .from('staging.user_profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
@@ -71,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log("AUTH_CONTEXT: Profile fetched successfully:", profile);
       setError(null);
-      return profile;
+      return profile as UserProfile;
     } catch (err) {
       console.error('AUTH_CONTEXT: Unexpected error fetching profile:', err);
       setError('An unexpected error occurred while loading your profile');
@@ -153,9 +163,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return { error: new Error('No user logged in') };
     
-    // Use staging client for profile updates
+    // Use staging client for profile updates with explicit table name
     const { error } = await stagingSupabase
-      .from('user_profiles')
+      .from('staging.user_profiles')
       .update(updates)
       .eq('user_id', user.id);
     

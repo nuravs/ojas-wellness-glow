@@ -28,6 +28,6 @@ export const stagingSupabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUB
     autoRefreshToken: true,
   },
   db: {
-    schema: "staging",
+    schema: "public", // Use public for type compatibility but target staging tables
   },
 });
