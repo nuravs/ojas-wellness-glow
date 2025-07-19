@@ -97,6 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       console.log('✅ Valid profile data:', profileData);
+      setError(null); // Clear any previous errors
       return profileData;
     } catch (error) {
       console.error('💥 Exception in fetchUserProfile:', error);
@@ -150,20 +151,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Only set loading timeout for protected routes, not auth page
+  // Profile fetch timeout - only for protected routes
   useEffect(() => {
     if (isOnAuthPage()) return;
 
     const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('⏰ Loading timeout reached, forcing loading to false');
+      if (loading && user && !userProfile) {
+        console.warn('⏰ Profile fetch timeout reached, allowing app to continue');
         setLoading(false);
-        setError('Authentication check timed out');
+        setError('Profile loading timed out - some features may be limited');
       }
-    }, 10000); // 10 second timeout
+    }, 8000); // 8 second timeout for profile fetch
 
     return () => clearTimeout(timeout);
-  }, [loading]);
+  }, [loading, user, userProfile]);
 
   useEffect(() => {
     console.log('🚀 Setting up auth state management');
@@ -193,9 +194,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (!isOnAuthPage()) {
             const profile = await fetchUserProfile(initialSession.user.id);
             setUserProfile(profile);
+          } else {
+            // On auth page, don't fetch profile but still set loading to false
+            setLoading(false);
           }
         } else {
           console.log('👤 No user in initial session');
+          setLoading(false);
         }
       } catch (error) {
         console.error('💥 Exception in getInitialSession:', error);
@@ -203,7 +208,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (!isOnAuthPage()) {
           setError(`Session initialization failed: ${errorMessage}`);
         }
-      } finally {
         setLoading(false);
       }
     };
@@ -223,14 +227,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Only fetch profile if not on auth page
           if (!isOnAuthPage()) {
+            setLoading(true); // Set loading when starting profile fetch
             const profile = await fetchUserProfile(session.user.id);
             setUserProfile(profile);
+            setLoading(false); // Clear loading after profile fetch completes
+          } else {
+            // On auth page, clear loading immediately
+            setLoading(false);
           }
         } else {
           console.log('👤 User signed out or no session');
           setSession(null);
           setUser(null);
           setUserProfile(null);
+          setLoading(false);
           if (!isOnAuthPage()) {
             setError(null);
           }
@@ -241,7 +251,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (!isOnAuthPage()) {
           setError(`Auth state change error: ${errorMessage}`);
         }
-      } finally {
         setLoading(false);
       }
     });
