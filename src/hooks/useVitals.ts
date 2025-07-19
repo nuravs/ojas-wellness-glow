@@ -82,23 +82,22 @@ export const useVitals = () => {
     }
 
     try {
+      // Use the database function to fetch vitals from staging schema
       const { data, error } = await supabase
-        .from('vitals')
-        .select('*')
-        .eq('user_id', targetPatientId)
-        .order('measured_at', { ascending: false });
+        .rpc('get_user_vitals', { vitals_user_id: targetPatientId });
 
       if (error) {
-        if (!error.message?.includes('does not exist')) {
-          toast({
-            title: 'Connection Error',
-            description: 'Unable to load vitals data. Please check your connection.',
-            variant: 'destructive',
-          });
-        }
+        console.error('Error fetching vitals:', error);
+        toast({
+          title: 'Connection Error',
+          description: 'Unable to load vitals data. Please check your connection.',
+          variant: 'destructive',
+        });
         setVitals([]);
       } else {
-        setVitals((data || []) as Vital[]);
+        // Parse the JSON response and ensure it's an array
+        const vitalsArray = Array.isArray(data) ? data : (data ? [data] : []);
+        setVitals(vitalsArray || []);
       }
     } catch (err) {
       console.error('useVitals → fetchVitals error:', err);
@@ -173,12 +172,10 @@ export const useVitals = () => {
   /** --------------------------- Hooks --------------------------- */
   useEffect(() => {
     fetchLinkedPatientId();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, isCaregiver]);
 
   useEffect(() => {
     fetchVitals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetPatientId]);
 
   /** --------------------------- Utilities --------------------------- */

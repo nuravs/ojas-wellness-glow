@@ -718,12 +718,24 @@ export type Database = {
         Args: { user_id: string }
         Returns: Json
       }
+      get_user_comorbidities: {
+        Args: { comorbidities_user_id: string }
+        Returns: Json
+      }
       get_user_medications: {
         Args: { medication_user_id: string }
         Returns: Json
       }
       get_user_profile: {
         Args: { profile_user_id: string }
+        Returns: Json
+      }
+      get_user_symptoms: {
+        Args: { symptoms_user_id: string }
+        Returns: Json
+      }
+      get_user_vitals: {
+        Args: { vitals_user_id: string }
         Returns: Json
       }
       increment_group_member_count: {

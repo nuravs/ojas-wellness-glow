@@ -36,10 +36,9 @@ export const useComorbidities = () => {
     try {
       console.log('Loading comorbidities for user:', user.id);
       
+      // Use the database function to fetch comorbidities from staging schema
       const { data, error } = await supabase
-        .from('comorbidities')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_user_comorbidities', { comorbidities_user_id: user.id });
 
       if (error) {
         console.error('Error loading comorbidities:', error);
@@ -51,7 +50,9 @@ export const useComorbidities = () => {
         return;
       }
 
-      setComorbidities(data || []);
+      // Parse the JSON response and ensure it's an array  
+      const comorbiditiesArray = Array.isArray(data) ? data : (data ? [data] : []);
+      setComorbidities(comorbiditiesArray || []);
     } catch (error) {
       console.error('Error in loadComorbidities:', error);
       toast({

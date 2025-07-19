@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -26,11 +27,9 @@ export const useSymptoms = () => {
     }
 
     try {
+      // Use the database function to fetch symptoms from staging schema
       const { data, error } = await supabase
-        .from('symptoms')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('logged_at', { ascending: false });
+        .rpc('get_user_symptoms', { symptoms_user_id: user.id });
 
       if (error) {
         console.error('Error loading symptoms:', error);
@@ -42,7 +41,9 @@ export const useSymptoms = () => {
         return;
       }
 
-      setSymptoms(data || []);
+      // Parse the JSON response and ensure it's an array
+      const symptomsArray = Array.isArray(data) ? data : (data ? [data] : []);
+      setSymptoms(symptomsArray || []);
     } catch (error) {
       console.error('Error in loadSymptoms:', error);
       toast({
