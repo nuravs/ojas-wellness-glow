@@ -103,25 +103,25 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
               />
             </div>
           )}
-
-          {/* Add Vital Form Modal */}
-          {showAddForm && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-strong max-w-md w-full max-h-[90vh] overflow-y-auto">
-                <VitalEntryForm
-                  selectedType={selectedVitalType}
-                  onSubmit={handleAddVital}
-                  onCancel={() => {
-                    setShowAddForm(false);
-                    setSelectedVitalType('');
-                  }}
-                  userRole={userRole}
-                />
-              </div>
-            </div>
-          )}
         </SafeAreaContainer>
       </div>
+
+      {/* Add Vital Form Modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-strong w-full max-w-md max-h-[95vh] overflow-y-auto">
+            <VitalEntryForm
+              selectedType={selectedVitalType}
+              onSubmit={handleAddVital}
+              onCancel={() => {
+                setShowAddForm(false);
+                setSelectedVitalType('');
+              }}
+              userRole={userRole}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Unified Floating Action Button - Only show vitals option */}
       <UnifiedFloatingActionButton
