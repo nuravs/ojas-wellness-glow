@@ -45,8 +45,8 @@ export const useMedications = () => {
       } else {
         console.log('Medications data received:', data);
         
-        // Parse the JSON response and ensure it's an array
-        const medicationsArray = Array.isArray(data) ? data : (data ? [data] : []);
+        // The RPC function returns JSON array directly
+        const medicationsArray = Array.isArray(data) ? data : [];
         
         // Transform the data to include taken status and time
         const transformedMedications = medicationsArray.map((med: any) => ({

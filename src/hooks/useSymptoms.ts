@@ -29,7 +29,7 @@ export const useSymptoms = () => {
     try {
       console.log('Loading symptoms for user:', user.id);
       
-      // Use the database function to fetch symptoms from staging schema
+      // Use the database function to fetch symptoms
       const { data, error } = await supabase
         .rpc('get_user_symptoms', { symptoms_user_id: user.id });
 
@@ -45,14 +45,14 @@ export const useSymptoms = () => {
 
       console.log('Symptoms data received:', data);
       
-      // Parse the JSON response and ensure it's an array with proper typing
-      const symptomsArray = Array.isArray(data) ? data : (data ? [data] : []);
+      // The RPC function returns JSON array directly
+      const symptomsArray = Array.isArray(data) ? data : [];
       setSymptoms((symptomsArray as unknown as Symptom[]) || []);
     } catch (error) {
       console.error('Error in loadSymptoms:', error);
       toast({
-        title: "Error loading data",
-        description: "Please try refreshing the page",
+        title: "Connection Error",
+        description: "Please check your connection and try again",
         variant: "destructive"
       });
     } finally {

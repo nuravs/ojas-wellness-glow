@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -36,7 +35,7 @@ export const useComorbidities = () => {
     try {
       console.log('Loading comorbidities for user:', user.id);
       
-      // Use the database function to fetch comorbidities from staging schema
+      // Use the database function to fetch comorbidities
       const { data, error } = await supabase
         .rpc('get_user_comorbidities', { comorbidities_user_id: user.id });
 
@@ -52,14 +51,14 @@ export const useComorbidities = () => {
 
       console.log('Comorbidities data received:', data);
       
-      // Parse the JSON response and ensure it's an array with proper typing
-      const comorbiditiesArray = Array.isArray(data) ? data : (data ? [data] : []);
+      // The RPC function returns JSON array directly
+      const comorbiditiesArray = Array.isArray(data) ? data : [];
       setComorbidities((comorbiditiesArray as unknown as Comorbidity[]) || []);
     } catch (error) {
       console.error('Error in loadComorbidities:', error);
       toast({
-        title: "Error loading data",
-        description: "Please try refreshing the page",
+        title: "Connection Error",
+        description: "Please check your connection and try again",
         variant: "destructive"
       });
     } finally {

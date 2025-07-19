@@ -52,11 +52,6 @@ export const useVitals = () => {
 
       if (error) {
         console.error('Failed to fetch linked patient:', error.message);
-        toast({
-          title: 'Access Error',
-          description: 'Could not verify caregiver access.',
-          variant: 'destructive',
-        });
         setTargetPatientId(null);
       } else {
         // The RPC function returns JSON directly, cast via unknown to our type
@@ -83,30 +78,30 @@ export const useVitals = () => {
     try {
       console.log('Fetching vitals for user:', targetPatientId);
       
-      // Use the database function to fetch vitals from staging schema
+      // Use the database function to fetch vitals
       const { data, error } = await supabase
         .rpc('get_user_vitals', { vitals_user_id: targetPatientId });
 
       if (error) {
         console.error('Error fetching vitals:', error);
         toast({
-          title: 'Connection Error',
-          description: 'Unable to load vitals data. Please check your connection.',
+          title: 'Error loading vitals',
+          description: 'Unable to load vitals data. Please try refreshing the page.',
           variant: 'destructive',
         });
         setVitals([]);
       } else {
         console.log('Vitals data received:', data);
         
-        // Parse the JSON response and ensure it's an array with proper typing
-        const vitalsArray = Array.isArray(data) ? data : (data ? [data] : []);
+        // The RPC function returns JSON array directly
+        const vitalsArray = Array.isArray(data) ? data : [];
         setVitals((vitalsArray as unknown as Vital[]) || []);
       }
     } catch (err) {
       console.error('useVitals → fetchVitals error:', err);
       toast({
-        title: 'Database Error',
-        description: 'Failed to load vitals. Please try again.',
+        title: 'Connection Error',
+        description: 'Failed to load vitals. Please check your connection and try again.',
         variant: 'destructive',
       });
       setVitals([]);
@@ -148,8 +143,9 @@ export const useVitals = () => {
         .single();
 
       if (error) {
+        console.error('Error adding vital:', error);
         toast({
-          title: 'Database Error',
+          title: 'Error saving vital',
           description: 'Failed to save vital sign. Please try again.',
           variant: 'destructive',
         });
