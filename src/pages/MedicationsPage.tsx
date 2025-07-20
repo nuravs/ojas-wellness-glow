@@ -8,6 +8,7 @@ import MedicationsList from '../components/medication/MedicationsList';
 import MedicationEmptyState from '../components/medication/MedicationEmptyState';
 import { useMedications } from '../hooks/useMedications';
 import { useRefillAlerts } from '../hooks/useRefillAlerts';
+import { toast } from '../hooks/use-toast';
 
 interface MedicationsPageProps {
   medications: Array<{
@@ -26,18 +27,27 @@ interface MedicationsPageProps {
 }
 
 const MedicationsPage: React.FC<MedicationsPageProps> = ({ 
-  medications, 
-  onToggleMedication, 
-  onPostponeMedication,
-  onAddMedication,
+  medications: propMedications, 
+  onToggleMedication: propOnToggleMedication, 
+  onPostponeMedication: propOnPostponeMedication,
+  onAddMedication: propOnAddMedication,
   userRole = 'patient'
 }) => {
   const [isUploading, setIsUploading] = useState(false);
-  const { toggleCaregiverVisibility } = useMedications();
+  const { 
+    medications, 
+    loading, 
+    toggleMedication, 
+    postponeMedication, 
+    addMedication,
+    toggleCaregiverVisibility 
+  } = useMedications();
   const { refillAlerts, dismissAlert, handleRefill, loading: refillLoading } = useRefillAlerts();
   
-  const pendingMeds = medications.filter(med => !med.taken);
-  const completedMeds = medications.filter(med => med.taken);
+  // Use hook data if available, fallback to props
+  const activeMedications = medications.length > 0 ? medications : propMedications;
+  const pendingMeds = activeMedications.filter(med => !med.taken);
+  const completedMeds = activeMedications.filter(med => med.taken);
 
   // Sort pending meds by overdue status and time
   const sortedPendingMeds = pendingMeds.sort((a, b) => {
@@ -54,13 +64,75 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
     return aTime.getTime() - bTime.getTime();
   });
 
-  const handleCameraUpload = () => {
+  const handleCameraUpload = async () => {
     setIsUploading(true);
-    // Simulate upload process
-    setTimeout(() => {
+    try {
+      // Simulate camera/scan functionality
+      toast({
+        title: "Camera scan",
+        description: "Camera scan functionality will be implemented in a future update.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to scan prescription. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsUploading(false);
-      onAddMedication();
-    }, 1500);
+    }
+  };
+
+  const handleAddMedication = async () => {
+    try {
+      // For now, show a message about manual addition
+      toast({
+        title: "Add Medication",
+        description: "Manual medication addition will be implemented in a future update.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add medication. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleToggleMedication = async (id: string) => {
+    try {
+      await toggleMedication(id);
+      toast({
+        title: "Medication logged",
+        description: "Medication marked as taken successfully.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log medication. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePostponeMedication = async (id: string) => {
+    try {
+      await postponeMedication(id);
+      toast({
+        title: "Medication postponed",
+        description: "Medication has been postponed.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to postpone medication. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -71,16 +143,16 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
             userRole={userRole}
             isUploading={isUploading}
             onCameraUpload={handleCameraUpload}
-            onAddMedication={onAddMedication}
+            onAddMedication={handleAddMedication}
           />
 
           {/* Today's Schedule - Now at the top */}
-          {medications.length > 0 && (
+          {activeMedications.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-6">
                 Today's Schedule
               </h2>
-              <MedicationTimeline medications={medications} />
+              <MedicationTimeline medications={activeMedications} />
             </div>
           )}
 
@@ -98,17 +170,17 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
           </div>
 
           {/* Medications List or Empty State */}
-          {medications.length === 0 ? (
+          {activeMedications.length === 0 ? (
             <MedicationEmptyState
-              onAddMedication={onAddMedication}
+              onAddMedication={handleAddMedication}
               onCameraUpload={handleCameraUpload}
             />
           ) : (
             <MedicationsList
               pendingMeds={sortedPendingMeds}
               completedMeds={completedMeds}
-              onToggleMedication={onToggleMedication}
-              onPostponeMedication={onPostponeMedication}
+              onToggleMedication={handleToggleMedication}
+              onPostponeMedication={handlePostponeMedication}
               onToggleVisibility={toggleCaregiverVisibility}
               userRole={userRole}
             />

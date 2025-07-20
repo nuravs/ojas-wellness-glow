@@ -29,7 +29,7 @@ export const useSymptoms = () => {
     try {
       console.log('Loading symptoms for user:', user.id);
       
-      // Use the database function to fetch symptoms
+      // Use the database function to fetch symptoms from staging
       const { data, error } = await supabase
         .rpc('get_user_symptoms', { symptoms_user_id: user.id });
 
@@ -57,6 +57,59 @@ export const useSymptoms = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addSymptom = async (symptomData: {
+    symptom_type: string;
+    severity: number;
+    details?: any;
+    notes?: string;
+  }) => {
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "Please log in to add symptoms.",
+        variant: "destructive"
+      });
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('symptoms')
+        .insert({
+          user_id: user.id,
+          symptom_type: symptomData.symptom_type,
+          severity: symptomData.severity,
+          details: symptomData.details,
+          notes: symptomData.notes,
+          logged_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding symptom:', error);
+        toast({
+          title: "Error saving symptom",
+          description: "Failed to save symptom. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+
+      toast({
+        title: "Symptom Added",
+        description: "Symptom logged successfully.",
+        variant: "default"
+      });
+
+      await loadSymptoms();
+      return data;
+    } catch (err) {
+      console.error('useSymptoms → addSymptom error:', err);
+      throw err;
     }
   };
 
@@ -107,6 +160,7 @@ export const useSymptoms = () => {
   return {
     symptoms,
     loading,
+    addSymptom,
     getRecentSymptoms,
     calculateAverageSeverity,
     getNeurologicalSymptoms,

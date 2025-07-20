@@ -102,14 +102,14 @@ const Index = () => {
     );
   }
 
-  // Show loading only while health data is loading (not auth data)
-  if (medicationsLoading) {
+  // Only show loading for medications if we have a user but no medication data yet
+  if (user && medicationsLoading && !medications.length && activeTab === 'medications') {
     return (
       <ThemeProvider>
         <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-ojas-slate-gray">Loading your health data...</p>
+            <p className="text-ojas-slate-gray">Loading your medications...</p>
           </div>
         </div>
       </ThemeProvider>

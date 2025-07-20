@@ -21,88 +21,109 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
   dismissedBanners,
   onDismissBanner
 }) => {
-  const pendingMeds = medications.filter(med => !med.taken);
+  // Generate smart banners based on medication status
+  const generateBanners = () => {
+    const banners: Array<{
+      id: string;
+      type: 'medication' | 'symptom' | 'vital' | 'appointment';
+      title: string;
+      message: string;
+      actionText?: string;
+      onAction?: () => void;
+    }> = [];
 
-  // Generate smart banners based on current state
-  const getSmartBanners = () => {
-    const banners = [];
-    
-    // Missed dose banner
-    if (pendingMeds.length > 0) {
-      const overdueMeds = pendingMeds.filter(med => {
-        const now = new Date();
-        const medTime = new Date();
-        const [hours] = med.time.split(':');
-        medTime.setHours(parseInt(hours), 0, 0, 0);
-        return now > medTime;
-      });
+    // Check for overdue medications
+    const overdueMeds = medications.filter(med => {
+      if (med.taken) return false;
       
-      if (overdueMeds.length > 0 && !dismissedBanners.has('missed-dose')) {
-        banners.push({
-          id: 'missed-dose',
-          type: 'missed-dose' as const,
-          title: 'Missed Medication',
-          message: `You have ${overdueMeds.length} overdue medication${overdueMeds.length > 1 ? 's' : ''}. Tap to reschedule or mark as taken.`,
-          actionText: 'Review Now',
-          priority: 'high' as const,
-          onAction: () => console.log('Navigate to medications')
-        });
-      }
-    }
-    
-    // Symptom reminder banner
-    if (!dismissedBanners.has('symptom-reminder')) {
-      const today = new Date().toDateString();
-      const lastLoggedToday = localStorage.getItem('lastSymptomLog') === today;
+      const medTime = new Date();
+      const [hours, minutes] = med.time.split(':');
+      medTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       
-      if (!lastLoggedToday) {
-        banners.push({
-          id: 'symptom-reminder',
-          type: 'symptom-reminder' as const,
-          title: 'Symptom Check-in',
-          message: 'No symptoms logged today. Recording how you feel helps your care team.',
-          actionText: 'Log Symptoms',
-          priority: 'medium' as const,
-          onAction: () => console.log('Navigate to symptoms')
-        });
-      }
-    }
-    
-    // Refill reminder (mock data)
-    if (!dismissedBanners.has('refill-reminder')) {
+      return medTime < new Date();
+    });
+
+    if (overdueMeds.length > 0 && !dismissedBanners.has('overdue-meds')) {
       banners.push({
-        id: 'refill-reminder',
-        type: 'refill-needed' as const,
-        title: 'Refill Needed Soon',
-        message: 'Levodopa has 3 days remaining. Order your refill now to avoid running out.',
-        actionText: 'Order Refill',
-        priority: 'medium' as const,
-        onAction: () => console.log('Navigate to pharmacy')
+        id: 'overdue-meds',
+        type: 'medication',
+        title: 'Medication Reminder',
+        message: `${overdueMeds.length} medication${overdueMeds.length > 1 ? 's' : ''} overdue. Take them now?`,
+        actionText: 'View Medications',
+        onAction: () => {
+          // Navigate to medications page
+          console.log('Navigate to medications');
+        }
       });
     }
+
+    // Check for no symptom logging today
+    const today = new Date().toDateString();
+    const lastSymptomLog = localStorage.getItem('lastSymptomLog');
     
+    if (lastSymptomLog !== today && !dismissedBanners.has('log-symptoms')) {
+      banners.push({
+        id: 'log-symptoms',
+        type: 'symptom',
+        title: 'Track Your Health',
+        message: 'Haven\'t logged symptoms today. How are you feeling?',
+        actionText: 'Log Symptoms',
+        onAction: () => {
+          // Navigate to symptoms page
+          console.log('Navigate to symptoms');
+        }
+      });
+    }
+
+    // Wellness tip banner
+    if (!dismissedBanners.has('wellness-tip')) {
+      const tips = [
+        'Regular exercise can help manage Parkinson\'s symptoms effectively.',
+        'Staying hydrated is important for medication absorption.',
+        'Good sleep hygiene can improve overall health and wellness.',
+        'Consider joining a support group to connect with others.'
+      ];
+      
+      const randomTip = tips[Math.floor(Math.random() * tips.length)];
+      
+      banners.push({
+        id: 'wellness-tip',
+        type: 'vital',
+        title: 'Wellness Tip',
+        message: randomTip,
+        actionText: 'Learn More'
+      });
+    }
+
     return banners;
   };
 
-  const smartBanners = getSmartBanners();
+  const banners = generateBanners();
 
-  if (smartBanners.length === 0) return null;
+  if (banners.length === 0) {
+    return null;
+  }
 
   return (
-    <>
-      {smartBanners.map(banner => (
-        <SmartBanner
-          key={banner.id}
-          type={banner.type}
-          title={banner.title}
-          message={banner.message}
-          actionText={banner.actionText}
-          onAction={banner.onAction}
-          onDismiss={() => onDismissBanner(banner.id)}
-          priority={banner.priority}
-        />
-      ))}
-    </>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white px-4">
+        Smart Reminders
+      </h2>
+      <div className="space-y-3 px-4">
+        {banners.map(banner => (
+          <SmartBanner
+            key={banner.id}
+            id={banner.id}
+            type={banner.type}
+            title={banner.title}
+            message={banner.message}
+            actionText={banner.actionText}
+            onAction={banner.onAction}
+            onDismiss={() => onDismissBanner(banner.id)}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 

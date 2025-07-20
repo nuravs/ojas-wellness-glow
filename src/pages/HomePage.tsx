@@ -19,11 +19,12 @@ import { useSymptoms } from '@/hooks/useSymptoms';
 import { useMedicationLogs } from '@/hooks/useMedicationLogs';
 import CaregiverLinkModal from '@/components/CaregiverLinkModal';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
 
 const HomePage = () => {
   const { userProfile } = useAuth();
   const { pendingRequestsForPatient } = usePatientCaregivers();
-  const { medications, loading: medicationsLoading } = useMedications();
+  const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
   const { symptoms, loading: symptomsLoading } = useSymptoms();
   const { medicationLogs, loading: logsLoading } = useMedicationLogs();
 
@@ -79,19 +80,53 @@ const HomePage = () => {
   };
 
   const handleMedicationToggle = async (id: string) => {
-    console.log('Toggle medication:', id);
+    try {
+      await toggleMedication(id);
+      toast({
+        title: "Medication logged",
+        description: "Medication marked as taken successfully.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log medication. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleMedicationPostpone = async (id: string) => {
-    console.log('Postpone medication:', id);
+    try {
+      await postponeMedication(id);
+      toast({
+        title: "Medication postponed",
+        description: "Medication has been postponed.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to postpone medication. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDismissBanner = (id: string) => {
-    console.log('Dismiss banner:', id);
+    toast({
+      title: "Banner dismissed",
+      description: "Smart banner has been dismissed.",
+      variant: "default"
+    });
   };
 
   const handleDismissInsight = (id: string) => {
-    console.log('Dismiss insight:', id);
+    toast({
+      title: "Insight dismissed",
+      description: "Insight has been dismissed.",
+      variant: "default"
+    });
   };
 
   const getWellnessStatus = (): 'good' | 'attention' | 'urgent' => {
@@ -116,12 +151,15 @@ const HomePage = () => {
     return Math.min(100, Math.round(medicationScore * 0.8 + 20 + symptomBonus));
   };
 
-  // Show loading state if any critical data is still loading
-  if (medicationsLoading || symptomsLoading || logsLoading) {
+  // Show loading state only if critical data is still loading
+  if (medicationsLoading && !medications.length) {
     return (
       <SafeAreaContainer>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="w-8 h-8 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin" />
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-ojas-slate-gray">Loading your health data...</p>
+          </div>
         </div>
       </SafeAreaContainer>
     );

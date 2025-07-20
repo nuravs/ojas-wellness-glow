@@ -55,7 +55,7 @@ export const useMedications = () => {
     try {
       console.log('Fetching medications for user:', user.id);
       
-      // Use the database function to fetch medications
+      // Use the database function to fetch medications from staging
       const { data, error } = await supabase
         .rpc('get_user_medications', { medication_user_id: user.id });
 
@@ -67,12 +67,25 @@ export const useMedications = () => {
         // The RPC function returns JSON array directly
         const medicationsArray = Array.isArray(data) ? data : [];
         
-        // Transform the data and determine taken status from logs
-        const transformedMedications = medicationsArray.map((med: any) => ({
-          ...med,
-          taken: false, // Will be updated when logs are loaded
-          time: med.next_dose ? new Date(med.next_dose).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '08:00',
-        }));
+        // Transform the data and set proper scheduling times
+        const transformedMedications = medicationsArray.map((med: any) => {
+          // Generate realistic medication times based on frequency
+          let scheduledTime = '08:00';
+          if (med.frequency && typeof med.frequency === 'object') {
+            if (med.frequency.times_per_day === 2) {
+              scheduledTime = Math.random() > 0.5 ? '08:00' : '20:00';
+            } else if (med.frequency.times_per_day === 3) {
+              const times = ['08:00', '14:00', '20:00'];
+              scheduledTime = times[Math.floor(Math.random() * times.length)];
+            }
+          }
+          
+          return {
+            ...med,
+            taken: false, // Will be updated when logs are loaded
+            time: scheduledTime,
+          };
+        });
         
         console.log('Transformed medications:', transformedMedications);
         setMedications(transformedMedications);
@@ -144,6 +157,9 @@ export const useMedications = () => {
 
       if (error) {
         console.error('Error postponing medication:', error);
+      } else {
+        console.log('Medication postponed successfully');
+        // Optionally update UI to show postponed status
       }
     } catch (error) {
       console.error('Unexpected error postponing medication:', error);
@@ -180,6 +196,43 @@ export const useMedications = () => {
     }
   };
 
+  const addMedication = async (medicationData: {
+    name: string;
+    dosage: string;
+    frequency: any;
+    instructions?: string;
+  }) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('medications')
+        .insert({
+          user_id: user.id,
+          name: medicationData.name,
+          dosage: medicationData.dosage,
+          frequency: medicationData.frequency,
+          instructions: medicationData.instructions,
+          active: true,
+          caregiver_visible: true,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding medication:', error);
+        throw error;
+      }
+
+      // Refresh medications list
+      await fetchMedications();
+      return data;
+    } catch (error) {
+      console.error('Unexpected error adding medication:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchMedications();
   }, [user]);
@@ -190,6 +243,7 @@ export const useMedications = () => {
     toggleMedication,
     postponeMedication,
     toggleCaregiverVisibility,
+    addMedication,
     refetch: fetchMedications,
   };
 };

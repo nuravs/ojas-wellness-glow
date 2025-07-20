@@ -78,7 +78,7 @@ export const useVitals = () => {
     try {
       console.log('Fetching vitals for user:', targetPatientId);
       
-      // Use the database function to fetch vitals
+      // Use the database function to fetch vitals from staging
       const { data, error } = await supabase
         .rpc('get_user_vitals', { vitals_user_id: targetPatientId });
 
