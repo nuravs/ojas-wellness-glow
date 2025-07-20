@@ -2,24 +2,22 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
-import HomeHeader from '@/components/HomeHeader';
-import WellnessRing from '@/components/WellnessRing';
-import SmartBannersSection from '@/components/SmartBannersSection';
-import MedicationSection from '@/components/MedicationSection';
-import InsightsSection from '@/components/InsightsSection';
-import TodaysFocusCard from '@/components/TodaysFocusCard';
-import AIAssistantFAB from '@/components/AIAssistantFAB';
-import CaregiverDashboard from '@/components/caregivers/CaregiverDashboard';
-import PatientApprovalCard from '@/components/caregivers/PatientApprovalCard';
 import { AIInsightsPanel } from '@/components/AIInsightsPanel';
-import WellnessScoreExplanation from '@/components/insights/WellnessScoreExplanation';
 import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
 import { useMedications } from '@/hooks/useMedications';
 import { useSymptoms } from '@/hooks/useSymptoms';
 import { useMedicationLogs } from '@/hooks/useMedicationLogs';
+import { useVitals } from '@/hooks/useVitals';
 import CaregiverLinkModal from '@/components/CaregiverLinkModal';
+import PatientApprovalCard from '@/components/caregivers/PatientApprovalCard';
+import CaregiverDashboard from '@/components/caregivers/CaregiverDashboard';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import HomePageHeader from '@/components/homepage/HomePageHeader';
+import WellnessSection from '@/components/homepage/WellnessSection';
+import AIInsightsSection from '@/components/homepage/AIInsightsSection';
+import TodaysActionsSection from '@/components/homepage/TodaysActionsSection';
+import LatestVitalsSection from '@/components/homepage/LatestVitalsSection';
 
 const HomePage = () => {
   const { userProfile } = useAuth();
@@ -27,10 +25,9 @@ const HomePage = () => {
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication, refetch: refetchMedications } = useMedications();
   const { symptoms, loading: symptomsLoading } = useSymptoms();
   const { medicationLogs, loading: logsLoading } = useMedicationLogs();
+  const { vitals } = useVitals();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [dismissedBanners, setDismissedBanners] = useState<Set<string>>(new Set());
-  const [dismissedInsights, setDismissedInsights] = useState<Set<string>>(new Set());
 
   if (!userProfile) {
     return (
@@ -84,7 +81,6 @@ const HomePage = () => {
   const handleMedicationToggle = async (id: string) => {
     try {
       await toggleMedication(id);
-      // Force refetch to get updated data
       await refetchMedications();
       toast({
         title: "Medication logged",
@@ -100,52 +96,6 @@ const HomePage = () => {
     }
   };
 
-  const handleMedicationPostpone = async (id: string) => {
-    try {
-      await postponeMedication(id);
-      toast({
-        title: "Medication postponed",
-        description: "Medication has been postponed.",
-        variant: "default"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to postpone medication. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDismissBanner = (id: string) => {
-    setDismissedBanners(prev => new Set([...prev, id]));
-    toast({
-      title: "Banner dismissed",
-      description: "Smart banner has been dismissed.",
-      variant: "default"
-    });
-  };
-
-  const handleDismissInsight = (id: string) => {
-    setDismissedInsights(prev => new Set([...prev, id]));
-    toast({
-      title: "Insight dismissed",
-      description: "Insight has been dismissed.",
-      variant: "default"
-    });
-  };
-
-  const getWellnessStatus = (): 'good' | 'attention' | 'urgent' => {
-    const { taken, total } = getMedicationStatus();
-    
-    if (total === 0) return 'good';
-
-    const overdueMeds = total - taken;
-    if (overdueMeds > 2) return 'urgent';
-    if (overdueMeds > 0) return 'attention';
-    return 'good';
-  };
-
   const getWellnessScore = () => {
     const { taken, total } = getMedicationStatus();
     const medicationScore = total > 0 ? (taken / total) * 100 : 100;
@@ -155,6 +105,13 @@ const HomePage = () => {
     const symptomBonus = symptomsLogged ? 5 : 0;
     
     return Math.min(100, Math.round(medicationScore * 0.8 + 20 + symptomBonus));
+  };
+
+  const getWellnessStatus = () => {
+    const score = getWellnessScore();
+    if (score >= 80) return 'good';
+    if (score >= 60) return 'attention';
+    return 'urgent';
   };
 
   // Show loading state only if critical data is still loading
@@ -174,24 +131,16 @@ const HomePage = () => {
   const medsCount = getMedicationStatus();
   const symptomsLogged = getSymptomsLoggedToday();
   const wellnessScore = getWellnessScore();
-
-  console.log('HomePage Data Debug:', {
-    medicationsCount: medications?.length || 0,
-    symptomsCount: symptoms?.length || 0,
-    logsCount: medicationLogs?.length || 0,
-    medsCount,
-    symptomsLogged,
-    wellnessScore
-  });
+  const wellnessStatus = getWellnessStatus();
 
   return (
     <SafeAreaContainer>
-      <div className="space-y-6 pb-20">
-        <HomeHeader userRole={userProfile.role as 'patient' | 'caregiver'} />
+      <div className="min-h-screen bg-ojas-bg-light pb-20">
+        <HomePageHeader userProfile={userProfile} />
 
         {/* Patient Approval Requests */}
         {userProfile.role === 'patient' && pendingRequestsForPatient.length > 0 && (
-          <div className="space-y-4">
+          <div className="px-4 mb-6 space-y-4">
             {pendingRequestsForPatient.map((request) => (
               <PatientApprovalCard key={request.id} request={request} />
             ))}
@@ -200,12 +149,14 @@ const HomePage = () => {
 
         {/* Caregiver Dashboard */}
         {userProfile.role === 'caregiver' && (
-          <CaregiverDashboard />
+          <div className="mb-6">
+            <CaregiverDashboard />
+          </div>
         )}
 
         {/* Link Caregiver Button (Only for Patients) */}
         {userProfile.role === 'patient' && (
-          <div className="flex justify-end px-4">
+          <div className="px-4 mb-6 flex justify-end">
             <Button onClick={() => setModalOpen(true)}>Link Caregiver</Button>
           </div>
         )}
@@ -213,67 +164,36 @@ const HomePage = () => {
         {/* Caregiver Modal */}
         <CaregiverLinkModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
-        {/* Wellness Ring with Real Data */}
-        <WellnessRing
-          status={getWellnessStatus()}
-          medsCount={medsCount}
-          symptomsLogged={symptomsLogged}
-        />
-
-        {/* Wellness Score Explanation with Real Data */}
-        <WellnessScoreExplanation
+        {/* Wellness Section */}
+        <WellnessSection 
           score={wellnessScore}
-          breakdown={{
-            medications: Math.round((medsCount.taken / Math.max(medsCount.total, 1)) * 100),
-            symptoms: symptomsLogged ? 85 : 75,
-            vitals: 85,
-            events: 90,
-            activities: 60
-          }}
-          trends={{
-            direction: wellnessScore > 70 ? 'up' : wellnessScore < 50 ? 'down' : 'stable',
-            change: Math.floor(Math.random() * 10) - 5,
-            period: 'last week'
-          }}
-        />
-
-        <SmartBannersSection
-          medications={medications || []}
-          dismissedBanners={dismissedBanners}
-          onDismissBanner={handleDismissBanner}
-          onMedicationAction={handleMedicationToggle}
-          onNavigateToSymptoms={() => {
-            // Navigate to symptoms - this would be handled by parent component
-            console.log('Navigate to symptoms');
-          }}
-          onNavigateToMedications={() => {
-            // Navigate to medications - this would be handled by parent component  
-            console.log('Navigate to medications');
-          }}
-        />
-
-        <MedicationSection
-          medications={medications || []}
-          onToggleMedication={handleMedicationToggle}
-          onPostponeMedication={handleMedicationPostpone}
-        />
-
-        <AIInsightsPanel userRole={userProfile.role as 'patient' | 'caregiver'} />
-        
-        {/* Today's Focus Card with Real Data */}
-        <TodaysFocusCard 
-          userRole={userProfile.role as 'patient' | 'caregiver'}
+          status={wellnessStatus}
           medsCount={medsCount}
           symptomsLogged={symptomsLogged}
         />
-        
-        <InsightsSection
-          dismissedInsights={dismissedInsights}
-          onDismissInsight={handleDismissInsight}
+
+        {/* AI Insights Section */}
+        <AIInsightsSection 
+          medications={medications || []}
+          vitals={vitals}
+          symptoms={symptoms || []}
+          userRole={userProfile.role as 'patient' | 'caregiver'}
+        />
+
+        {/* Today's Actions Section */}
+        <TodaysActionsSection 
+          medications={medications || []}
+          medsCount={medsCount}
+          symptomsLogged={symptomsLogged}
+          onMedicationAction={handleMedicationToggle}
+        />
+
+        {/* Latest Vitals Section */}
+        <LatestVitalsSection 
+          vitals={vitals}
+          userRole={userProfile.role as 'patient' | 'caregiver'}
         />
       </div>
-
-      <AIAssistantFAB />
     </SafeAreaContainer>
   );
 };
