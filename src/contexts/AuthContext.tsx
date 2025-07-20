@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../integrations/supabase/client';
@@ -53,6 +52,11 @@ const isValidUserProfile = (data: any): data is UserProfile => {
   );
 };
 
+// Type guard to check if data is an object (not array)
+const isObject = (data: any): data is Record<string, any> => {
+  return data && typeof data === 'object' && !Array.isArray(data);
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -80,11 +84,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('📦 Raw RPC response:', data);
       
-      // Handle the RPC response - it could be wrapped or direct
+      // Handle the RPC response - check if it's wrapped or direct
       let profileData = data;
       
-      // If the response is wrapped in a function name key, unwrap it
-      if (data && typeof data === 'object' && data.get_user_profile) {
+      // If the response is an object and has the function name key, unwrap it
+      if (isObject(data) && 'get_user_profile' in data) {
         profileData = data.get_user_profile;
         console.log('🔧 Unwrapped profile data:', profileData);
       }
@@ -137,11 +141,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('📦 Update response data:', data);
       
-      // Handle the RPC response - it could be wrapped or direct
+      // Handle the RPC response - check if it's wrapped or direct
       let updatedProfile = data;
       
-      // If the response is wrapped in a function name key, unwrap it
-      if (data && typeof data === 'object' && data.update_user_profile) {
+      // If the response is an object and has the function name key, unwrap it
+      if (isObject(data) && 'update_user_profile' in data) {
         updatedProfile = data.update_user_profile;
         console.log('🔧 Unwrapped updated profile:', updatedProfile);
       }
