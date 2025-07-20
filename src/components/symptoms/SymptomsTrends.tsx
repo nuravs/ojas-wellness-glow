@@ -14,7 +14,7 @@ interface Symptom {
 interface SymptomsTrendsProps {
   symptoms: Symptom[];
   getRecentSymptoms: (days: number) => Symptom[];
-  getSymptomTrends: (symptomType: string, days: number) => any[];
+  getSymptomTrends: () => { current: number; previous: number; trend: string };
   userRole?: 'patient' | 'caregiver';
 }
 
@@ -73,6 +73,8 @@ const SymptomsTrends: React.FC<SymptomsTrendsProps> = ({
       .slice(0, 3)
       .map(([type, count]) => ({ type, count }));
   }, [symptoms]);
+
+  const trendData = getSymptomTrends();
 
   if (symptoms.length === 0) {
     return (
@@ -149,6 +151,36 @@ const SymptomsTrends: React.FC<SymptomsTrendsProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Trend Summary */}
+      {trendData.current > 0 && (
+        <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl p-6 shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray">
+          <div className="flex items-center gap-3 mb-4">
+            <Calendar className="w-5 h-5 text-ojas-primary" />
+            <h3 className="text-lg font-semibold text-ojas-text-main dark:text-ojas-mist-white">
+              7-Day Trend Summary
+            </h3>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                Current average severity: <span className="font-semibold">{trendData.current.toFixed(1)}</span>
+              </p>
+              <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                Previous week average: <span className="font-semibold">{trendData.previous.toFixed(1)}</span>
+              </p>
+            </div>
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+              trendData.trend === 'improving' ? 'bg-ojas-calming-green/10 text-ojas-calming-green' :
+              trendData.trend === 'worsening' ? 'bg-ojas-vibrant-coral/10 text-ojas-vibrant-coral' :
+              'bg-ojas-soft-gold/10 text-ojas-soft-gold'
+            }`}>
+              {trendData.trend}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Top Symptoms */}
       {topSymptoms.length > 0 && (
