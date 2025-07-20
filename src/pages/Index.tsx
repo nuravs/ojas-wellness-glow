@@ -102,7 +102,7 @@ const Index = () => {
     );
   }
 
-  // Show loading only while app data is loading
+  // Show loading only while health data is loading (not auth data)
   if (medicationsLoading) {
     return (
       <ThemeProvider>

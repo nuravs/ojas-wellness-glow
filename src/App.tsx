@@ -23,13 +23,13 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     currentPath: window.location.pathname
   });
 
-  // 1. While we are checking for authentication, show a loading screen
+  // 1. While checking for authentication, show a simple loading screen
   if (authLoading) {
     return (
       <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-ojas-slate-gray">Loading your health data...</p>
+          <p className="text-ojas-slate-gray">Checking authentication...</p>
         </div>
       </div>
     );
@@ -41,8 +41,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  // 3. User is authenticated - allow app to continue regardless of profile status
-  // Profile loading issues shouldn't block the entire app experience
+  // 3. User is authenticated - allow app to continue
   console.log('✅ User authenticated, allowing app access');
   return children;
 };

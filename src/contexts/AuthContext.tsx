@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../integrations/supabase/client';
@@ -194,8 +195,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Only fetch profile if not on auth page
           if (!isOnAuthPage()) {
-            const profile = await fetchUserProfile(initialSession.user.id);
-            setUserProfile(profile);
+            try {
+              const profile = await fetchUserProfile(initialSession.user.id);
+              setUserProfile(profile);
+            } catch (error) {
+              console.error('Profile fetch error during init:', error);
+              // Don't set error here - profile issues shouldn't block auth
+            }
           }
         }
         
@@ -226,33 +232,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Only fetch profile if not on auth page
           if (!isOnAuthPage()) {
-            setLoading(true);
-            
-            // Fetch profile with proper timeout handling
-            const fetchProfile = async () => {
+            // Fetch profile in background without blocking auth completion
+            setTimeout(async () => {
               try {
                 const profile = await fetchUserProfile(session.user.id);
                 setUserProfile(profile);
               } catch (error) {
-                console.error('Profile fetch error:', error);
-                setUserProfile(null);
-              } finally {
-                setLoading(false);
+                console.error('Background profile fetch error:', error);
+                // Don't set error - profile issues shouldn't block auth flow
               }
-            };
-
-            // Set a timeout to ensure loading state is cleared
-            const timeoutId = setTimeout(() => {
-              console.warn('⏰ Profile fetch timeout reached');
-              setLoading(false);
-            }, 3000);
-
-            await fetchProfile();
-            clearTimeout(timeoutId);
-          } else {
-            // On auth page, clear loading immediately
-            setLoading(false);
+            }, 0);
           }
+          setLoading(false);
         } else {
           console.log('👤 User signed out or no session');
           setSession(null);
