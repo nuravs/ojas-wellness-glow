@@ -72,9 +72,14 @@ export const useMedications = () => {
           // Generate realistic medication times based on frequency
           let scheduledTime = '08:00';
           if (med.frequency && typeof med.frequency === 'object') {
-            if (med.frequency.times_per_day === 2) {
-              scheduledTime = Math.random() > 0.5 ? '08:00' : '20:00';
+            if (med.frequency.times_per_day === 1) {
+              scheduledTime = '08:00';
+            } else if (med.frequency.times_per_day === 2) {
+              // For two doses, alternate between morning and evening
+              const times = ['08:00', '20:00'];
+              scheduledTime = times[Math.floor(Math.random() * times.length)];
             } else if (med.frequency.times_per_day === 3) {
+              // For three doses, spread throughout the day
               const times = ['08:00', '14:00', '20:00'];
               scheduledTime = times[Math.floor(Math.random() * times.length)];
             }
@@ -131,7 +136,9 @@ export const useMedications = () => {
 
       if (error) {
         console.error('Error logging medication:', error);
+        throw error;
       } else {
+        console.log('Medication logged successfully');
         // Update local state immediately for better UX
         setMedications(prev =>
           prev.map(med =>
@@ -141,6 +148,7 @@ export const useMedications = () => {
       }
     } catch (error) {
       console.error('Unexpected error toggling medication:', error);
+      throw error;
     }
   };
 
@@ -157,12 +165,14 @@ export const useMedications = () => {
 
       if (error) {
         console.error('Error postponing medication:', error);
+        throw error;
       } else {
         console.log('Medication postponed successfully');
         // Optionally update UI to show postponed status
       }
     } catch (error) {
       console.error('Unexpected error postponing medication:', error);
+      throw error;
     }
   };
 

@@ -27,16 +27,28 @@ const MedicationSection: React.FC<MedicationSectionProps> = ({
   // Determine priority medications (overdue or very urgent)
   const getPriorityMedications = () => {
     const now = new Date();
-    const currentHour = now.getHours();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
     
     return pendingMeds.filter(med => {
-      const medHour = parseInt(med.time.split(':')[0]);
-      // Consider medications priority if they're more than 2 hours overdue
-      return currentHour - medHour > 2;
+      const [hours, minutes] = med.time.split(':').map(Number);
+      const medTime = hours * 60 + minutes;
+      // Consider medications priority if they're more than 30 minutes overdue
+      return currentTime - medTime > 30;
     });
   };
 
   const priorityMeds = getPriorityMedications();
+
+  const handlePostpone = async (id: string) => {
+    try {
+      await onPostponeMedication(id);
+      // The medication will remain in the list but marked as postponed
+      // In a real implementation, you might want to move it to a different section
+      // or add a "postponed" status to the medication object
+    } catch (error) {
+      console.error('Error postponing medication:', error);
+    }
+  };
 
   return (
     <>
@@ -57,7 +69,7 @@ const MedicationSection: React.FC<MedicationSectionProps> = ({
                 key={medication.id}
                 medication={medication}
                 onToggle={onToggleMedication}
-                onPostpone={onPostponeMedication}
+                onPostpone={handlePostpone}
                 isPriority={priorityMeds.some(pm => pm.id === medication.id)}
               />
             ))}

@@ -14,12 +14,18 @@ interface SmartBannersSectionProps {
   medications: Medication[];
   dismissedBanners: Set<string>;
   onDismissBanner: (id: string) => void;
+  onMedicationAction?: (id: string, action: 'taken' | 'postponed') => void;
+  onNavigateToSymptoms?: () => void;
+  onNavigateToMedications?: () => void;
 }
 
 const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
   medications,
   dismissedBanners,
-  onDismissBanner
+  onDismissBanner,
+  onMedicationAction,
+  onNavigateToSymptoms,
+  onNavigateToMedications
 }) => {
   // Generate smart banners based on medication status
   const generateBanners = () => {
@@ -51,8 +57,7 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
         message: `${overdueMeds.length} medication${overdueMeds.length > 1 ? 's' : ''} overdue. Take them now?`,
         actionText: 'View Medications',
         onAction: () => {
-          // Navigate to medications page
-          console.log('Navigate to medications');
+          onNavigateToMedications?.();
         }
       });
     }
@@ -69,8 +74,7 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
         message: 'Haven\'t logged symptoms today. How are you feeling?',
         actionText: 'Log Symptoms',
         onAction: () => {
-          // Navigate to symptoms page
-          console.log('Navigate to symptoms');
+          onNavigateToSymptoms?.();
         }
       });
     }

@@ -26,16 +26,16 @@ export const VITAL_RANGES = {
     high: { min: 100, max: 999 }
   },
   temperature: {
-    normal_celsius: { min: 36.1, max: 37.2 },
-    low_celsius: { min: 0, max: 36.1 },
-    fever_celsius: { min: 37.2, max: 50 },
-    normal_fahrenheit: { min: 97.0, max: 99.0 },
-    low_fahrenheit: { min: 0, max: 97.0 },
-    fever_fahrenheit: { min: 99.0, max: 110 }
+    normal_celsius: { min: 35.0, max: 37.5 },
+    low_celsius: { min: 32.0, max: 35.0 },
+    fever_celsius: { min: 37.5, max: 42.0 },
+    normal_fahrenheit: { min: 95.0, max: 99.5 },
+    low_fahrenheit: { min: 89.6, max: 95.0 },
+    fever_fahrenheit: { min: 99.5, max: 107.6 }
   },
   weight: {
-    // Weight ranges are highly individual, so we use very broad ranges
-    normal: { min: 30, max: 300 } // kg
+    // Weight ranges are highly individual, using very broad ranges
+    normal: { min: 25, max: 500 } // kg - very permissive range
   }
 };
 
@@ -48,48 +48,38 @@ export const isOutOfRange = (
       if (!values.systolic || !values.diastolic) return false;
       const bpRanges = VITAL_RANGES.blood_pressure;
       return (
-        values.systolic < bpRanges.optimal.systolic[0] ||
-        values.systolic > bpRanges.high.systolic[1] ||
-        values.diastolic < bpRanges.optimal.diastolic[0] ||
-        values.diastolic > bpRanges.high.diastolic[1]
+        values.systolic < 80 || values.systolic > 200 ||
+        values.diastolic < 50 || values.diastolic > 120
       );
 
     case 'blood_sugar':
       if (!values.value) return false;
-      const bsRanges = VITAL_RANGES.blood_sugar;
-      return (
-        values.value < bsRanges.normal_fasting.min ||
-        values.value > bsRanges.diabetic_fasting.max
-      );
+      // Allow wide range for blood sugar (40-400 mg/dL)
+      return values.value < 40 || values.value > 400;
 
     case 'pulse':
       if (!values.value) return false;
-      const pulseRanges = VITAL_RANGES.pulse;
-      return (
-        values.value < pulseRanges.normal.min ||
-        values.value > pulseRanges.normal.max
-      );
+      // Allow wide range for pulse (30-200 bpm)
+      return values.value < 30 || values.value > 200;
 
     case 'temperature':
       if (!values.value) return false;
-      // Check if it's Celsius or Fahrenheit based on unit or value range
-      const isFahrenheit = values.unit === '°F' || (values.value > 50);
-      const tempRanges = isFahrenheit 
-        ? VITAL_RANGES.temperature.normal_fahrenheit 
-        : VITAL_RANGES.temperature.normal_celsius;
+      // Detect unit and validate accordingly
+      const isFahrenheit = values.unit === '°F' || values.unit === 'F' || 
+                          (values.value > 50 && !values.unit?.includes('C'));
       
-      return (
-        values.value < tempRanges.min ||
-        values.value > tempRanges.max
-      );
+      if (isFahrenheit) {
+        // Fahrenheit range: 89.6°F to 107.6°F (very permissive)
+        return values.value < 89.6 || values.value > 107.6;
+      } else {
+        // Celsius range: 32°C to 42°C (very permissive)
+        return values.value < 32.0 || values.value > 42.0;
+      }
 
     case 'weight':
       if (!values.value) return false;
-      const weightRanges = VITAL_RANGES.weight;
-      return (
-        values.value < weightRanges.normal.min ||
-        values.value > weightRanges.normal.max
-      );
+      // Very permissive weight range
+      return values.value < 25 || values.value > 500;
 
     default:
       return false;
@@ -153,7 +143,8 @@ export const getVitalRangeStatus = (
 
     case 'temperature':
       if (!values.value) return 'normal';
-      const isFahrenheit = values.unit === '°F' || (values.value > 50);
+      const isFahrenheit = values.unit === '°F' || values.unit === 'F' || 
+                          (values.value > 50 && !values.unit?.includes('C'));
       const tempRanges = isFahrenheit 
         ? VITAL_RANGES.temperature.normal_fahrenheit 
         : VITAL_RANGES.temperature.normal_celsius;

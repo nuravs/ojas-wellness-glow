@@ -5,148 +5,166 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { AlertTriangle, Brain, Heart, Plus } from 'lucide-react';
-import { useEvents, CreateEventData } from '@/hooks/useEvents';
+import { AlertTriangle, Heart, Brain, Plus } from 'lucide-react';
+import { useEvents } from '../../hooks/useEvents';
+import { toast } from '../../hooks/use-toast';
 
 interface EventLoggerModalProps {
   children: React.ReactNode;
   onEventLogged?: () => void;
 }
 
-const eventTypes = [
-  {
-    type: 'fall' as const,
-    label: 'Fall',
-    icon: AlertTriangle,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
-    description: 'An actual fall that occurred'
-  },
-  {
-    type: 'near-fall' as const,
-    label: 'Near Fall',
-    icon: AlertTriangle,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-    description: 'Almost fell but caught yourself'
-  },
-  {
-    type: 'confusion' as const,
-    label: 'Confusion Episode',
-    icon: Brain,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-    description: 'Episode of confusion or disorientation'
-  },
-  {
-    type: 'emergency' as const,
-    label: 'Emergency',
-    icon: Heart,
-    color: 'text-red-700',
-    bgColor: 'bg-red-100 dark:bg-red-900/30',
-    description: 'Medical emergency situation'
-  },
-  {
-    type: 'other' as const,
-    label: 'Other',
-    icon: Plus,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-50 dark:bg-gray-900/20',
-    description: 'Other significant event'
-  }
-];
-
-const EventLoggerModal: React.FC<EventLoggerModalProps> = ({ children, onEventLogged }) => {
+const EventLoggerModal: React.FC<EventLoggerModalProps> = ({ 
+  children, 
+  onEventLogged 
+}) => {
   const [open, setOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<CreateEventData['event_type'] | null>(null);
-  const [severity, setSeverity] = useState([1]);
-  const [notes, setNotes] = useState('');
+  const [eventType, setEventType] = useState<'fall' | 'near-fall' | 'confusion' | 'emergency' | 'other'>('fall');
+  const [severity, setSeverity] = useState(1);
   const [location, setLocation] = useState('');
+  const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { createEvent } = useEvents();
 
-  const handleSubmit = async () => {
-    if (!selectedType) return;
-
-    setIsSubmitting(true);
-    
-    const eventData: CreateEventData = {
-      event_type: selectedType,
-      severity: severity[0],
-      notes: notes.trim() || undefined,
-      location: location.trim() || undefined,
-    };
-
-    const result = await createEvent(eventData);
-    
-    if (result) {
-      // Reset form
-      setSelectedType(null);
-      setSeverity([1]);
-      setNotes('');
-      setLocation('');
-      setOpen(false);
-      onEventLogged?.();
+  const eventTypes = [
+    { 
+      value: 'fall' as const, 
+      label: 'Fall', 
+      description: 'An actual fall that occurred',
+      icon: AlertTriangle,
+      color: 'text-red-600 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+    },
+    { 
+      value: 'near-fall' as const, 
+      label: 'Near Fall', 
+      description: 'Almost fell but caught yourself',
+      icon: AlertTriangle,
+      color: 'text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800'
+    },
+    { 
+      value: 'confusion' as const, 
+      label: 'Confusion Episode', 
+      description: 'Episode of confusion or disorientation',
+      icon: Brain,
+      color: 'text-purple-600 bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800'
+    },
+    { 
+      value: 'emergency' as const, 
+      label: 'Emergency', 
+      description: 'Medical emergency situation',
+      icon: Heart,
+      color: 'text-red-700 bg-red-100 border-red-300 dark:bg-red-900/30 dark:border-red-700'
+    },
+    { 
+      value: 'other' as const, 
+      label: 'Other', 
+      description: 'Other significant event',
+      icon: Plus,
+      color: 'text-gray-600 bg-gray-50 border-gray-200 dark:bg-gray-900/20 dark:border-gray-700'
     }
-    
-    setIsSubmitting(false);
+  ];
+
+  const severityLevels = [
+    { value: 1, label: 'Mild', color: 'bg-green-500' },
+    { value: 2, label: 'Moderate', color: 'bg-yellow-500' },
+    { value: 3, label: 'Severe', color: 'bg-orange-500' },
+    { value: 4, label: 'Critical', color: 'bg-red-500' }
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const result = await createEvent({
+        event_type: eventType,
+        severity,
+        location: location.trim() || undefined,
+        notes: notes.trim() || undefined
+      });
+
+      if (result) {
+        // Reset form
+        setEventType('fall');
+        setSeverity(1);
+        setLocation('');
+        setNotes('');
+        setOpen(false);
+        onEventLogged?.();
+        
+        toast({
+          title: "Event logged successfully",
+          description: `${eventType.replace('-', ' ')} has been recorded`,
+        });
+      }
+    } catch (error) {
+      console.error('Error logging event:', error);
+      toast({
+        title: "Error logging event",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const getSeverityLabel = (value: number) => {
-    const labels = {
-      1: 'Mild',
-      2: 'Moderate', 
-      3: 'Significant',
-      4: 'Severe',
-      5: 'Critical'
-    };
-    return labels[value as keyof typeof labels] || 'Mild';
-  };
+  const selectedEventType = eventTypes.find(type => type.value === eventType);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-ojas-charcoal-gray">
         <DialogHeader>
-          <DialogTitle className="text-ojas-text-main dark:text-ojas-mist-white">
+          <DialogTitle className="text-xl font-semibold text-ojas-text-main dark:text-ojas-mist-white">
             Log an Event
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Event Type Selection */}
-          <div>
-            <Label className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-3 block">
-              What happened?
+          <div className="space-y-3">
+            <Label className="text-base font-medium text-ojas-text-main dark:text-ojas-mist-white">
+              Event Type
             </Label>
-            <div className="grid grid-cols-1 gap-2">
-              {eventTypes.map((eventType) => {
-                const Icon = eventType.icon;
+            <div className="grid gap-3">
+              {eventTypes.map((type) => {
+                const IconComponent = type.icon;
                 return (
                   <button
-                    key={eventType.type}
+                    key={type.value}
                     type="button"
-                    onClick={() => setSelectedType(eventType.type)}
-                    className={`p-4 text-left rounded-xl border-2 transition-all duration-200 ${
-                      selectedType === eventType.type
-                        ? 'border-ojas-primary bg-ojas-primary/10'
-                        : 'border-ojas-border dark:border-ojas-slate-gray hover:border-ojas-primary/50'
-                    } ${eventType.bgColor}`}
-                    style={{ minHeight: '44px' }}
+                    onClick={() => setEventType(type.value)}
+                    className={`w-full p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                      eventType === type.value
+                        ? `${type.color} border-current shadow-md`
+                        : 'bg-white dark:bg-ojas-slate-gray border-ojas-border dark:border-ojas-slate-gray hover:border-ojas-primary'
+                    }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <Icon className={`w-5 h-5 mt-1 ${eventType.color}`} />
+                    <div className="flex items-center gap-3">
+                      <IconComponent className={`w-5 h-5 ${
+                        eventType === type.value 
+                          ? 'text-current' 
+                          : 'text-ojas-text-secondary'
+                      }`} />
                       <div>
-                        <div className={`font-medium ${eventType.color}`}>
-                          {eventType.label}
-                        </div>
-                        <div className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver mt-1">
-                          {eventType.description}
-                        </div>
+                        <h3 className={`font-semibold ${
+                          eventType === type.value 
+                            ? 'text-current' 
+                            : 'text-ojas-text-main dark:text-ojas-mist-white'
+                        }`}>
+                          {type.label}
+                        </h3>
+                        <p className={`text-sm ${
+                          eventType === type.value 
+                            ? 'text-current opacity-80' 
+                            : 'text-ojas-text-secondary dark:text-ojas-cloud-silver'
+                        }`}>
+                          {type.description}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -155,71 +173,81 @@ const EventLoggerModal: React.FC<EventLoggerModalProps> = ({ children, onEventLo
             </div>
           </div>
 
-          {selectedType && (
-            <>
-              {/* Severity */}
-              <div>
-                <Label className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-3 block">
-                  Severity: {getSeverityLabel(severity[0])}
-                </Label>
-                <Slider
-                  value={severity}
-                  onValueChange={setSeverity}
-                  max={5}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                  aria-valuenow={severity[0]}
-                  aria-valuetext={getSeverityLabel(severity[0])}
-                />
-                <div className="flex justify-between text-xs text-ojas-text-secondary dark:text-ojas-cloud-silver mt-2">
-                  <span>Mild</span>
-                  <span>Critical</span>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div>
-                <Label htmlFor="location" className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2 block">
-                  Location (optional)
-                </Label>
-                <Input
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g., Kitchen, Bathroom, Living Room"
-                  className="w-full"
+          {/* Severity Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium text-ojas-text-main dark:text-ojas-mist-white">
+              Severity
+            </Label>
+            <div className="grid grid-cols-4 gap-2">
+              {severityLevels.map((level) => (
+                <button
+                  key={level.value}
+                  type="button"
+                  onClick={() => setSeverity(level.value)}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 font-medium ${
+                    severity === level.value
+                      ? `${level.color} text-white border-current shadow-md`
+                      : 'bg-white dark:bg-ojas-slate-gray border-ojas-border dark:border-ojas-slate-gray text-ojas-text-main dark:text-ojas-mist-white hover:border-ojas-primary'
+                  }`}
                   style={{ minHeight: '44px' }}
-                />
-              </div>
+                >
+                  {level.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-              {/* Notes */}
-              <div>
-                <Label htmlFor="notes" className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white mb-2 block">
-                  Additional Notes (optional)
-                </Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Any additional details about what happened..."
-                  rows={3}
-                  className="w-full resize-none"
-                />
-              </div>
+          {/* Location */}
+          <div className="space-y-2">
+            <Label htmlFor="location" className="text-base font-medium text-ojas-text-main dark:text-ojas-mist-white">
+              Location (optional)
+            </Label>
+            <Input
+              id="location"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g., Kitchen, Bathroom, Living Room"
+              className="w-full border-ojas-border dark:border-ojas-slate-gray"
+              style={{ minHeight: '44px' }}
+            />
+          </div>
 
-              {/* Submit Button */}
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full bg-ojas-primary hover:bg-ojas-primary-hover text-white font-medium py-3"
-                style={{ minHeight: '44px' }}
-              >
-                {isSubmitting ? 'Logging Event...' : 'Log Event'}
-              </Button>
-            </>
-          )}
-        </div>
+          {/* Additional Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="notes" className="text-base font-medium text-ojas-text-main dark:text-ojas-mist-white">
+              Additional Notes (optional)
+            </Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any additional details about the event..."
+              className="w-full min-h-[100px] border-ojas-border dark:border-ojas-slate-gray"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="flex-1"
+              style={{ minHeight: '44px' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 bg-ojas-primary hover:bg-ojas-primary-hover text-white"
+              style={{ minHeight: '44px' }}
+            >
+              {isSubmitting ? 'Logging...' : 'Log Event'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -24,11 +24,13 @@ import { toast } from '@/hooks/use-toast';
 const HomePage = () => {
   const { userProfile } = useAuth();
   const { pendingRequestsForPatient } = usePatientCaregivers();
-  const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
+  const { medications, loading: medicationsLoading, toggleMedication, postponeMedication, refetch: refetchMedications } = useMedications();
   const { symptoms, loading: symptomsLoading } = useSymptoms();
   const { medicationLogs, loading: logsLoading } = useMedicationLogs();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [dismissedBanners, setDismissedBanners] = useState<Set<string>>(new Set());
+  const [dismissedInsights, setDismissedInsights] = useState<Set<string>>(new Set());
 
   if (!userProfile) {
     return (
@@ -82,6 +84,8 @@ const HomePage = () => {
   const handleMedicationToggle = async (id: string) => {
     try {
       await toggleMedication(id);
+      // Force refetch to get updated data
+      await refetchMedications();
       toast({
         title: "Medication logged",
         description: "Medication marked as taken successfully.",
@@ -114,6 +118,7 @@ const HomePage = () => {
   };
 
   const handleDismissBanner = (id: string) => {
+    setDismissedBanners(prev => new Set([...prev, id]));
     toast({
       title: "Banner dismissed",
       description: "Smart banner has been dismissed.",
@@ -122,6 +127,7 @@ const HomePage = () => {
   };
 
   const handleDismissInsight = (id: string) => {
+    setDismissedInsights(prev => new Set([...prev, id]));
     toast({
       title: "Insight dismissed",
       description: "Insight has been dismissed.",
@@ -233,8 +239,17 @@ const HomePage = () => {
 
         <SmartBannersSection
           medications={medications || []}
-          dismissedBanners={new Set<string>()}
+          dismissedBanners={dismissedBanners}
           onDismissBanner={handleDismissBanner}
+          onMedicationAction={handleMedicationToggle}
+          onNavigateToSymptoms={() => {
+            // Navigate to symptoms - this would be handled by parent component
+            console.log('Navigate to symptoms');
+          }}
+          onNavigateToMedications={() => {
+            // Navigate to medications - this would be handled by parent component  
+            console.log('Navigate to medications');
+          }}
         />
 
         <MedicationSection
@@ -253,7 +268,7 @@ const HomePage = () => {
         />
         
         <InsightsSection
-          dismissedInsights={new Set<string>()}
+          dismissedInsights={dismissedInsights}
           onDismissInsight={handleDismissInsight}
         />
       </div>
