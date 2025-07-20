@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
 import { AIInsightsPanel } from '@/components/AIInsightsPanel';
@@ -20,6 +21,7 @@ import TodaysActionsSection from '@/components/homepage/TodaysActionsSection';
 import LatestVitalsSection from '@/components/homepage/LatestVitalsSection';
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const { userProfile } = useAuth();
   const { pendingRequestsForPatient } = usePatientCaregivers();
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication, refetch: refetchMedications } = useMedications();
@@ -114,6 +116,31 @@ const HomePage = () => {
     return 'urgent';
   };
 
+  // Navigation handlers
+  const handleViewAllInsights = () => {
+    navigate('/more'); // Or create a dedicated insights page
+  };
+
+  const handleViewAllVitals = () => {
+    navigate('/vitals');
+  };
+
+  const handleQuickAddVital = () => {
+    navigate('/vitals?action=add');
+  };
+
+  const handleAddVitalReading = (vitalType: string) => {
+    navigate(`/vitals?action=add&type=${vitalType}`);
+  };
+
+  const handleLogSymptom = () => {
+    navigate('/symptoms');
+  };
+
+  const handleViewMedications = () => {
+    navigate('/medications');
+  };
+
   // Show loading state only if critical data is still loading
   if (medicationsLoading && !medications.length) {
     return (
@@ -178,6 +205,7 @@ const HomePage = () => {
           vitals={vitals}
           symptoms={symptoms || []}
           userRole={userProfile.role as 'patient' | 'caregiver'}
+          onViewAll={handleViewAllInsights}
         />
 
         {/* Today's Actions Section */}
@@ -186,12 +214,17 @@ const HomePage = () => {
           medsCount={medsCount}
           symptomsLogged={symptomsLogged}
           onMedicationAction={handleMedicationToggle}
+          onLogSymptom={handleLogSymptom}
+          onViewMedications={handleViewMedications}
         />
 
         {/* Latest Vitals Section */}
         <LatestVitalsSection 
           vitals={vitals}
           userRole={userProfile.role as 'patient' | 'caregiver'}
+          onViewAll={handleViewAllVitals}
+          onQuickAdd={handleQuickAddVital}
+          onAddReading={handleAddVitalReading}
         />
       </div>
     </SafeAreaContainer>
