@@ -25,7 +25,7 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
   const generateBanners = () => {
     const banners: Array<{
       id: string;
-      type: 'medication' | 'symptom' | 'vital' | 'appointment';
+      type: 'missed-dose' | 'symptom-reminder' | 'refill-needed' | 'appointment-reminder' | 'success';
       title: string;
       message: string;
       actionText?: string;
@@ -46,7 +46,7 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
     if (overdueMeds.length > 0 && !dismissedBanners.has('overdue-meds')) {
       banners.push({
         id: 'overdue-meds',
-        type: 'medication',
+        type: 'missed-dose',
         title: 'Medication Reminder',
         message: `${overdueMeds.length} medication${overdueMeds.length > 1 ? 's' : ''} overdue. Take them now?`,
         actionText: 'View Medications',
@@ -64,7 +64,7 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
     if (lastSymptomLog !== today && !dismissedBanners.has('log-symptoms')) {
       banners.push({
         id: 'log-symptoms',
-        type: 'symptom',
+        type: 'symptom-reminder',
         title: 'Track Your Health',
         message: 'Haven\'t logged symptoms today. How are you feeling?',
         actionText: 'Log Symptoms',
@@ -88,7 +88,7 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
       
       banners.push({
         id: 'wellness-tip',
-        type: 'vital',
+        type: 'success',
         title: 'Wellness Tip',
         message: randomTip,
         actionText: 'Learn More'
@@ -113,7 +113,6 @@ const SmartBannersSection: React.FC<SmartBannersSectionProps> = ({
         {banners.map(banner => (
           <SmartBanner
             key={banner.id}
-            id={banner.id}
             type={banner.type}
             title={banner.title}
             message={banner.message}
