@@ -8,6 +8,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
+import VitalsPage from "./pages/VitalsPage";
+import SymptomsPage from "./pages/SymptomsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +69,25 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <Index />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Add dedicated routes for key pages */}
+                <Route
+                  path="/vitals"
+                  element={
+                    <ProtectedRoute>
+                      <VitalsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/symptoms"
+                  element={
+                    <ProtectedRoute>
+                      <SymptomsPage />
                     </ProtectedRoute>
                   }
                 />

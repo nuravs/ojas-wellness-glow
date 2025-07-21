@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Clock, Pill, Heart, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface TodaysActionsSectionProps {
   medications: any[];
@@ -19,6 +20,12 @@ const TodaysActionsSection: React.FC<TodaysActionsSectionProps> = ({
   onLogSymptom,
   onViewMedications
 }) => {
+  const navigate = useNavigate();
+
+  const handleLogSymptom = () => {
+    navigate('/symptoms');
+  };
+
   // Generate dynamic actions based on real data
   const generateActions = () => {
     const actions = [];
@@ -52,7 +59,7 @@ const TodaysActionsSection: React.FC<TodaysActionsSectionProps> = ({
         time: 'Anytime',
         priority: 'medium',
         completed: false,
-        action: onLogSymptom
+        action: handleLogSymptom
       });
     }
 
@@ -66,7 +73,7 @@ const TodaysActionsSection: React.FC<TodaysActionsSectionProps> = ({
         time: '7:00 PM',
         priority: 'medium',
         completed: false,
-        action: () => window.location.href = '/vitals?action=add&type=blood_pressure'
+        action: () => navigate('/vitals?action=add&type=blood_pressure')
       });
     }
 

@@ -118,7 +118,7 @@ const HomePage = () => {
 
   // Navigation handlers
   const handleViewAllInsights = () => {
-    navigate('/more'); // Or create a dedicated insights page
+    navigate('/?tab=more');
   };
 
   const handleViewAllVitals = () => {
@@ -138,7 +138,8 @@ const HomePage = () => {
   };
 
   const handleViewMedications = () => {
-    navigate('/medications');
+    // Navigate to medications tab in the main app
+    navigate('/?tab=medications');
   };
 
   // Show loading state only if critical data is still loading

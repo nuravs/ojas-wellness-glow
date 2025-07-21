@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LogOut, Bell, Settings, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -18,12 +17,12 @@ const HomePageHeader: React.FC<HomePageHeaderProps> = ({ userProfile }) => {
   };
 
   const handleNotifications = () => {
-    // For now, show a simple dropdown with meaningful notifications
     setShowNotifications(!showNotifications);
   };
 
   const handleSettings = () => {
-    navigate('/settings');
+    // Navigate to settings through the Index page routing system
+    navigate('/?page=settings');
   };
 
   const getCurrentDate = () => {

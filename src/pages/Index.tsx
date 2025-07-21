@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
 import HealthLogPage from './HealthLogPage';
@@ -22,9 +22,18 @@ import { useAuthDebug } from '../hooks/useAuthDebug';
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');  
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups' | 'events'>('main');
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const { user, userProfile, loading: authLoading } = useAuthDebug();
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
+
+  // Handle URL parameter for page navigation
+  useEffect(() => {
+    const page = searchParams.get('page');
+    if (page === 'settings') {
+      setCurrentPage('settings');
+    }
+  }, [searchParams]);
 
   console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);
 
@@ -59,6 +68,8 @@ const Index = () => {
   const handleBackToMore = () => {
     setCurrentPage('main');
     setActiveTab('more');
+    // Clear URL parameters
+    setSearchParams({});
   };
 
   // Handle special page navigation

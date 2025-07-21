@@ -114,33 +114,15 @@ const LatestVitalsSection: React.FC<LatestVitalsSectionProps> = ({
   };
 
   const handleViewAll = () => {
-    // Navigate to vitals page with all vitals and insights
     navigate('/vitals');
-    toast({
-      title: "Vitals Overview",
-      description: "Viewing all vitals history and trends.",
-      variant: "default"
-    });
   };
 
   const handleQuickAdd = () => {
-    // Navigate to vitals page with add form open
     navigate('/vitals?action=add');
-    toast({
-      title: "Add Vital",
-      description: "Opening quick add vitals form.",
-      variant: "default"
-    });
   };
 
   const handleAddReading = (vitalType: string) => {
-    // Navigate to vitals page with specific vital type pre-selected
     navigate(`/vitals?action=add&type=${vitalType}`);
-    toast({
-      title: "Add Reading",
-      description: `Adding new ${vitalType.replace('_', ' ')} reading.`,
-      variant: "default"
-    });
   };
 
   const vitalsData = getLatestVitals();
