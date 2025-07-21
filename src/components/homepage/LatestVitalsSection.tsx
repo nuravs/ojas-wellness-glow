@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { Activity, Heart, Droplets, Scale, Plus, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Activity, Heart, Droplets, Scale, Plus, TrendingUp, AlertTriangle, Thermometer } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 interface LatestVitalsSectionProps {
   vitals: any[];
@@ -17,6 +19,8 @@ const LatestVitalsSection: React.FC<LatestVitalsSectionProps> = ({
   onQuickAdd,
   onAddReading
 }) => {
+  const navigate = useNavigate();
+
   // Process vitals data to get latest readings
   const getLatestVitals = () => {
     const vitalTypes = ['blood_pressure', 'heart_rate', 'weight', 'blood_sugar'];
@@ -38,21 +42,21 @@ const LatestVitalsSection: React.FC<LatestVitalsSectionProps> = ({
             };
           case 'heart_rate':
             return {
-              value: vital.values?.bpm || '--',
+              value: vital.values?.bpm || vital.values?.value || '--',
               unit: 'bpm',
-              status: (vital.values?.bpm > 100 || vital.values?.bpm < 60) ? 'attention' : 'normal'
+              status: (vital.values?.bpm > 100 || vital.values?.bpm < 60 || vital.values?.value > 100 || vital.values?.value < 60) ? 'attention' : 'normal'
             };
           case 'weight':
             return {
-              value: vital.values?.weight || '--',
+              value: vital.values?.weight || vital.values?.value || '--',
               unit: 'lbs',
               status: 'normal'
             };
           case 'blood_sugar':
             return {
-              value: vital.values?.glucose || '--',
+              value: vital.values?.glucose || vital.values?.value || '--',
               unit: 'mg/dL',
-              status: (vital.values?.glucose > 140) ? 'attention' : 'normal'
+              status: (vital.values?.glucose > 140 || vital.values?.value > 140) ? 'attention' : 'normal'
             };
           default:
             return { value: '--', unit: '', status: 'normal' };
@@ -109,6 +113,36 @@ const LatestVitalsSection: React.FC<LatestVitalsSectionProps> = ({
     }
   };
 
+  const handleViewAll = () => {
+    // Navigate to vitals page with all vitals and insights
+    navigate('/vitals');
+    toast({
+      title: "Vitals Overview",
+      description: "Viewing all vitals history and trends.",
+      variant: "default"
+    });
+  };
+
+  const handleQuickAdd = () => {
+    // Navigate to vitals page with add form open
+    navigate('/vitals?action=add');
+    toast({
+      title: "Add Vital",
+      description: "Opening quick add vitals form.",
+      variant: "default"
+    });
+  };
+
+  const handleAddReading = (vitalType: string) => {
+    // Navigate to vitals page with specific vital type pre-selected
+    navigate(`/vitals?action=add&type=${vitalType}`);
+    toast({
+      title: "Add Reading",
+      description: `Adding new ${vitalType.replace('_', ' ')} reading.`,
+      variant: "default"
+    });
+  };
+
   const vitalsData = getLatestVitals();
 
   return (
@@ -121,7 +155,7 @@ const LatestVitalsSection: React.FC<LatestVitalsSectionProps> = ({
           </h2>
         </div>
         <button 
-          onClick={onViewAll}
+          onClick={handleViewAll}
           className="text-ojas-primary text-sm font-medium hover:text-ojas-primary-hover transition-colors"
         >
           View All
@@ -167,7 +201,7 @@ const LatestVitalsSection: React.FC<LatestVitalsSectionProps> = ({
                   </div>
                   
                   <button 
-                    onClick={() => onAddReading(vital.id)}
+                    onClick={() => handleAddReading(vital.id)}
                     className="w-8 h-8 rounded-full bg-ojas-primary/10 text-ojas-primary hover:bg-ojas-primary/20 transition-colors flex items-center justify-center"
                     title={`Add ${vital.label} reading`}
                   >
@@ -182,7 +216,7 @@ const LatestVitalsSection: React.FC<LatestVitalsSectionProps> = ({
 
       <div className="mt-6 text-center">
         <button 
-          onClick={onQuickAdd}
+          onClick={handleQuickAdd}
           className="px-6 py-3 bg-ojas-primary/10 text-ojas-primary rounded-xl font-medium hover:bg-ojas-primary/20 transition-colors"
         >
           + Quick Add Vital

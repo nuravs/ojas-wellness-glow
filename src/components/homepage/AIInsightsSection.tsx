@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { TrendingUp, CheckCircle, AlertTriangle, Clock, ExternalLink } from 'lucide-react';
+import { TrendingUp, CheckCircle, AlertTriangle, Clock, ExternalLink, Pill, Activity, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 interface AIInsightsSectionProps {
   medications: any[];
@@ -17,6 +19,8 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
   userRole,
   onViewAll
 }) => {
+  const navigate = useNavigate();
+
   // Generate AI insights based on real data
   const generateInsights = () => {
     const insights = [];
@@ -34,7 +38,9 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
         description: `Great job maintaining ${Math.round(adherenceRate)}% medication adherence this week.`,
         priority: 'low',
         actionable: false,
-        time: 'Today'
+        time: 'Today',
+        actionText: 'View Details',
+        actionRoute: '/medications'
       });
     } else if (adherenceRate < 70) {
       insights.push({
@@ -44,7 +50,9 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
         description: `Your medication adherence is at ${Math.round(adherenceRate)}%. Consider setting reminders to improve consistency.`,
         priority: 'high',
         actionable: true,
-        time: 'Today'
+        time: 'Today',
+        actionText: 'Set Reminders',
+        actionRoute: '/medications'
       });
     }
 
@@ -59,7 +67,27 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
           description: 'Your blood pressure has been elevated. Consider discussing this with your doctor.',
           priority: 'high',
           actionable: true,
-          time: '2 days ago'
+          time: '2 days ago',
+          actionText: 'Log Reading',
+          actionRoute: '/vitals'
+        });
+      }
+
+      // Missing vitals insight
+      const lastVitalDate = new Date(Math.max(...vitals.map(v => new Date(v.measured_at).getTime())));
+      const daysSinceLastVital = Math.floor((Date.now() - lastVitalDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysSinceLastVital > 7) {
+        insights.push({
+          id: 'vitals-missing',
+          icon: Heart,
+          title: 'Vitals Check Overdue',
+          description: `It's been ${daysSinceLastVital} days since your last vital reading. Regular monitoring is important.`,
+          priority: 'medium',
+          actionable: true,
+          time: `${daysSinceLastVital} days ago`,
+          actionText: 'Log Vitals',
+          actionRoute: '/vitals'
         });
       }
     }
@@ -81,9 +109,33 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
           description: 'You\'ve logged multiple symptoms this week. Track patterns for your next appointment.',
           priority: 'medium',
           actionable: true,
-          time: 'This week'
+          time: 'This week',
+          actionText: 'View Trends',
+          actionRoute: '/symptoms'
         });
       }
+    }
+
+    // Medication refill reminder
+    const medicationsNeedingRefill = medications.filter(med => {
+      if (!med.next_refill_date || !med.pills_remaining) return false;
+      const refillDate = new Date(med.next_refill_date);
+      const daysUntilRefill = Math.ceil((refillDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      return daysUntilRefill <= 7 || med.pills_remaining <= 7;
+    });
+
+    if (medicationsNeedingRefill.length > 0) {
+      insights.push({
+        id: 'refill-reminder',
+        icon: Pill,
+        title: 'Medication Refill Due',
+        description: `${medicationsNeedingRefill.length} medication${medicationsNeedingRefill.length > 1 ? 's' : ''} need refilling soon.`,
+        priority: 'medium',
+        actionable: true,
+        time: 'This week',
+        actionText: 'Manage Refills',
+        actionRoute: '/medications'
+      });
     }
 
     // Default insight if no data
@@ -94,8 +146,10 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
         title: 'Welcome to OJAS',
         description: 'Start logging your medications and symptoms to receive personalized insights.',
         priority: 'low',
-        actionable: false,
-        time: 'Getting started'
+        actionable: true,
+        time: 'Getting started',
+        actionText: 'Get Started',
+        actionRoute: '/medications'
       });
     }
 
@@ -114,16 +168,25 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
   };
 
   const handleInsightAction = (insight: any) => {
-    if (insight.id === 'med-adherence-low') {
-      // Navigate to medications page
-      window.location.href = '/medications';
-    } else if (insight.id === 'bp-high') {
-      // Navigate to vitals page
-      window.location.href = '/vitals';
-    } else if (insight.id === 'symptom-pattern') {
-      // Navigate to symptoms page
-      window.location.href = '/symptoms';
-    }
+    // Provide user feedback
+    toast({
+      title: "Taking Action",
+      description: `Navigating to ${insight.actionText.toLowerCase()}...`,
+      variant: "default"
+    });
+
+    // Navigate to appropriate page
+    navigate(insight.actionRoute);
+  };
+
+  const handleViewAll = () => {
+    // For now, navigate to more page where detailed insights could be shown
+    navigate('/more');
+    toast({
+      title: "AI Insights",
+      description: "Viewing all health insights and recommendations.",
+      variant: "default"
+    });
   };
 
   return (
@@ -138,7 +201,7 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
           </h2>
         </div>
         <button 
-          onClick={onViewAll}
+          onClick={handleViewAll}
           className="text-ojas-primary text-sm font-medium hover:text-ojas-primary-hover transition-colors flex items-center gap-1"
         >
           View All
@@ -182,7 +245,7 @@ const AIInsightsSection: React.FC<AIInsightsSectionProps> = ({
                     onClick={() => handleInsightAction(insight)}
                     className="px-3 py-1 bg-ojas-primary/10 text-ojas-primary rounded-lg text-xs font-medium hover:bg-ojas-primary/20 transition-colors flex-shrink-0"
                   >
-                    Take Action
+                    {insight.actionText || 'Take Action'}
                   </button>
                 )}
               </div>

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useVitals } from '../hooks/useVitals';
 import VitalEntryForm from '../components/vitals/VitalEntryForm';
 import VitalsList from '../components/vitals/VitalsList';
@@ -7,6 +7,7 @@ import VitalsDashboard from '../components/vitals/VitalsDashboard';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import UnifiedFloatingActionButton from '../components/UnifiedFloatingActionButton';
 import { ArrowLeft } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 interface VitalsPageProps {
   onBack?: () => void;
@@ -20,12 +21,30 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedVitalType, setSelectedVitalType] = useState<string>('');
   const { vitals, loading, addVital, getVitalRangeStatus } = useVitals();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Handle URL parameters for pre-selecting actions and vital types
+  useEffect(() => {
+    const action = searchParams.get('action');
+    const type = searchParams.get('type');
+    
+    if (action === 'add') {
+      setShowAddForm(true);
+      if (type) {
+        setSelectedVitalType(type);
+      }
+    }
+  }, [searchParams]);
 
   const handleAddVital = async (vitalData: any) => {
     try {
       await addVital(vitalData);
       setShowAddForm(false);
       setSelectedVitalType('');
+      
+      // Clear URL parameters after successful add
+      navigate('/vitals', { replace: true });
     } catch (error) {
       console.error('Error adding vital:', error);
     }
@@ -39,6 +58,14 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
   const handleFloatingAdd = () => {
     setShowAddForm(true);
     setSelectedVitalType('');
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate('/');
+    }
   };
 
   if (loading) {
@@ -64,21 +91,19 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between mb-6 pt-4">
             <div className="flex items-center gap-3">
-              {onBack && (
-                <button
-                  onClick={onBack}
-                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  style={{ minWidth: '44px', minHeight: '44px' }}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
-              )}
+              <button
+                onClick={handleBack}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                style={{ minWidth: '44px', minHeight: '44px' }}
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
               <div>
                 <h1 className="text-2xl font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-                  {userRole === 'caregiver' ? "Jane's Vitals" : "My Vitals"}
+                  {userRole === 'caregiver' ? "Patient's Vitals" : "My Vitals"}
                 </h1>
                 <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                  Track your health measurements
+                  Track your health measurements and trends
                 </p>
               </div>
             </div>
@@ -116,6 +141,8 @@ const VitalsPage: React.FC<VitalsPageProps> = ({
               onCancel={() => {
                 setShowAddForm(false);
                 setSelectedVitalType('');
+                // Clear URL parameters when canceling
+                navigate('/vitals', { replace: true });
               }}
               userRole={userRole}
             />

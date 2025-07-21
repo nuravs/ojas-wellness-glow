@@ -18,10 +18,8 @@ const HomePageHeader: React.FC<HomePageHeaderProps> = ({ userProfile }) => {
   };
 
   const handleNotifications = () => {
+    // For now, show a simple dropdown with meaningful notifications
     setShowNotifications(!showNotifications);
-    // In a real app, this would show a notifications dropdown
-    // For now, we'll navigate to a notifications page or show a toast
-    console.log('Notifications clicked');
   };
 
   const handleSettings = () => {
@@ -45,8 +43,30 @@ const HomePageHeader: React.FC<HomePageHeaderProps> = ({ userProfile }) => {
     return 'Good evening';
   };
 
+  // Get meaningful notifications for health app
+  const getHealthNotifications = () => {
+    return [
+      {
+        id: 1,
+        title: 'Medication Reminder',
+        message: 'Time to take your evening medication',
+        time: '30 minutes ago',
+        priority: 'high'
+      },
+      {
+        id: 2,
+        title: 'Vitals Check',
+        message: 'Blood pressure reading is due',
+        time: '2 hours ago',
+        priority: 'medium'
+      }
+    ];
+  };
+
+  const notifications = getHealthNotifications();
+
   return (
-    <div className="bg-white px-4 py-6 border-b border-ojas-border">
+    <div className="bg-white px-4 py-6 border-b border-ojas-border relative">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-ojas-text-main mb-1">
@@ -58,16 +78,51 @@ const HomePageHeader: React.FC<HomePageHeaderProps> = ({ userProfile }) => {
         </div>
         
         <div className="flex items-center gap-3">
-          <button 
-            onClick={handleNotifications}
-            className="relative p-2 text-ojas-text-secondary hover:text-ojas-text-main transition-colors"
-            title="Notifications"
-          >
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-ojas-error rounded-full flex items-center justify-center">
-              <span className="text-xs text-white font-medium">2</span>
-            </span>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={handleNotifications}
+              className="relative p-2 text-ojas-text-secondary hover:text-ojas-text-main transition-colors"
+              title="Notifications"
+            >
+              <Bell className="w-5 h-5" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-ojas-error rounded-full flex items-center justify-center">
+                  <span className="text-xs text-white font-medium">{notifications.length}</span>
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-ojas-strong border border-ojas-border z-50">
+                <div className="p-4 border-b border-ojas-border">
+                  <h3 className="font-semibold text-ojas-text-main">Notifications</h3>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {notifications.map((notification) => (
+                    <div key={notification.id} className="p-3 border-b border-ojas-border hover:bg-ojas-bg-light">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-2 h-2 rounded-full mt-2 ${
+                          notification.priority === 'high' ? 'bg-ojas-error' : 'bg-ojas-alert'
+                        }`} />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-ojas-text-main text-sm">
+                            {notification.title}
+                          </h4>
+                          <p className="text-sm text-ojas-text-secondary">
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-ojas-text-secondary mt-1">
+                            {notification.time}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           
           <button 
             onClick={handleSettings}
@@ -84,6 +139,14 @@ const HomePageHeader: React.FC<HomePageHeaderProps> = ({ userProfile }) => {
           </div>
         </div>
       </div>
+
+      {/* Click outside to close notifications */}
+      {showNotifications && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowNotifications(false)}
+        />
+      )}
     </div>
   );
 };
