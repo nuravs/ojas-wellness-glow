@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SafeAreaContainer from '@/components/SafeAreaContainer';
-import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
 import { useMedications } from '@/hooks/useMedications';
 import { useSymptoms } from '@/hooks/useSymptoms';
@@ -19,6 +18,7 @@ import WellnessSection from '@/components/homepage/WellnessSection';
 import AIInsightsSection from '@/components/homepage/AIInsightsSection';
 import TodaysActionsSection from '@/components/homepage/TodaysActionsSection';
 import LatestVitalsSection from '@/components/homepage/LatestVitalsSection';
+import { EnhancedWellnessCalculator } from '@/utils/enhancedWellnessScore';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -98,15 +98,30 @@ const HomePage = () => {
     }
   };
 
+  // Enhanced wellness score calculation
+  const getEnhancedWellnessScore = () => {
+    const calculator = EnhancedWellnessCalculator.getInstance();
+    const result = calculator.calculateEnhancedWellnessScore(
+      vitals,
+      symptoms,
+      medications,
+      medicationLogs
+    );
+    return result.score;
+  };
+
   const getWellnessScore = () => {
-    const { taken, total } = getMedicationStatus();
-    const medicationScore = total > 0 ? (taken / total) * 100 : 100;
-    
-    // Factor in symptoms - if logged today, slight boost for engagement
-    const symptomsLogged = getSymptomsLoggedToday();
-    const symptomBonus = symptomsLogged ? 5 : 0;
-    
-    return Math.min(100, Math.round(medicationScore * 0.8 + 20 + symptomBonus));
+    try {
+      return getEnhancedWellnessScore();
+    } catch (error) {
+      console.error('Error calculating enhanced wellness score:', error);
+      // Fallback to basic calculation
+      const { taken, total } = getMedicationStatus();
+      const medicationScore = total > 0 ? (taken / total) * 100 : 100;
+      const symptomsLogged = getSymptomsLoggedToday();
+      const symptomBonus = symptomsLogged ? 5 : 0;
+      return Math.min(100, Math.round(medicationScore * 0.8 + 20 + symptomBonus));
+    }
   };
 
   const getWellnessStatus = () => {
@@ -118,7 +133,7 @@ const HomePage = () => {
 
   // Navigation handlers
   const handleViewAllInsights = () => {
-    navigate('/?tab=more');
+    navigate('/more');
   };
 
   const handleViewAllVitals = () => {
@@ -138,7 +153,6 @@ const HomePage = () => {
   };
 
   const handleViewMedications = () => {
-    // Navigate to medications tab in the main app
     navigate('/?tab=medications');
   };
 
@@ -192,19 +206,24 @@ const HomePage = () => {
         {/* Caregiver Modal */}
         <CaregiverLinkModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
-        {/* Wellness Section */}
+        {/* Enhanced Wellness Section */}
         <WellnessSection 
           score={wellnessScore}
           status={wellnessStatus}
           medsCount={medsCount}
           symptomsLogged={symptomsLogged}
+          vitals={vitals}
+          symptoms={symptoms}
+          medications={medications}
+          medicationLogs={medicationLogs}
         />
 
-        {/* AI Insights Section */}
+        {/* Enhanced AI Insights Section */}
         <AIInsightsSection 
           medications={medications || []}
-          vitals={vitals}
+          vitals={vitals || []}
           symptoms={symptoms || []}
+          medicationLogs={medicationLogs || []}
           userRole={userProfile.role as 'patient' | 'caregiver'}
           onViewAll={handleViewAllInsights}
         />
@@ -221,7 +240,7 @@ const HomePage = () => {
 
         {/* Latest Vitals Section */}
         <LatestVitalsSection 
-          vitals={vitals}
+          vitals={vitals || []}
           userRole={userProfile.role as 'patient' | 'caregiver'}
           onViewAll={handleViewAllVitals}
           onQuickAdd={handleQuickAddVital}

@@ -193,3 +193,92 @@
 .animate-gentle-fade-in {
   animation: gentle-fade-in 0.3s ease-out;
 }
+
+/* Enhanced wellness ring animations */
+@keyframes wellness-glow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 8px rgba(0, 180, 136, 0.3));
+  }
+  50% { 
+    filter: drop-shadow(0 0 16px rgba(0, 180, 136, 0.5));
+  }
+}
+
+@keyframes wellness-pulse {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes insight-fade-in {
+  0% { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes score-counter {
+  0% { 
+    transform: scale(0.8);
+  }
+  50% { 
+    transform: scale(1.1);
+  }
+  100% { 
+    transform: scale(1);
+  }
+}
+
+/* Wellness ring states */
+.wellness-ring-excellent {
+  animation: wellness-glow 2s ease-in-out infinite;
+}
+
+.wellness-ring-urgent {
+  animation: wellness-pulse 1.5s ease-in-out infinite;
+}
+
+.insight-item {
+  animation: insight-fade-in 0.5s ease-out;
+}
+
+.score-counter {
+  animation: score-counter 1s ease-out;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .wellness-ring-excellent,
+  .wellness-ring-urgent,
+  .insight-item,
+  .score-counter {
+    animation: none;
+  }
+}
+
+/* Enhanced focus states for better accessibility */
+.wellness-button:focus-visible {
+  outline: 2px solid var(--ojas-primary);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.wellness-loading {
+  background: linear-gradient(90deg, var(--ojas-cloud-gray) 25%, var(--ojas-bg-light) 50%, var(--ojas-cloud-gray) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
