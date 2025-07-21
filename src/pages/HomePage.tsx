@@ -15,9 +15,10 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import HomePageHeader from '@/components/homepage/HomePageHeader';
 import WellnessSection from '@/components/homepage/WellnessSection';
-import AIInsightsSection from '@/components/homepage/AIInsightsSection';
-import TodaysActionsSection from '@/components/homepage/TodaysActionsSection';
-import LatestVitalsSection from '@/components/homepage/LatestVitalsSection';
+import TodaysFocusSection from '@/components/homepage/TodaysFocusSection';
+import SecondaryActionsSection from '@/components/homepage/SecondaryActionsSection';
+import CollapsibleInsightsSection from '@/components/homepage/CollapsibleInsightsSection';
+import ConsolidatedFloatingActionButton from '@/components/ConsolidatedFloatingActionButton';
 import { EnhancedWellnessCalculator } from '@/utils/enhancedWellnessScore';
 
 const HomePage = () => {
@@ -131,31 +132,6 @@ const HomePage = () => {
     return 'urgent';
   };
 
-  // Navigation handlers
-  const handleViewAllInsights = () => {
-    navigate('/more');
-  };
-
-  const handleViewAllVitals = () => {
-    navigate('/vitals');
-  };
-
-  const handleQuickAddVital = () => {
-    navigate('/vitals?action=add');
-  };
-
-  const handleAddVitalReading = (vitalType: string) => {
-    navigate(`/vitals?action=add&type=${vitalType}`);
-  };
-
-  const handleLogSymptom = () => {
-    navigate('/symptoms');
-  };
-
-  const handleViewMedications = () => {
-    navigate('/?tab=medications');
-  };
-
   // Show loading state only if critical data is still loading
   if (medicationsLoading && !medications.length) {
     return (
@@ -206,46 +182,50 @@ const HomePage = () => {
         {/* Caregiver Modal */}
         <CaregiverLinkModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
-        {/* Enhanced Wellness Section */}
-        <WellnessSection 
-          score={wellnessScore}
-          status={wellnessStatus}
+        {/* Condensed Wellness Ring */}
+        <div className="px-4 mb-6">
+          <WellnessSection 
+            score={wellnessScore}
+            status={wellnessStatus}
+            medsCount={medsCount}
+            symptomsLogged={symptomsLogged}
+            vitals={vitals}
+            symptoms={symptoms}
+            medications={medications}
+            medicationLogs={medicationLogs}
+            condensed={true}
+          />
+        </div>
+
+        {/* NEW: Today's Focus Section - Main Priority */}
+        <TodaysFocusSection 
+          medications={medications || []}
           medsCount={medsCount}
           symptomsLogged={symptomsLogged}
-          vitals={vitals}
-          symptoms={symptoms}
-          medications={medications}
-          medicationLogs={medicationLogs}
+          vitals={vitals || []}
+          userProfile={userProfile}
+          onMedicationAction={handleMedicationToggle}
         />
 
-        {/* Enhanced AI Insights Section */}
-        <AIInsightsSection 
+        {/* NEW: Secondary Actions */}
+        <SecondaryActionsSection 
+          medsCount={medsCount}
+          symptomsLogged={symptomsLogged}
+          vitals={vitals || []}
+          userRole={userProfile.role as 'patient' | 'caregiver'}
+        />
+
+        {/* NEW: Collapsible Insights */}
+        <CollapsibleInsightsSection 
           medications={medications || []}
           vitals={vitals || []}
           symptoms={symptoms || []}
           medicationLogs={medicationLogs || []}
           userRole={userProfile.role as 'patient' | 'caregiver'}
-          onViewAll={handleViewAllInsights}
         />
 
-        {/* Today's Actions Section */}
-        <TodaysActionsSection 
-          medications={medications || []}
-          medsCount={medsCount}
-          symptomsLogged={symptomsLogged}
-          onMedicationAction={handleMedicationToggle}
-          onLogSymptom={handleLogSymptom}
-          onViewMedications={handleViewMedications}
-        />
-
-        {/* Latest Vitals Section */}
-        <LatestVitalsSection 
-          vitals={vitals || []}
-          userRole={userProfile.role as 'patient' | 'caregiver'}
-          onViewAll={handleViewAllVitals}
-          onQuickAdd={handleQuickAddVital}
-          onAddReading={handleAddVitalReading}
-        />
+        {/* NEW: Consolidated Floating Action Button */}
+        <ConsolidatedFloatingActionButton />
       </div>
     </SafeAreaContainer>
   );

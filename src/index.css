@@ -1,185 +1,21 @@
+// Tailwind base styles and resets
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+/* Enhanced animations for Phase 2 */
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 217.2 32.6% 27.5%;
-
-    --radius: 0.5rem;
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
-  }
-}
-
-/* ojas colors */
-.ojas-primary {
-  color: #007BFF;
-}
-
-.ojas-primary-hover {
-  color: #0056b3;
-}
-
-.ojas-secondary {
-  color: #6c757d;
-}
-
-.ojas-success {
-  color: #28a745;
-}
-
-.ojas-info {
-  color: #17a2b8;
-}
-
-.ojas-warning {
-  color: #ffc107;
-}
-
-.ojas-error {
-  color: #dc3545;
-}
-
-.ojas-bg-light {
-  background-color: #f8f9fa;
-}
-
-.ojas-text-main {
-  color: #343a40;
-}
-
-.ojas-text-secondary {
-  color: #6c757d;
-}
-
-.ojas-border {
-  border-color: #dee2e6;
-}
-
-.ojas-soft-midnight {
-  background-color: #1e293b;
-}
-
-.ojas-charcoal-gray {
-  background-color: #334155;
-}
-
-.ojas-slate-gray {
-  border-color: #475569;
-}
-
-.ojas-mist-white {
-  color: #f0f9ff;
-}
-
-.ojas-cloud-silver {
-  color: #cbd5e1;
-}
-
-.ojas-soft {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.ojas-medium {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.ojas-strong {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
-
-.ojas-alert {
-  color: #ffc107;
-  background-color: #fff3cd;
-}
-
-/* Custom animations for wellness ring */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 195, 0, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(255, 195, 0, 0.6);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Fade in animation for breakdown section */
-@keyframes gentle-fade-in {
+@keyframes fade-in {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -190,95 +26,24 @@
   }
 }
 
-.animate-gentle-fade-in {
-  animation: gentle-fade-in 0.3s ease-out;
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
 }
 
-/* Enhanced wellness ring animations */
-@keyframes wellness-glow {
-  0%, 100% { 
-    filter: drop-shadow(0 0 8px rgba(0, 180, 136, 0.3));
-  }
-  50% { 
-    filter: drop-shadow(0 0 16px rgba(0, 180, 136, 0.5));
-  }
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
 }
 
-@keyframes wellness-pulse {
-  0%, 100% { 
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% { 
-    opacity: 0.1;
-    transform: scale(1.05);
-  }
+/* Focus section animations */
+.focus-card-enter {
+  animation: scale-in 0.3s ease-out;
 }
 
-@keyframes insight-fade-in {
-  0% { 
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% { 
-    opacity: 1;
-    transform: translateY(0);
-  }
+.focus-card-exit {
+  animation: scale-out 0.2s ease-out;
 }
 
-@keyframes score-counter {
-  0% { 
-    transform: scale(0.8);
-  }
-  50% { 
-    transform: scale(1.1);
-  }
-  100% { 
-    transform: scale(1);
-  }
-}
-
-/* Wellness ring states */
-.wellness-ring-excellent {
-  animation: wellness-glow 2s ease-in-out infinite;
-}
-
-.wellness-ring-urgent {
-  animation: wellness-pulse 1.5s ease-in-out infinite;
-}
-
-.insight-item {
-  animation: insight-fade-in 0.5s ease-out;
-}
-
-.score-counter {
-  animation: score-counter 1s ease-out;
-}
-
-/* Accessibility improvements */
-@media (prefers-reduced-motion: reduce) {
-  .wellness-ring-excellent,
-  .wellness-ring-urgent,
-  .insight-item,
-  .score-counter {
-    animation: none;
-  }
-}
-
-/* Enhanced focus states for better accessibility */
-.wellness-button:focus-visible {
-  outline: 2px solid var(--ojas-primary);
-  outline-offset: 2px;
-}
-
-/* Loading states */
-.wellness-loading {
-  background: linear-gradient(90deg, var(--ojas-cloud-gray) 25%, var(--ojas-bg-light) 50%, var(--ojas-cloud-gray) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite;
-}
-
-@keyframes loading-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+/* Floating action button animations */
+.fab-expand {
+  animation: scale-in 0.2s ease-out;
 }
