@@ -99,7 +99,12 @@ const HomePage = () => {
             />
             
             {/* Secondary actions */}
-            <SecondaryActionsSection />
+            <SecondaryActionsSection
+              medsCount={medsCount}
+              symptomsLogged={symptomsLogged}
+              vitals={vitals}
+              userRole={userRole}
+            />
             
             {/* Collapsible insights */}
             <CollapsibleInsightsSection

@@ -12,9 +12,15 @@ interface Medication {
 
 interface MedicationTimelineProps {
   medications: Medication[];
+  onToggleMedication?: (id: string) => void;
+  onPostponeMedication?: (id: string) => void;
 }
 
-const MedicationTimeline: React.FC<MedicationTimelineProps> = ({ medications }) => {
+const MedicationTimeline: React.FC<MedicationTimelineProps> = ({ 
+  medications, 
+  onToggleMedication, 
+  onPostponeMedication 
+}) => {
   if (!medications || medications.length === 0) {
     return (
       <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-6">
@@ -127,6 +133,28 @@ const MedicationTimeline: React.FC<MedicationTimelineProps> = ({ medications }) 
                   <p className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
                     {formatTime(medication.time)}
                   </p>
+
+                  {/* Action buttons */}
+                  {!medication.taken && (onToggleMedication || onPostponeMedication) && (
+                    <div className="flex gap-2 mt-3">
+                      {onToggleMedication && (
+                        <button
+                          onClick={() => onToggleMedication(medication.id)}
+                          className="px-3 py-1 text-sm bg-ojas-success text-white rounded-md hover:bg-ojas-success/90 transition-colors"
+                        >
+                          Take
+                        </button>
+                      )}
+                      {onPostponeMedication && (
+                        <button
+                          onClick={() => onPostponeMedication(medication.id)}
+                          className="px-3 py-1 text-sm bg-ojas-text-secondary text-white rounded-md hover:bg-ojas-text-secondary/90 transition-colors"
+                        >
+                          Later
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             );

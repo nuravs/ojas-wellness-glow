@@ -85,7 +85,7 @@ export const useHealthData = () => {
     }
 
     // Update store - extract numeric value from wellness score
-    const scoreValue = typeof wellnessScore === 'object' ? wellnessScore.score : wellnessScore;
+    const scoreValue = typeof wellnessScore === 'number' ? wellnessScore : 75;
     setWellnessScore(scoreValue);
     setTodaysFocus(todaysFocus);
     setMedicationsPending(pendingMeds);
