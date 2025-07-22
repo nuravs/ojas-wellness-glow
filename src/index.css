@@ -1,4 +1,5 @@
-// Tailwind base styles and resets
+
+/* Tailwind base styles and resets */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -26,12 +27,55 @@
   }
 }
 
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
 }
 
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-in-from-top {
+  animation: slide-in-from-top 0.4s ease-out;
+}
+
+.animate-slide-in-from-bottom {
+  animation: slide-in-from-bottom 0.4s ease-out;
+}
+
+.animate-gentle-bounce {
+  animation: gentle-bounce 2s ease-in-out infinite;
 }
 
 /* Focus section animations */
@@ -46,4 +90,13 @@
 /* Floating action button animations */
 .fab-expand {
   animation: scale-in 0.2s ease-out;
+}
+
+/* Collapsible section animations */
+.collapsible-enter {
+  animation: slide-in-from-top 0.3s ease-out;
+}
+
+.collapsible-exit {
+  animation: slide-in-from-bottom 0.2s ease-out;
 }
