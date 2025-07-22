@@ -58,6 +58,38 @@
   }
 }
 
+/* Enhanced wellness ring animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 180, 136, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 180, 136, 0.6);
+  }
+}
+
+@keyframes gentle-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+}
+
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
 }
@@ -76,6 +108,18 @@
 
 .animate-gentle-bounce {
   animation: gentle-bounce 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-gentle-fade-in {
+  animation: gentle-fade-in 0.5s ease-out;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 4s ease-in-out infinite;
 }
 
 /* Focus section animations */

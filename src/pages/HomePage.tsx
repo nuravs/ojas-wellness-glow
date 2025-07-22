@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,7 +41,6 @@ const HomePage = () => {
     );
   }
 
-  // Helper function to check if symptoms were logged today
   const getSymptomsLoggedToday = (): boolean => {
     if (!symptoms || symptoms.length === 0) return false;
     
@@ -56,7 +54,6 @@ const HomePage = () => {
     });
   };
 
-  // Helper function to determine medication taken status from logs
   const getMedicationStatus = () => {
     if (!medications || medications.length === 0) {
       return { taken: 0, total: 0 };
@@ -67,13 +64,11 @@ const HomePage = () => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Get today's medication logs
     const todaysLogs = medicationLogs.filter(log => {
       const logDate = new Date(log.created_at);
       return logDate >= today && logDate < tomorrow && log.status === 'taken';
     });
 
-    // Count unique medications taken today
     const takenMedicationIds = new Set(todaysLogs.map(log => log.medication_id));
     const taken = takenMedicationIds.size;
     const total = medications.length;
@@ -99,7 +94,6 @@ const HomePage = () => {
     }
   };
 
-  // Enhanced wellness score calculation
   const getEnhancedWellnessScore = () => {
     const calculator = EnhancedWellnessCalculator.getInstance();
     const result = calculator.calculateEnhancedWellnessScore(
@@ -116,7 +110,6 @@ const HomePage = () => {
       return getEnhancedWellnessScore();
     } catch (error) {
       console.error('Error calculating enhanced wellness score:', error);
-      // Fallback to basic calculation
       const { taken, total } = getMedicationStatus();
       const medicationScore = total > 0 ? (taken / total) * 100 : 100;
       const symptomsLogged = getSymptomsLoggedToday();
@@ -182,22 +175,21 @@ const HomePage = () => {
         {/* Caregiver Modal */}
         <CaregiverLinkModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
-        {/* Condensed Wellness Ring */}
-        <div className="px-4 mb-6">
-          <WellnessSection 
-            score={wellnessScore}
-            status={wellnessStatus}
-            medsCount={medsCount}
-            symptomsLogged={symptomsLogged}
-            vitals={vitals}
-            symptoms={symptoms}
-            medications={medications}
-            medicationLogs={medicationLogs}
-            condensed={true}
-          />
-        </div>
+        {/* Main Animated Wellness Ring - Restored as the central element */}
+        <WellnessSection 
+          score={wellnessScore}
+          status={wellnessStatus}
+          medsCount={medsCount}
+          symptomsLogged={symptomsLogged}
+          vitals={vitals}
+          symptoms={symptoms}
+          medications={medications}
+          medicationLogs={medicationLogs}
+          condensed={false}
+          userRole={userProfile.role as 'patient' | 'caregiver'}
+        />
 
-        {/* NEW: Today's Focus Section - Main Priority */}
+        {/* Today's Focus Section - Main Priority */}
         <TodaysFocusSection 
           medications={medications || []}
           medsCount={medsCount}
@@ -207,7 +199,7 @@ const HomePage = () => {
           onMedicationAction={handleMedicationToggle}
         />
 
-        {/* NEW: Secondary Actions */}
+        {/* Secondary Actions */}
         <SecondaryActionsSection 
           medsCount={medsCount}
           symptomsLogged={symptomsLogged}
@@ -215,7 +207,7 @@ const HomePage = () => {
           userRole={userProfile.role as 'patient' | 'caregiver'}
         />
 
-        {/* NEW: Collapsible Insights */}
+        {/* Collapsible Insights */}
         <CollapsibleInsightsSection 
           medications={medications || []}
           vitals={vitals || []}
@@ -224,7 +216,7 @@ const HomePage = () => {
           userRole={userProfile.role as 'patient' | 'caregiver'}
         />
 
-        {/* NEW: Consolidated Floating Action Button */}
+        {/* Consolidated Floating Action Button */}
         <ConsolidatedFloatingActionButton />
       </div>
     </SafeAreaContainer>

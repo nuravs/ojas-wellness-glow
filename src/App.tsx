@@ -12,7 +12,15 @@ import VitalsPage from "./pages/VitalsPage";
 import SymptomsPage from "./pages/SymptomsPage";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading: authLoading, userProfile, error } = useAuth();
@@ -25,7 +33,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     currentPath: window.location.pathname
   });
 
-  // 1. While checking for authentication, show a simple loading screen
+  // While checking for authentication, show a simple loading screen
   if (authLoading) {
     return (
       <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
@@ -37,13 +45,13 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     );
   }
 
-  // 2. If checking is done and there's no user, redirect to the login page
+  // If checking is done and there's no user, redirect to the login page
   if (!user) {
     console.log('🔄 No user found, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
 
-  // 3. User is authenticated - allow app to continue
+  // User is authenticated - allow app to continue
   console.log('✅ User authenticated, allowing app access');
   return children;
 };
@@ -63,9 +71,9 @@ const App = () => {
                 {/* The login page is public */}
                 <Route path="/auth" element={<AuthPage />} />
 
-                {/* The main app (Index) is now wrapped in our ProtectedRoute */}
+                {/* All main app routes go through Index with internal routing */}
                 <Route
-                  path="/"
+                  path="/*"
                   element={
                     <ProtectedRoute>
                       <Index />
@@ -73,7 +81,7 @@ const App = () => {
                   }
                 />
 
-                {/* Add dedicated routes for key pages */}
+                {/* Dedicated routes for key pages */}
                 <Route
                   path="/vitals"
                   element={
@@ -92,7 +100,7 @@ const App = () => {
                   }
                 />
                 
-                {/* All other routes */}
+                {/* Catch-all for unknown routes */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

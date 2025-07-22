@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
 import HealthLogPage from './HealthLogPage';
@@ -20,20 +20,41 @@ import { useMedications } from '../hooks/useMedications';
 import { useAuthDebug } from '../hooks/useAuthDebug';
 
 const Index = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');  
   const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups' | 'events'>('main');
-  const [searchParams, setSearchParams] = useSearchParams();
   
   const { user, userProfile, loading: authLoading } = useAuthDebug();
   const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
 
-  // Handle URL parameter for page navigation
+  // Handle URL-based routing
   useEffect(() => {
-    const page = searchParams.get('page');
-    if (page === 'settings') {
+    const path = location.pathname;
+    
+    if (path.includes('settings')) {
       setCurrentPage('settings');
+    } else if (path.includes('doctors')) {
+      setCurrentPage('doctors');
+    } else if (path.includes('comorbidities')) {
+      setCurrentPage('comorbidities');
+    } else if (path.includes('support-groups')) {
+      setCurrentPage('support-groups');
+    } else if (path.includes('events')) {
+      setCurrentPage('events');
+    } else if (path.includes('more')) {
+      setActiveTab('more');
+      setCurrentPage('main');
+    } else if (path.includes('medications')) {
+      setActiveTab('medications');
+      setCurrentPage('main');
+    } else if (path.includes('health-log')) {
+      setActiveTab('health-log');
+      setCurrentPage('main');
+    } else {
+      setActiveTab('home');
+      setCurrentPage('main');
     }
-  }, [searchParams]);
+  }, [location.pathname]);
 
   console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);
 
@@ -55,6 +76,7 @@ const Index = () => {
 
   const handleNavigateToHealthLog = () => {
     setActiveTab('health-log');
+    setCurrentPage('main');
   };
 
   const handleNavigateToSupportGroups = () => {
@@ -68,8 +90,13 @@ const Index = () => {
   const handleBackToMore = () => {
     setCurrentPage('main');
     setActiveTab('more');
-    // Clear URL parameters
-    setSearchParams({});
+    window.history.pushState({}, '', '/more');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentPage('main');
+    setActiveTab('home');
+    window.history.pushState({}, '', '/');
   };
 
   // Handle special page navigation
@@ -113,7 +140,7 @@ const Index = () => {
     );
   }
 
-  // Only show loading for medications if we have a user but no medication data yet
+  // Show loading state only if critical data is still loading
   if (user && medicationsLoading && !medications.length && activeTab === 'medications') {
     return (
       <ThemeProvider>

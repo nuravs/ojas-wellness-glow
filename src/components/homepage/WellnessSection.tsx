@@ -1,6 +1,9 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Clock3, AlertCircle, Check, Clock, AlertTriangle } from 'lucide-react';
+import WellnessRing from '../WellnessRing';
+import EnhancedWellnessRing from '../EnhancedWellnessRing';
 
 interface WellnessSectionProps {
   score: number;
@@ -12,6 +15,7 @@ interface WellnessSectionProps {
   medications: any[];
   medicationLogs: any[];
   condensed?: boolean;
+  userRole?: 'patient' | 'caregiver';
 }
 
 const WellnessSection: React.FC<WellnessSectionProps> = ({ 
@@ -23,7 +27,8 @@ const WellnessSection: React.FC<WellnessSectionProps> = ({
   symptoms, 
   medications, 
   medicationLogs,
-  condensed = false
+  condensed = false,
+  userRole = 'patient'
 }) => {
   const navigate = useNavigate();
 
@@ -55,7 +60,7 @@ const WellnessSection: React.FC<WellnessSectionProps> = ({
   };
 
   if (condensed) {
-    // Condensed version for the new focused homepage
+    // Condensed version for quick overview
     return (
       <div className="bg-white rounded-xl p-4 shadow-ojas-soft border border-ojas-border">
         <div className="flex items-center justify-between">
@@ -88,35 +93,28 @@ const WellnessSection: React.FC<WellnessSectionProps> = ({
     );
   }
 
+  // Full animated wellness ring - this is the main feature
   return (
     <div className="px-4 mb-8">
       <div className="bg-white rounded-2xl p-6 shadow-ojas-soft border border-ojas-border">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            {status === 'good' && <CheckCircle className="w-6 h-6 text-ojas-success" />}
-            {status === 'attention' && <Clock3 className="w-6 h-6 text-ojas-alert" />}
-            {status === 'urgent' && <AlertCircle className="w-6 h-6 text-ojas-error" />}
-            <h2 className="text-lg font-semibold text-ojas-text-main">
-              Wellness Score
-            </h2>
-          </div>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBgColor(status)}`}>
-            {getStatusLabel(status)}
-          </div>
+        <div className="flex items-center justify-center mb-4">
+          <h2 className="text-xl font-semibold text-ojas-text-main">
+            Today's Wellness
+          </h2>
         </div>
 
-        <div className="flex items-center justify-center mb-6">
-          <div className="relative">
-            <div className="w-32 h-32 rounded-full bg-ojas-primary/10 flex items-center justify-center">
-              <span className="text-4xl font-bold text-ojas-text-main">{score}</span>
-            </div>
-            <div className="absolute -bottom-2 right-0 w-8 h-8 rounded-full bg-white border-2 border-ojas-border flex items-center justify-center">
-              {getStatusIcon(status)}
-            </div>
-          </div>
-        </div>
+        {/* Enhanced Wellness Ring - The main animated element */}
+        <EnhancedWellnessRing
+          status={status}
+          medsCount={medsCount}
+          symptomsLogged={symptomsLogged}
+          score={score}
+          userRole={userRole}
+          onExpand={() => navigate('/more')}
+        />
 
-        <div className="grid grid-cols-2 gap-4">
+        {/* Quick Stats Summary */}
+        <div className="mt-6 grid grid-cols-2 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-ojas-success/10 flex items-center justify-center">
               <Check className="w-4 h-4 text-ojas-success" />
@@ -148,15 +146,6 @@ const WellnessSection: React.FC<WellnessSectionProps> = ({
               </p>
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <button 
-            onClick={() => navigate('/more')}
-            className="text-ojas-primary font-medium text-sm hover:text-ojas-primary-hover transition-colors"
-          >
-            View Details
-          </button>
         </div>
       </div>
     </div>
