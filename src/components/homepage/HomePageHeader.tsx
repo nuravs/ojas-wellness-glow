@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { LogOut, Bell, Settings, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -63,6 +64,53 @@ const HomePageHeader: React.FC<HomePageHeaderProps> = ({ userProfile }) => {
   };
 
   const notifications = getHealthNotifications();
+
+  // Handle loading state when userProfile is null
+  if (!userProfile) {
+    return (
+      <div className="bg-white px-4 py-6 border-b border-ojas-border">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-ojas-text-main mb-1">
+              {getGreeting()}...
+            </h1>
+            <p className="text-sm text-ojas-text-secondary">
+              {getCurrentDate()}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button 
+                onClick={handleNotifications}
+                className="relative p-2 text-ojas-text-secondary hover:text-ojas-text-main transition-colors"
+                title="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-ojas-error rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white font-medium">{notifications.length}</span>
+                  </span>
+                )}
+              </button>
+            </div>
+            
+            <button 
+              onClick={handleSettings}
+              className="p-2 text-ojas-text-secondary hover:text-ojas-text-main transition-colors"
+              title="Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            
+            <div className="w-10 h-10 bg-ojas-primary rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white px-4 py-6 border-b border-ojas-border relative">
