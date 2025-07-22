@@ -4,6 +4,8 @@ import { useHealthStore } from '../stores/healthStore';
 import { useMedications } from './useMedications';
 import { useSymptoms } from './useSymptoms';
 import { useVitals } from './useVitals';
+import { useMedicationLogs } from './useMedicationLogs';
+import { useComorbidities } from './useComorbidities';
 import { calculateWellnessScore } from '../utils/wellnessScore';
 
 export const useHealthData = () => {
@@ -19,26 +21,40 @@ export const useHealthData = () => {
   const { medications, loading: medicationsLoading } = useMedications();
   const { symptoms, loading: symptomsLoading } = useSymptoms();
   const { vitals, loading: vitalsLoading } = useVitals();
+  const { medicationLogs, loading: medicationLogsLoading } = useMedicationLogs();
+  const { comorbidities, loading: comorbiditiesLoading } = useComorbidities();
 
   useEffect(() => {
-    if (medicationsLoading || symptomsLoading || vitalsLoading) return;
+    if (medicationsLoading || symptomsLoading || vitalsLoading || medicationLogsLoading || comorbiditiesLoading) return;
 
-    // Calculate wellness score
+    // Calculate wellness score with all required data
     const wellnessScore = calculateWellnessScore({
       medications,
       symptoms,
       vitals,
+      medicationLogs,
+      comorbidities,
     });
 
-    // Count pending medications
-    const pendingMeds = medications.filter(med => 
-      med.active && !med.taken_today
-    ).length;
+    // Count pending medications - check if active and not taken today
+    const pendingMeds = medications.filter(med => {
+      if (!med.active) return false;
+      
+      // Check if medication was taken today by looking at logs
+      const today = new Date().toISOString().split('T')[0];
+      const takenToday = medicationLogs.some(log => 
+        log.medication_id === med.id && 
+        log.status === 'taken' && 
+        log.created_at?.startsWith(today)
+      );
+      
+      return !takenToday;
+    }).length;
 
     // Count today's symptoms
     const today = new Date().toISOString().split('T')[0];
     const todaySymptoms = symptoms.filter(symptom => 
-      symptom.logged_at.startsWith(today)
+      symptom.logged_at?.startsWith(today)
     ).length;
 
     // Count out-of-range vitals
@@ -68,8 +84,9 @@ export const useHealthData = () => {
       };
     }
 
-    // Update store
-    setWellnessScore(wellnessScore);
+    // Update store - extract numeric value from wellness score
+    const scoreValue = typeof wellnessScore === 'object' ? wellnessScore.score : wellnessScore;
+    setWellnessScore(scoreValue);
     setTodaysFocus(todaysFocus);
     setMedicationsPending(pendingMeds);
     setSymptomsToday(todaySymptoms);
@@ -79,9 +96,13 @@ export const useHealthData = () => {
     medications,
     symptoms,
     vitals,
+    medicationLogs,
+    comorbidities,
     medicationsLoading,
     symptomsLoading,
     vitalsLoading,
+    medicationLogsLoading,
+    comorbiditiesLoading,
     setWellnessScore,
     setTodaysFocus,
     setMedicationsPending,
@@ -91,6 +112,6 @@ export const useHealthData = () => {
   ]);
 
   return {
-    loading: medicationsLoading || symptomsLoading || vitalsLoading,
+    loading: medicationsLoading || symptomsLoading || vitalsLoading || medicationLogsLoading || comorbiditiesLoading,
   };
 };

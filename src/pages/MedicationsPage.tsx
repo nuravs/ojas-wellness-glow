@@ -13,26 +13,10 @@ import { useMedicationLogs } from '../hooks/useMedicationLogs';
 import { toast } from '../hooks/use-toast';
 
 interface MedicationsPageProps {
-  medications: Array<{
-    id: string;
-    name: string;
-    dosage: string;
-    time: string;
-    taken: boolean;
-    caregiver_visible?: boolean;
-    logged_by_role?: 'patient' | 'caregiver';
-  }>;
-  onToggleMedication: (id: string) => void;
-  onPostponeMedication: (id: string) => void;
-  onAddMedication: () => void;
   userRole?: 'patient' | 'caregiver';
 }
 
 const MedicationsPage: React.FC<MedicationsPageProps> = ({ 
-  medications: propMedications, 
-  onToggleMedication: propOnToggleMedication, 
-  onPostponeMedication: propOnPostponeMedication,
-  onAddMedication: propOnAddMedication,
   userRole = 'patient'
 }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -49,12 +33,23 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
   const { refillAlerts, dismissAlert, handleRefill, loading: refillLoading } = useRefillAlerts();
   const { medicationLogs } = useMedicationLogs();
   
-  // Use hook data if available, fallback to props
-  const activeMedications = medications.length > 0 ? medications : propMedications;
-  const pendingMeds = activeMedications.filter(med => !med.taken);
-  const completedMeds = activeMedications.filter(med => med.taken);
+  // Use hook data
+  const activeMedications = medications;
+  const today = new Date().toISOString().split('T')[0];
+  const takenToday = medicationLogs.filter(log => 
+    log.status === 'taken' && log.created_at?.startsWith(today)
+  );
+  const pendingMeds = activeMedications.filter(med => {
+    const takenMedToday = takenToday.some(log => log.medication_id === med.id);
+    return med.active && !takenMedToday;
+  });
+  const completedMeds = activeMedications.filter(med => {
+    const takenMedToday = takenToday.some(log => log.medication_id === med.id);
+    return takenMedToday;
+  });
+  
   const overdueMeds = pendingMeds.filter(med => {
-    const medTime = new Date(`2000/01/01 ${med.time}`);
+    const medTime = new Date(`2000/01/01 ${med.frequency?.time || '00:00'}`);
     const now = new Date();
     const currentTime = new Date(`2000/01/01 ${now.getHours()}:${now.getMinutes()}`);
     return medTime < currentTime;
@@ -62,7 +57,7 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
 
   // Calculate stats for header cards
   const totalMeds = activeMedications.length;
-  const takenToday = completedMeds.length;
+  const takenTodayCount = takenToday.length;
   const overdueCount = overdueMeds.length;
 
   // Calculate adherence percentage
@@ -73,7 +68,7 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
     last7Days.setDate(last7Days.getDate() - 7);
     
     const recentLogs = medicationLogs.filter(log => 
-      new Date(log.created_at) >= last7Days
+      new Date(log.created_at!) >= last7Days
     );
     
     const takenLogs = recentLogs.filter(log => log.status === 'taken');
@@ -153,6 +148,17 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
     }
   };
 
+  // Create medication data compatible with timeline
+  const medicationData = activeMedications.map(med => ({
+    id: med.id,
+    name: med.name,
+    dosage: med.dosage,
+    time: med.frequency?.time || '00:00',
+    taken: takenToday.some(log => log.medication_id === med.id),
+    caregiver_visible: med.caregiver_visible,
+    logged_by_role: userRole
+  }));
+
   return (
     <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
       <div className="overflow-y-auto pb-20" style={{ padding: '0 16px' }}>
@@ -183,7 +189,7 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
               <div className="text-sm text-ojas-text-secondary">Total Meds</div>
             </div>
             <div className="bg-blue-50 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">{takenToday}</div>
+              <div className="text-2xl font-bold text-blue-600 mb-1">{takenTodayCount}</div>
               <div className="text-sm text-blue-600">Taken Today</div>
             </div>
             <div className="bg-red-50 rounded-xl p-4 text-center">
@@ -242,8 +248,12 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
                     {new Date().toLocaleDateString()}
                   </span>
                 </div>
-                {activeMedications.length > 0 ? (
-                  <MedicationTimeline medications={activeMedications} />
+                {medicationData.length > 0 ? (
+                  <MedicationTimeline 
+                    medications={medicationData}
+                    onToggleMedication={handleToggleMedication}
+                    onPostponeMedication={handlePostponeMedication}
+                  />
                 ) : (
                   <div className="bg-white rounded-xl p-6 text-center">
                     <Pill className="w-12 h-12 text-ojas-text-secondary mx-auto mb-3" />
@@ -285,16 +295,16 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
                           </div>
                           <div>
                             <h3 className="font-semibold text-ojas-text-main">{medication.name}</h3>
-                            <p className="text-sm text-ojas-text-secondary">{medication.dosage} • 3x daily</p>
+                            <p className="text-sm text-ojas-text-secondary">{medication.dosage} • Daily</p>
                           </div>
                         </div>
-                        {medication.taken ? (
+                        {takenToday.some(log => log.medication_id === medication.id) ? (
                           <span className="px-3 py-1 bg-ojas-success/10 text-ojas-success rounded-full text-sm font-medium">
                             Completed
                           </span>
                         ) : (
                           <span className="px-3 py-1 bg-ojas-error/10 text-ojas-error rounded-full text-sm font-medium">
-                            Overdue
+                            Pending
                           </span>
                         )}
                       </div>
@@ -302,21 +312,18 @@ const MedicationsPage: React.FC<MedicationsPageProps> = ({
                       <div className="mb-3">
                         <p className="text-sm font-medium text-ojas-text-main mb-1">Daily Schedule</p>
                         <div className="flex gap-2">
-                          <span className="px-2 py-1 bg-ojas-bg-light rounded text-xs">08:00</span>
-                          <span className="px-2 py-1 bg-ojas-bg-light rounded text-xs">14:00</span>
-                          <span className="px-2 py-1 bg-ojas-bg-light rounded text-xs">20:00</span>
+                          <span className="px-2 py-1 bg-ojas-bg-light rounded text-xs">
+                            {medication.frequency?.time || '08:00'}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Refill Alert */}
-                      <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-sm text-yellow-800">⚠️ Refill needed by 20/1/2024</p>
-                      </div>
-
-                      <p className="text-sm text-ojas-text-secondary mb-3">Take with food to reduce nausea</p>
+                      {medication.instructions && (
+                        <p className="text-sm text-ojas-text-secondary mb-3">{medication.instructions}</p>
+                      )}
 
                       <div className="flex gap-2">
-                        {!medication.taken && (
+                        {!takenToday.some(log => log.medication_id === medication.id) && (
                           <button
                             onClick={() => handleToggleMedication(medication.id)}
                             className="flex-1 py-2 bg-ojas-primary text-white rounded-lg font-medium hover:bg-ojas-primary-hover transition-colors"
