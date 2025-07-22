@@ -1,22 +1,49 @@
 
-/* Tailwind base styles and resets */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Enhanced animations for Phase 2 */
-@keyframes scale-in {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+/* Color variables for OJAS theme */
+:root {
+  --ojas-primary-blue: 215 86% 55%;
+  --ojas-soft-blue: 207 84% 88%;
+  --ojas-mist-white: 0 0% 98%;
+  --ojas-warm-white: 60 9% 98%;
+  --ojas-charcoal-gray: 220 14% 20%;
+  --ojas-slate-gray: 218 14% 46%;
+  --ojas-neutral-200: 220 14% 85%;
+  --ojas-neutral-300: 220 14% 75%;
+  --ojas-soft-midnight: 220 39% 11%;
+  --ojas-bg-light: 0 0% 100%;
 }
 
-@keyframes fade-in {
+/* Accessibility improvements */
+.keyboard-navigation *:focus {
+  outline: 2px solid hsl(var(--ojas-primary-blue));
+  outline-offset: 2px;
+}
+
+.contrast-more {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+
+.contrast-more .bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
+/* Enhanced focus indicators */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid hsl(var(--ojas-primary-blue));
+  outline-offset: 2px;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -27,120 +54,94 @@
   }
 }
 
-@keyframes slide-in-from-top {
+@keyframes slideIn {
   from {
-    transform: translateY(-20px);
-    opacity: 0;
+    transform: translateX(-100%);
   }
   to {
-    transform: translateY(0);
-    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-@keyframes slide-in-from-bottom {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes gentle-bounce {
+@keyframes pulse {
   0%, 100% {
-    transform: translateY(0);
+    opacity: 1;
   }
   50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-10px);
+  }
+  70% {
     transform: translateY(-5px);
   }
-}
-
-/* Enhanced wellness ring animations */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(0, 180, 136, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(0, 180, 136, 0.6);
+  90% {
+    transform: translateY(-3px);
   }
 }
 
-@keyframes gentle-fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes pulse-gentle {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.02);
-    opacity: 0.9;
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 0.2s ease-out;
-}
-
+/* Animation classes */
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.animate-slide-in-from-top {
-  animation: slide-in-from-top 0.4s ease-out;
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
 }
 
-.animate-slide-in-from-bottom {
-  animation: slide-in-from-bottom 0.4s ease-out;
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.animate-gentle-bounce {
-  animation: gentle-bounce 2s ease-in-out infinite;
+.animate-bounce {
+  animation: bounce 1s infinite;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.15s ease-in-out;
 }
 
-.animate-gentle-fade-in {
-  animation: gentle-fade-in 0.5s ease-out;
+.transition-colors {
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-.animate-pulse-gentle {
-  animation: pulse-gentle 4s ease-in-out infinite;
+.transition-transform {
+  transition: transform 0.15s ease-in-out;
 }
 
-/* Focus section animations */
-.focus-card-enter {
-  animation: scale-in 0.3s ease-out;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.focus-card-exit {
-  animation: scale-out 0.2s ease-out;
+::-webkit-scrollbar-track {
+  background: hsl(var(--ojas-neutral-200));
 }
 
-/* Floating action button animations */
-.fab-expand {
-  animation: scale-in 0.2s ease-out;
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--ojas-primary-blue));
+  border-radius: 4px;
 }
 
-/* Collapsible section animations */
-.collapsible-enter {
-  animation: slide-in-from-top 0.3s ease-out;
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--ojas-primary-blue) / 0.8);
 }
 
-.collapsible-exit {
-  animation: slide-in-from-bottom 0.2s ease-out;
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

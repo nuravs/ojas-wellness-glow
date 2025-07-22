@@ -1,31 +1,40 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useAppStore } from '../stores/appStore';
+import { useHealthData } from '../hooks/useHealthData';
+import { ThemeProvider } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { KeyboardNavigationProvider } from '../components/ui/enhanced-accessibility';
+import { GlobalLoadingOverlay } from '../components/ui/optimized-loading';
+
 import HomePage from './HomePage';
 import MedicationsPage from './MedicationsPage';
 import HealthLogPage from './HealthLogPage';
-import WellnessCenterPage from './WellnessCenterPage';
-import RecordsPage from './RecordsPage';
 import MorePage from './MorePage';
 import DoctorsHubPage from './DoctorsHubPage';
 import EnhancedSettingsPage from './EnhancedSettingsPage';
 import ComorbiditiesPage from './ComorbiditiesPage';
-import BrainGymPage from './BrainGymPage';
 import SupportGroupsPage from './SupportGroupsPage';
 import EventsPage from './EventsPage';
 import Navigation from '../components/Navigation';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import { useAuth } from '../contexts/AuthContext';
-import { useMedications } from '../hooks/useMedications';
-import { useAuthDebug } from '../hooks/useAuthDebug';
 
 const Index = () => {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'home' | 'medications' | 'health-log' | 'more'>('home');  
-  const [currentPage, setCurrentPage] = useState<'main' | 'doctors' | 'settings' | 'comorbidities' | 'support-groups' | 'events'>('main');
+  const { user, userProfile } = useAuth();
   
-  const { user, userProfile, loading: authLoading } = useAuthDebug();
-  const { medications, loading: medicationsLoading, toggleMedication, postponeMedication } = useMedications();
+  // Zustand store
+  const {
+    activeTab,
+    currentPage,
+    setActiveTab,
+    setCurrentPage,
+    fontSize,
+    highContrast,
+  } = useAppStore();
+
+  // Initialize health data
+  useHealthData();
 
   // Handle URL-based routing
   useEffect(() => {
@@ -54,56 +63,38 @@ const Index = () => {
       setActiveTab('home');
       setCurrentPage('main');
     }
-  }, [location.pathname]);
+  }, [location.pathname, setActiveTab, setCurrentPage]);
 
-  console.log('Index component - user:', !!user, 'userProfile:', !!userProfile, 'authLoading:', authLoading);
-
-  const handleAddMedication = () => {
-    console.log('Add medication functionality would be implemented here');
-  };
-
-  const handleNavigateToDoctors = () => {
-    setCurrentPage('doctors');
-  };
-
-  const handleNavigateToSettings = () => {
-    setCurrentPage('settings');
-  };
-
-  const handleNavigateToComorbidities = () => {
-    setCurrentPage('comorbidities');
-  };
-
-  const handleNavigateToHealthLog = () => {
-    setActiveTab('health-log');
-    setCurrentPage('main');
-  };
-
-  const handleNavigateToSupportGroups = () => {
-    setCurrentPage('support-groups');
-  };
-
-  const handleNavigateToEvents = () => {
-    setCurrentPage('events');
-  };
-
+  // Navigation handlers
+  const handleNavigateToDoctors = () => setCurrentPage('doctors');
+  const handleNavigateToSettings = () => setCurrentPage('settings');
+  const handleNavigateToComorbidities = () => setCurrentPage('comorbidities');
+  const handleNavigateToSupportGroups = () => setCurrentPage('support-groups');
+  const handleNavigateToEvents = () => setCurrentPage('events');
   const handleBackToMore = () => {
     setCurrentPage('main');
     setActiveTab('more');
     window.history.pushState({}, '', '/more');
   };
 
-  const handleBackToHome = () => {
-    setCurrentPage('main');
-    setActiveTab('home');
-    window.history.pushState({}, '', '/');
+  // Apply accessibility classes
+  const accessibilityClasses = {
+    'text-sm': fontSize === 'small',
+    'text-base': fontSize === 'medium',
+    'text-lg': fontSize === 'large',
+    'contrast-more': highContrast,
   };
 
   // Handle special page navigation
   if (currentPage === 'doctors') {
     return (
       <ThemeProvider>
-        <DoctorsHubPage onBack={handleBackToMore} />
+        <KeyboardNavigationProvider>
+          <div className={Object.entries(accessibilityClasses).filter(([_, active]) => active).map(([cls]) => cls).join(' ')}>
+            <DoctorsHubPage onBack={handleBackToMore} />
+            <GlobalLoadingOverlay />
+          </div>
+        </KeyboardNavigationProvider>
       </ThemeProvider>
     );
   }
@@ -111,7 +102,12 @@ const Index = () => {
   if (currentPage === 'settings') {
     return (
       <ThemeProvider>
-        <EnhancedSettingsPage onBack={handleBackToMore} />
+        <KeyboardNavigationProvider>
+          <div className={Object.entries(accessibilityClasses).filter(([_, active]) => active).map(([cls]) => cls).join(' ')}>
+            <EnhancedSettingsPage onBack={handleBackToMore} />
+            <GlobalLoadingOverlay />
+          </div>
+        </KeyboardNavigationProvider>
       </ThemeProvider>
     );
   }
@@ -119,7 +115,12 @@ const Index = () => {
   if (currentPage === 'comorbidities') {
     return (
       <ThemeProvider>
-        <ComorbiditiesPage onBack={handleBackToMore} />
+        <KeyboardNavigationProvider>
+          <div className={Object.entries(accessibilityClasses).filter(([_, active]) => active).map(([cls]) => cls).join(' ')}>
+            <ComorbiditiesPage onBack={handleBackToMore} />
+            <GlobalLoadingOverlay />
+          </div>
+        </KeyboardNavigationProvider>
       </ThemeProvider>
     );
   }
@@ -127,7 +128,12 @@ const Index = () => {
   if (currentPage === 'support-groups') {
     return (
       <ThemeProvider>
-        <SupportGroupsPage />
+        <KeyboardNavigationProvider>
+          <div className={Object.entries(accessibilityClasses).filter(([_, active]) => active).map(([cls]) => cls).join(' ')}>
+            <SupportGroupsPage />
+            <GlobalLoadingOverlay />
+          </div>
+        </KeyboardNavigationProvider>
       </ThemeProvider>
     );
   }
@@ -135,21 +141,12 @@ const Index = () => {
   if (currentPage === 'events') {
     return (
       <ThemeProvider>
-        <EventsPage />
-      </ThemeProvider>
-    );
-  }
-
-  // Show loading state only if critical data is still loading
-  if (user && medicationsLoading && !medications.length && activeTab === 'medications') {
-    return (
-      <ThemeProvider>
-        <div className="min-h-screen bg-ojas-mist-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-ojas-slate-gray">Loading your medications...</p>
+        <KeyboardNavigationProvider>
+          <div className={Object.entries(accessibilityClasses).filter(([_, active]) => active).map(([cls]) => cls).join(' ')}>
+            <EventsPage />
+            <GlobalLoadingOverlay />
           </div>
-        </div>
+        </KeyboardNavigationProvider>
       </ThemeProvider>
     );
   }
@@ -161,15 +158,7 @@ const Index = () => {
       case 'home':
         return <HomePage />;
       case 'medications':
-        return (
-          <MedicationsPage
-            medications={medications}
-            onToggleMedication={toggleMedication}
-            onPostponeMedication={postponeMedication}
-            onAddMedication={handleAddMedication}
-            userRole={userRole}
-          />
-        );
+        return <MedicationsPage userRole={userRole} />;
       case 'health-log':
         return <HealthLogPage userRole={userRole} />;
       case 'more':
@@ -188,10 +177,13 @@ const Index = () => {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight font-ojas transition-colors duration-300">
-        {renderCurrentPage()}
-        <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-      </div>
+      <KeyboardNavigationProvider>
+        <div className={`min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight font-ojas transition-colors duration-300 ${Object.entries(accessibilityClasses).filter(([_, active]) => active).map(([cls]) => cls).join(' ')}`}>
+          {renderCurrentPage()}
+          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <GlobalLoadingOverlay />
+        </div>
+      </KeyboardNavigationProvider>
     </ThemeProvider>
   );
 };

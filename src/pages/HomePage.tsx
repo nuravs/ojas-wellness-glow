@@ -1,223 +1,50 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import SafeAreaContainer from '@/components/SafeAreaContainer';
-import { usePatientCaregivers } from '@/hooks/usePatientCaregivers';
-import { useMedications } from '@/hooks/useMedications';
-import { useSymptoms } from '@/hooks/useSymptoms';
-import { useMedicationLogs } from '@/hooks/useMedicationLogs';
-import { useVitals } from '@/hooks/useVitals';
-import CaregiverLinkModal from '@/components/CaregiverLinkModal';
-import PatientApprovalCard from '@/components/caregivers/PatientApprovalCard';
-import CaregiverDashboard from '@/components/caregivers/CaregiverDashboard';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
-import HomePageHeader from '@/components/homepage/HomePageHeader';
-import WellnessSection from '@/components/homepage/WellnessSection';
-import TodaysFocusSection from '@/components/homepage/TodaysFocusSection';
-import SecondaryActionsSection from '@/components/homepage/SecondaryActionsSection';
-import CollapsibleInsightsSection from '@/components/homepage/CollapsibleInsightsSection';
-import ConsolidatedFloatingActionButton from '@/components/ConsolidatedFloatingActionButton';
-import { EnhancedWellnessCalculator } from '@/utils/enhancedWellnessScore';
+
+import React from 'react';
+import { useHealthStore } from '../stores/healthStore';
+import { useAuth } from '../contexts/AuthContext';
+import SafeAreaContainer from '../components/SafeAreaContainer';
+import { HomePageHeader } from '../components/homepage/HomePageHeader';
+import { WellnessSection } from '../components/homepage/WellnessSection';
+import { TodaysFocusSection } from '../components/homepage/TodaysFocusSection';
+import { TodaysActionsSection } from '../components/homepage/TodaysActionsSection';
+import { SecondaryActionsSection } from '../components/homepage/SecondaryActionsSection';
+import { CollapsibleInsightsSection } from '../components/homepage/CollapsibleInsightsSection';
+import { LiveRegion } from '../components/ui/enhanced-accessibility';
 
 const HomePage = () => {
-  const navigate = useNavigate();
-  const { userProfile } = useAuth();
-  const { pendingRequestsForPatient } = usePatientCaregivers();
-  const { medications, loading: medicationsLoading, toggleMedication, postponeMedication, refetch: refetchMedications } = useMedications();
-  const { symptoms, loading: symptomsLoading } = useSymptoms();
-  const { medicationLogs, loading: logsLoading } = useMedicationLogs();
-  const { vitals } = useVitals();
-
-  const [modalOpen, setModalOpen] = useState(false);
-
-  if (!userProfile) {
-    return (
-      <SafeAreaContainer>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="w-8 h-8 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin" />
-        </div>
-      </SafeAreaContainer>
-    );
-  }
-
-  const getSymptomsLoggedToday = (): boolean => {
-    if (!symptoms || symptoms.length === 0) return false;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return symptoms.some(symptom => {
-      const symptomDate = new Date(symptom.logged_at);
-      symptomDate.setHours(0, 0, 0, 0);
-      return symptomDate.getTime() === today.getTime();
-    });
-  };
-
-  const getMedicationStatus = () => {
-    if (!medications || medications.length === 0) {
-      return { taken: 0, total: 0 };
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const todaysLogs = medicationLogs.filter(log => {
-      const logDate = new Date(log.created_at);
-      return logDate >= today && logDate < tomorrow && log.status === 'taken';
-    });
-
-    const takenMedicationIds = new Set(todaysLogs.map(log => log.medication_id));
-    const taken = takenMedicationIds.size;
-    const total = medications.length;
-
-    return { taken, total };
-  };
-
-  const handleMedicationToggle = async (id: string) => {
-    try {
-      await toggleMedication(id);
-      await refetchMedications();
-      toast({
-        title: "Medication logged",
-        description: "Medication marked as taken successfully.",
-        variant: "default"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to log medication. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const getEnhancedWellnessScore = () => {
-    const calculator = EnhancedWellnessCalculator.getInstance();
-    const result = calculator.calculateEnhancedWellnessScore(
-      vitals,
-      symptoms,
-      medications,
-      medicationLogs
-    );
-    return result.score;
-  };
-
-  const getWellnessScore = () => {
-    try {
-      return getEnhancedWellnessScore();
-    } catch (error) {
-      console.error('Error calculating enhanced wellness score:', error);
-      const { taken, total } = getMedicationStatus();
-      const medicationScore = total > 0 ? (taken / total) * 100 : 100;
-      const symptomsLogged = getSymptomsLoggedToday();
-      const symptomBonus = symptomsLogged ? 5 : 0;
-      return Math.min(100, Math.round(medicationScore * 0.8 + 20 + symptomBonus));
-    }
-  };
-
-  const getWellnessStatus = () => {
-    const score = getWellnessScore();
-    if (score >= 80) return 'good';
-    if (score >= 60) return 'attention';
-    return 'urgent';
-  };
-
-  // Show loading state only if critical data is still loading
-  if (medicationsLoading && !medications.length) {
-    return (
-      <SafeAreaContainer>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="w-8 h-8 border-4 border-ojas-primary-blue border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-ojas-slate-gray">Loading your health data...</p>
-          </div>
-        </div>
-      </SafeAreaContainer>
-    );
-  }
-
-  const medsCount = getMedicationStatus();
-  const symptomsLogged = getSymptomsLoggedToday();
-  const wellnessScore = getWellnessScore();
-  const wellnessStatus = getWellnessStatus();
+  const { user, userProfile } = useAuth();
+  const { wellnessScore, todaysFocus, lastUpdated } = useHealthStore();
+  
+  const userRole = userProfile?.role as 'patient' | 'caregiver' || 'patient';
 
   return (
     <SafeAreaContainer>
-      <div className="min-h-screen bg-ojas-bg-light pb-20">
-        <HomePageHeader userProfile={userProfile} />
-
-        {/* Patient Approval Requests */}
-        {userProfile.role === 'patient' && pendingRequestsForPatient.length > 0 && (
-          <div className="px-4 mb-6 space-y-4">
-            {pendingRequestsForPatient.map((request) => (
-              <PatientApprovalCard key={request.id} request={request} />
-            ))}
+      <div className="flex flex-col min-h-screen bg-ojas-bg-light">
+        <HomePageHeader userRole={userRole} />
+        
+        <main className="flex-1 px-4 pb-24">
+          <LiveRegion 
+            message={`Wellness score updated to ${wellnessScore}%`}
+            priority="polite"
+          />
+          
+          <div className="space-y-6">
+            {/* Central wellness ring */}
+            <WellnessSection />
+            
+            {/* Today's focus */}
+            <TodaysFocusSection />
+            
+            {/* Quick actions */}
+            <TodaysActionsSection />
+            
+            {/* Secondary actions */}
+            <SecondaryActionsSection />
+            
+            {/* Collapsible insights */}
+            <CollapsibleInsightsSection />
           </div>
-        )}
-
-        {/* Caregiver Dashboard */}
-        {userProfile.role === 'caregiver' && (
-          <div className="mb-6">
-            <CaregiverDashboard />
-          </div>
-        )}
-
-        {/* Link Caregiver Button (Only for Patients) */}
-        {userProfile.role === 'patient' && (
-          <div className="px-4 mb-6 flex justify-end">
-            <Button onClick={() => setModalOpen(true)}>Link Caregiver</Button>
-          </div>
-        )}
-
-        {/* Caregiver Modal */}
-        <CaregiverLinkModal open={modalOpen} onClose={() => setModalOpen(false)} />
-
-        {/* Main Animated Wellness Ring - Restored as the central element */}
-        <WellnessSection 
-          score={wellnessScore}
-          status={wellnessStatus}
-          medsCount={medsCount}
-          symptomsLogged={symptomsLogged}
-          vitals={vitals}
-          symptoms={symptoms}
-          medications={medications}
-          medicationLogs={medicationLogs}
-          condensed={false}
-          userRole={userProfile.role as 'patient' | 'caregiver'}
-        />
-
-        {/* Today's Focus Section - Main Priority */}
-        <TodaysFocusSection 
-          medications={medications || []}
-          medsCount={medsCount}
-          symptomsLogged={symptomsLogged}
-          vitals={vitals || []}
-          userProfile={userProfile}
-          onMedicationAction={handleMedicationToggle}
-        />
-
-        {/* Secondary Actions */}
-        <SecondaryActionsSection 
-          medsCount={medsCount}
-          symptomsLogged={symptomsLogged}
-          vitals={vitals || []}
-          userRole={userProfile.role as 'patient' | 'caregiver'}
-        />
-
-        {/* Collapsible Insights */}
-        <CollapsibleInsightsSection 
-          medications={medications || []}
-          vitals={vitals || []}
-          symptoms={symptoms || []}
-          medicationLogs={medicationLogs || []}
-          userRole={userProfile.role as 'patient' | 'caregiver'}
-        />
-
-        {/* Consolidated Floating Action Button */}
-        <ConsolidatedFloatingActionButton />
+        </main>
       </div>
     </SafeAreaContainer>
   );
