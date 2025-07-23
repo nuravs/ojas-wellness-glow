@@ -10,6 +10,7 @@ import DailyEducationCard from '../components/homepage/DailyEducationCard';
 import DailyBrainExercise from '../components/homepage/DailyBrainExercise';
 import ComorbiditiesStatusWidget from '../components/homepage/ComorbiditiesStatusWidget';
 import SecondaryActionsSection from '../components/homepage/SecondaryActionsSection';
+import EmergencyButton from '../components/EmergencyButton';
 import { LiveRegion } from '../components/ui/enhanced-accessibility';
 import { useHealthData } from '../hooks/useHealthData';
 import { useMedications } from '../hooks/useMedications';
@@ -114,6 +115,9 @@ const HomePage = () => {
             />
           </div>
         </main>
+
+        {/* Emergency Button - Always visible for safety */}
+        <EmergencyButton />
       </div>
     </SafeAreaContainer>
   );

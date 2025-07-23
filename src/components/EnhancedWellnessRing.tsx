@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
-import { TrendingUp, Activity } from 'lucide-react';
+import { TrendingUp, Activity, ChevronRight, Plus } from 'lucide-react';
 import { getCopyForRole } from '../utils/roleBasedCopy';
 import GoodDayPrompt from './GoodDayPrompt';
 import WellnessInsightsModal from './WellnessInsightsModal';
 import { usePositiveFactors } from '../hooks/usePositiveFactors';
+import { useNavigate } from 'react-router-dom';
 
 interface ComorbidityStatus {
   controlled: number;
@@ -36,6 +38,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   const [isPressed, setIsPressed] = useState(false);
   const [showGoodDayPrompt, setShowGoodDayPrompt] = useState(false);
   const { hasLoggedToday } = usePositiveFactors();
+  const navigate = useNavigate();
 
   const getScoreZone = (score: number) => {
     if (score >= 80) return { zone: 'good', color: '#00B488', label: 'Good' };
@@ -57,13 +60,50 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
     }
   };
 
-  const handleCloseInsights = () => {
-    setShowInsightsModal(false);
+  const handleQuickAction = (action: 'medications' | 'symptoms' | 'vitals') => {
+    switch (action) {
+      case 'medications':
+        navigate('/?tab=medications');
+        break;
+      case 'symptoms':
+        navigate('/symptoms');
+        break;
+      case 'vitals':
+        navigate('/vitals');
+        break;
+    }
   };
+
+  const wellnessFactors = [
+    {
+      label: 'Medications',
+      value: Math.round((medsCount.taken / Math.max(medsCount.total, 1)) * 100),
+      weight: 40,
+      color: medsCount.taken === medsCount.total ? 'text-ojas-success' : 'text-ojas-alert'
+    },
+    {
+      label: 'Symptoms',
+      value: symptomsLogged ? 100 : 80,
+      weight: 25,
+      color: symptomsLogged ? 'text-ojas-success' : 'text-ojas-text-secondary'
+    },
+    {
+      label: 'Conditions',
+      value: comorbidityStatus ? Math.round((comorbidityStatus.controlled / Math.max(comorbidityStatus.total, 1)) * 100) : 100,
+      weight: 20,
+      color: 'text-ojas-success'
+    },
+    {
+      label: 'Activity',
+      value: 85,
+      weight: 15,
+      color: 'text-ojas-success'
+    }
+  ];
 
   return (
     <div className="w-full max-w-sm mx-auto relative">
-      {/* Progress Ring with Touch Feedback and Subtle Pulse Animation */}
+      {/* Progress Ring with Touch Feedback */}
       <div className="relative">
         <button
           onClick={handleRingTap}
@@ -83,9 +123,8 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
             filter: isPressed ? `drop-shadow(0 0 20px ${scoreZone.color}60)` : `drop-shadow(0 0 12px ${scoreZone.color}40)`
           }}
         >
-          {/* SVG Progress Ring with Subtle Glow Animation */}
+          {/* SVG Progress Ring */}
           <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 240 240">
-            {/* Background circle */}
             <circle
               cx="120"
               cy="120"
@@ -94,8 +133,6 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
               strokeWidth="8"
               fill="none"
             />
-            
-            {/* Progress circle with gentle glow animation */}
             <circle
               cx="120"
               cy="120"
@@ -113,7 +150,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
             />
           </svg>
 
-          {/* Center Content with Subtle Scale Animation */}
+          {/* Center Content */}
           <div className="relative z-10 text-center bg-white dark:bg-ojas-charcoal-gray rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-ojas-strong border-4 border-white dark:border-ojas-slate-gray transition-transform duration-200 hover:scale-105">
             <div className="text-3xl font-bold text-ojas-text-main dark:text-ojas-mist-white mb-2">
               {score}
@@ -133,7 +170,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
         {/* Enhanced Insights Modal */}
         <WellnessInsightsModal
           isOpen={showInsightsModal}
-          onClose={handleCloseInsights}
+          onClose={() => setShowInsightsModal(false)}
           wellnessScore={score}
           medsCount={medsCount}
           symptomsLogged={symptomsLogged}
@@ -149,24 +186,81 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
         )}
       </div>
 
-      {/* Score Legend - Updated with better spacing */}
-      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mt-6">
-        <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-3 text-center">
-          Health Score Zones
+      {/* Interactive Quick Actions Summary */}
+      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mt-6">
+        <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-4 text-center">
+          Today's Health Summary
         </h4>
-        <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-ojas-success flex-shrink-0"></div>
-            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver whitespace-nowrap">80-100<br/>Good</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-ojas-alert flex-shrink-0"></div>
-            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver whitespace-nowrap">60-79<br/>Fair</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-ojas-error flex-shrink-0"></div>
-            <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver whitespace-nowrap">&lt;60<br/>Attention</span>
-          </div>
+        
+        <div className="space-y-3">
+          {/* Medications Quick Action */}
+          <button
+            onClick={() => handleQuickAction('medications')}
+            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-ojas-bg-light dark:hover:bg-ojas-slate-gray/20 transition-colors duration-200 text-left"
+            style={{ minHeight: '44px' }}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${
+                medsCount.taken === medsCount.total ? 'bg-ojas-success' : 'bg-ojas-alert'
+              }`} />
+              <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
+                Medications
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white">
+                {medsCount.taken}/{medsCount.total}
+              </span>
+              <ChevronRight className="w-4 h-4 text-ojas-text-secondary" />
+            </div>
+          </button>
+
+          {/* Symptoms Quick Action */}
+          <button
+            onClick={() => handleQuickAction('symptoms')}
+            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-ojas-bg-light dark:hover:bg-ojas-slate-gray/20 transition-colors duration-200 text-left"
+            style={{ minHeight: '44px' }}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${
+                symptomsLogged ? 'bg-ojas-success' : 'bg-ojas-text-secondary'
+              }`} />
+              <span className="text-sm font-medium text-ojas-text-main dark:text-ojas-mist-white">
+                Symptoms
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white">
+                {symptomsLogged ? 'Logged' : 'Not logged'}
+              </span>
+              {!symptomsLogged && <Plus className="w-4 h-4 text-ojas-primary" />}
+              <ChevronRight className="w-4 h-4 text-ojas-text-secondary" />
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Wellness Score Factors */}
+      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mt-4">
+        <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-3 text-center">
+          Score Breakdown
+        </h4>
+        <div className="space-y-2">
+          {wellnessFactors.map((factor, index) => (
+            <div key={index} className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                  {factor.label}
+                </span>
+                <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                  ({factor.weight}%)
+                </span>
+              </div>
+              <span className={`font-medium ${factor.color}`}>
+                {factor.value}%
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
