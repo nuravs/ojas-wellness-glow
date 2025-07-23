@@ -15,6 +15,21 @@ interface Symptom {
   logged_at: string;
 }
 
+interface SymptomInsight {
+  label: string;
+  category: string;
+  count: number;
+  avgSeverity: number;
+  recentAvg: number;
+  previousAvg: number;
+  trend: 'improving' | 'worsening' | 'stable';
+  detailAnalysis: Record<string, Record<string, number>>;
+  mostRecentEntry: Symptom;
+  locations?: string[];
+  triggers?: string[];
+  types?: string[];
+}
+
 interface DetailedSymptomTrendsProps {
   symptoms: Symptom[];
   userRole?: 'patient' | 'caregiver';
@@ -127,7 +142,7 @@ const DetailedSymptomTrends: React.FC<DetailedSymptomTrendsProps> = ({
   }, [filteredSymptoms, periodDays]);
 
   const symptomInsights = useMemo(() => {
-    const insights: any = {};
+    const insights: Record<string, SymptomInsight> = {};
     
     Object.entries(SYMPTOM_CATEGORIES).forEach(([category, symptoms]) => {
       Object.entries(symptoms).forEach(([symptomKey, config]) => {
@@ -150,8 +165,9 @@ const DetailedSymptomTrends: React.FC<DetailedSymptomTrendsProps> = ({
           const previousAvg = previousWeek.length > 0 ? 
             previousWeek.reduce((sum, s) => sum + s.severity, 0) / previousWeek.length : 0;
           
-          const trend = recentAvg > previousAvg ? 'worsening' : 
-                       recentAvg < previousAvg ? 'improving' : 'stable';
+          const trend: 'improving' | 'worsening' | 'stable' = 
+            recentAvg > previousAvg ? 'worsening' : 
+            recentAvg < previousAvg ? 'improving' : 'stable';
           
           // Analyze details for clinical insights
           const detailAnalysis = symptomData.reduce((acc, symptom) => {
