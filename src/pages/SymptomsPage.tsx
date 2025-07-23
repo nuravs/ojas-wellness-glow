@@ -2,11 +2,10 @@
 import React, { useState } from 'react';
 import { useSymptoms } from '../hooks/useSymptoms';
 import SymptomLogger from '../components/symptoms/SymptomLogger';
-import SymptomsList from '../components/symptoms/SymptomsList';
-import SymptomsTrends from '../components/symptoms/SymptomsTrends';
+import DetailedSymptomTrends from '../components/symptoms/DetailedSymptomTrends';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import UnifiedFloatingActionButton from '../components/UnifiedFloatingActionButton';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
 interface SymptomsPageProps {
@@ -19,7 +18,7 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({
   userRole = 'patient' 
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
-  const { symptoms, loading, addSymptom, getRecentSymptoms, getSymptomTrends } = useSymptoms();
+  const { symptoms, loading, addSymptom } = useSymptoms();
 
   console.log('SymptomsPage - symptoms:', symptoms?.length || 0);
 
@@ -58,26 +57,9 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({
     <div className="min-h-screen bg-ojas-bg-light dark:bg-ojas-soft-midnight">
       <div className="overflow-y-auto pb-32">
         <SafeAreaContainer>
-          {/* Header */}
           <div className="flex items-center justify-between mb-6 pt-4">
-            <div className="flex items-center gap-3">
-              {onBack && (
-                <button
-                  onClick={onBack}
-                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  style={{ minWidth: '44px', minHeight: '44px' }}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
-              )}
-              <div>
-                <h1 className="text-2xl font-semibold text-ojas-text-main dark:text-ojas-mist-white">
-                  {userRole === 'caregiver' ? "Jane's Symptoms" : "My Symptoms"}
-                </h1>
-                <p className="text-sm text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                  Track how you're feeling daily
-                </p>
-              </div>
+            <div className="flex-1">
+              {/* Header content will be handled in DetailedSymptomTrends */}
             </div>
             
             {/* Add Symptom Button */}
@@ -91,25 +73,12 @@ const SymptomsPage: React.FC<SymptomsPageProps> = ({
             </Button>
           </div>
 
-          {/* Trends Section */}
-          {symptoms.length > 0 && (
-            <div className="mb-8">
-              <SymptomsTrends 
-                symptoms={symptoms}
-                getRecentSymptoms={getRecentSymptoms}
-                getSymptomTrends={getSymptomTrends}
-                userRole={userRole}
-              />
-            </div>
-          )}
-
-          {/* Symptoms List */}
-          <div className="mb-8">
-            <SymptomsList 
-              symptoms={symptoms} 
-              userRole={userRole}
-            />
-          </div>
+          {/* Detailed Symptom Trends */}
+          <DetailedSymptomTrends 
+            symptoms={symptoms}
+            userRole={userRole}
+            onBack={onBack}
+          />
         </SafeAreaContainer>
       </div>
 
