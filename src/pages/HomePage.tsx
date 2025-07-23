@@ -5,16 +5,18 @@ import { useAuth } from '../contexts/AuthContext';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import HomePageHeader from '../components/homepage/HomePageHeader';
 import WellnessSection from '../components/homepage/WellnessSection';
-import { TodaysFocusSection } from '../components/homepage/TodaysFocusSection';
-import TodaysActionsSection from '../components/homepage/TodaysActionsSection';
+import AIInsightsSection from '../components/homepage/AIInsightsSection';
+import DailyEducationCard from '../components/homepage/DailyEducationCard';
+import DailyBrainExercise from '../components/homepage/DailyBrainExercise';
+import ComorbiditiesStatusWidget from '../components/homepage/ComorbiditiesStatusWidget';
 import SecondaryActionsSection from '../components/homepage/SecondaryActionsSection';
-import CollapsibleInsightsSection from '../components/homepage/CollapsibleInsightsSection';
 import { LiveRegion } from '../components/ui/enhanced-accessibility';
 import { useHealthData } from '../hooks/useHealthData';
 import { useMedications } from '../hooks/useMedications';
 import { useSymptoms } from '../hooks/useSymptoms';
 import { useVitals } from '../hooks/useVitals';
 import { useMedicationLogs } from '../hooks/useMedicationLogs';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const { user, userProfile } = useAuth();
@@ -23,6 +25,7 @@ const HomePage = () => {
   const { symptoms } = useSymptoms();
   const { vitals } = useVitals();
   const { medicationLogs } = useMedicationLogs();
+  const navigate = useNavigate();
   
   // Initialize health data
   useHealthData();
@@ -45,19 +48,12 @@ const HomePage = () => {
     symptom.logged_at?.startsWith(today)
   );
 
-  const handleMedicationAction = (id: string) => {
-    // TODO: Implement medication action
-    console.log('Medication action:', id);
+  const handleNavigateToEducation = () => {
+    navigate('/wellness-center');
   };
 
-  const handleLogSymptom = () => {
-    // TODO: Navigate to symptom logging
-    console.log('Log symptom');
-  };
-
-  const handleViewMedications = () => {
-    // TODO: Navigate to medications page
-    console.log('View medications');
+  const handleNavigateToBrainGym = () => {
+    navigate('/brain-gym');
   };
 
   return (
@@ -72,7 +68,7 @@ const HomePage = () => {
           />
           
           <div className="space-y-6">
-            {/* Central wellness ring */}
+            {/* Central wellness ring - Primary Feature */}
             <WellnessSection
               score={wellnessScore}
               status={wellnessScore >= 80 ? 'good' : wellnessScore >= 60 ? 'attention' : 'urgent'}
@@ -85,33 +81,35 @@ const HomePage = () => {
               userRole={userRole}
             />
             
-            {/* Today's focus */}
-            <TodaysFocusSection />
+            {/* AI Insights - Moved up for priority */}
+            <div className="px-0">
+              <AIInsightsSection
+                medications={medications}
+                vitals={vitals}
+                symptoms={symptoms}
+                medicationLogs={medicationLogs}
+                userRole={userRole}
+                onViewAll={() => navigate('/more')}
+              />
+            </div>
+
+            {/* Health Conditions Status - Important for neurological patients */}
+            <ComorbiditiesStatusWidget userRole={userRole} />
             
-            {/* Quick actions */}
-            <TodaysActionsSection
-              medications={medications}
-              medsCount={medsCount}
-              symptomsLogged={symptomsLogged}
-              onMedicationAction={handleMedicationAction}
-              onLogSymptom={handleLogSymptom}
-              onViewMedications={handleViewMedications}
+            {/* Educational Content - Core PRD feature */}
+            <DailyEducationCard 
+              userRole={userRole}
+              onViewMore={handleNavigateToEducation}
             />
             
-            {/* Secondary actions */}
+            {/* Daily Brain Exercise - Core PRD feature */}
+            <DailyBrainExercise userRole={userRole} />
+            
+            {/* Streamlined Secondary Actions - Reduced redundancy */}
             <SecondaryActionsSection
               medsCount={medsCount}
               symptomsLogged={symptomsLogged}
               vitals={vitals}
-              userRole={userRole}
-            />
-            
-            {/* Collapsible insights */}
-            <CollapsibleInsightsSection
-              medications={medications}
-              vitals={vitals}
-              symptoms={symptoms}
-              medicationLogs={medicationLogs}
               userRole={userRole}
             />
           </div>
