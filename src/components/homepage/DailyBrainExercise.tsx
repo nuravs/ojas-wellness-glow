@@ -26,7 +26,7 @@ const DailyBrainExercise: React.FC<DailyBrainExerciseProps> = ({ userRole }) => 
   const [todaysExercise, setTodaysExercise] = useState<DailyExercise | null>(null);
   const [isStarted, setIsStarted] = useState(false);
   const { comorbidities } = useComorbidities();
-  const { exercises, createSession } = useBrainGym();
+  const { exercises, startSession } = useBrainGym();
   const navigate = useNavigate();
 
   // Curated exercises for neurological patients
