@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { useHealthStore } from '../stores/healthStore';
 import { useAuth } from '../contexts/AuthContext';
 import SafeAreaContainer from '../components/SafeAreaContainer';
 import HomePageHeader from '../components/homepage/HomePageHeader';
 import WellnessSection from '../components/homepage/WellnessSection';
-import AIInsightsSection from '../components/homepage/AIInsightsSection';
+import SmartHealthAssistant from '../components/homepage/SmartHealthAssistant';
 import DailyEducationCard from '../components/homepage/DailyEducationCard';
 import DailyBrainExercise from '../components/homepage/DailyBrainExercise';
 import ComorbiditiesStatusWidget from '../components/homepage/ComorbiditiesStatusWidget';
@@ -82,17 +81,14 @@ const HomePage = () => {
               userRole={userRole}
             />
             
-            {/* AI Insights - Moved up for priority */}
-            <div className="px-0">
-              <AIInsightsSection
-                medications={medications}
-                vitals={vitals}
-                symptoms={symptoms}
-                medicationLogs={medicationLogs}
-                userRole={userRole}
-                onViewAll={() => navigate('/more')}
-              />
-            </div>
+            {/* Smart Health Assistant - Replaced AI Insights */}
+            <SmartHealthAssistant
+              medications={medications}
+              vitals={vitals}
+              symptoms={symptoms}
+              medicationLogs={medicationLogs}
+              userRole={userRole}
+            />
 
             {/* Health Conditions Status - Important for neurological patients */}
             <ComorbiditiesStatusWidget userRole={userRole} />
@@ -106,7 +102,7 @@ const HomePage = () => {
             {/* Daily Brain Exercise - Core PRD feature */}
             <DailyBrainExercise userRole={userRole} />
             
-            {/* Streamlined Secondary Actions - Reduced redundancy */}
+            {/* Streamlined Secondary Actions - Consistent styling */}
             <SecondaryActionsSection
               medsCount={medsCount}
               symptomsLogged={symptomsLogged}

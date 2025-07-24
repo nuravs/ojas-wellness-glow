@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TrendingUp, Activity, ChevronRight, Plus } from 'lucide-react';
+import { TrendingUp, Activity, ChevronRight, Plus, Info } from 'lucide-react';
 import { getCopyForRole } from '../utils/roleBasedCopy';
 import GoodDayPrompt from './GoodDayPrompt';
 import WellnessInsightsModal from './WellnessInsightsModal';
@@ -37,6 +37,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   const [showInsightsModal, setShowInsightsModal] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [showGoodDayPrompt, setShowGoodDayPrompt] = useState(false);
+  const [showScoreBreakdown, setShowScoreBreakdown] = useState(false);
   const { hasLoggedToday } = usePositiveFactors();
   const navigate = useNavigate();
 
@@ -52,7 +53,6 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
   const progressOffset = circumference - (score / 100) * circumference;
 
   const handleRingTap = () => {
-    // Good Day Protocol: Show prompt if score >= 80 and hasn't logged today
     if (score >= 80 && !hasLoggedToday()) {
       setShowGoodDayPrompt(true);
     } else {
@@ -167,6 +167,54 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
           </div>
         </button>
 
+        {/* Score Breakdown Info Icon */}
+        <div className="absolute top-4 right-4">
+          <div className="relative">
+            <button
+              onMouseEnter={() => setShowScoreBreakdown(true)}
+              onMouseLeave={() => setShowScoreBreakdown(false)}
+              className="w-6 h-6 bg-white dark:bg-ojas-charcoal-gray rounded-full shadow-ojas-soft flex items-center justify-center text-ojas-text-secondary hover:text-ojas-primary transition-colors"
+              aria-label="Score breakdown"
+            >
+              <Info className="w-3 h-3" />
+            </button>
+            
+            {/* Hover tooltip */}
+            {showScoreBreakdown && (
+              <div className="absolute top-full right-0 mt-2 bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-strong border border-ojas-border dark:border-ojas-slate-gray p-3 z-50 min-w-48">
+                <h4 className="text-xs font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-2">
+                  Score Breakdown
+                </h4>
+                <div className="space-y-1">
+                  {wellnessFactors.map((factor, index) => (
+                    <div key={index} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1">
+                        <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
+                          {factor.label}
+                        </span>
+                        <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver opacity-60">
+                          ({factor.weight}%)
+                        </span>
+                      </div>
+                      <span className={`font-medium ${factor.color}`}>
+                        {factor.value}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-2 pt-2 border-t border-ojas-border dark:border-ojas-slate-gray">
+                  <button
+                    onClick={() => setShowInsightsModal(true)}
+                    className="text-xs text-ojas-primary hover:text-ojas-primary-hover font-medium"
+                  >
+                    View detailed insights →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Enhanced Insights Modal */}
         <WellnessInsightsModal
           isOpen={showInsightsModal}
@@ -187,7 +235,7 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
       </div>
 
       {/* Interactive Quick Actions Summary */}
-      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mt-6">
+      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-2xl shadow-ojas-soft p-4 mt-6">
         <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-4 text-center">
           Today's Health Summary
         </h4>
@@ -237,30 +285,6 @@ const EnhancedWellnessRing: React.FC<EnhancedWellnessRingProps> = ({
               <ChevronRight className="w-4 h-4 text-ojas-text-secondary" />
             </div>
           </button>
-        </div>
-      </div>
-
-      {/* Wellness Score Factors */}
-      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-xl shadow-ojas-soft border border-ojas-border dark:border-ojas-slate-gray p-4 mt-4">
-        <h4 className="text-sm font-semibold text-ojas-text-main dark:text-ojas-mist-white mb-3 text-center">
-          Score Breakdown
-        </h4>
-        <div className="space-y-2">
-          {wellnessFactors.map((factor, index) => (
-            <div key={index} className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                  {factor.label}
-                </span>
-                <span className="text-ojas-text-secondary dark:text-ojas-cloud-silver">
-                  ({factor.weight}%)
-                </span>
-              </div>
-              <span className={`font-medium ${factor.color}`}>
-                {factor.value}%
-              </span>
-            </div>
-          ))}
         </div>
       </div>
     </div>
