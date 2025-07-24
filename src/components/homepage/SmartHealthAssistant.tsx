@@ -115,10 +115,10 @@ const SmartHealthAssistant: React.FC<SmartHealthAssistantProps> = ({
         </div>
       </div>
 
-      {/* Expanded Modal */}
+      {/* Expanded Modal - Fixed height and positioning */}
       {isExpanded && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white dark:bg-ojas-charcoal-gray rounded-t-3xl shadow-ojas-strong max-w-lg w-full mx-4 max-h-[80vh] overflow-hidden animate-slide-up">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-ojas-charcoal-gray rounded-3xl shadow-ojas-strong max-w-lg w-full max-h-[90vh] overflow-hidden animate-slide-up">
             <div className="flex items-center justify-between p-6 border-b border-ojas-border">
               <div>
                 <h2 className="text-xl font-semibold text-ojas-text-main">Health Assistant</h2>
@@ -134,7 +134,7 @@ const SmartHealthAssistant: React.FC<SmartHealthAssistantProps> = ({
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto max-h-96 space-y-4">
+            <div className="p-6 overflow-y-auto space-y-4" style={{ maxHeight: 'calc(90vh - 120px)' }}>
               {allInsights.map((insight, index) => (
                 <div key={insight.id} className={`p-4 rounded-xl border-l-4 ${getPriorityColor(insight.priority)}`}>
                   <h3 className="font-semibold text-ojas-text-main mb-2">{insight.title}</h3>

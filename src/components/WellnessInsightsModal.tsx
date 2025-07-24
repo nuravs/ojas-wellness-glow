@@ -90,8 +90,8 @@ const WellnessInsightsModal: React.FC<WellnessInsightsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-t-3xl shadow-ojas-strong max-w-lg w-full mx-4 max-h-[80vh] overflow-hidden animate-slide-up">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-ojas-charcoal-gray rounded-3xl shadow-ojas-strong max-w-lg w-full max-h-[90vh] overflow-hidden animate-slide-up">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-ojas-border">
           <div>
@@ -131,8 +131,8 @@ const WellnessInsightsModal: React.FC<WellnessInsightsModalProps> = ({
           ))}
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-96">
+        {/* Content - Fixed height and scrollable */}
+        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 200px)' }}>
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Positive Highlights */}
